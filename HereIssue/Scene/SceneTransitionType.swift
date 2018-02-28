@@ -1,5 +1,5 @@
 //
-//  SplashViewModel.swift
+//  SceneTransitionType.swift
 //  HereIssue
 //
 //  Created by junwoo on 2018. 2. 27..
@@ -7,3 +7,10 @@
 //
 
 import Foundation
+
+enum SceneTransitionType {
+  case root
+  case push
+  case modal
+}
+

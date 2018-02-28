@@ -1,0 +1,60 @@
+PODS:
+  - Action (3.5.0):
+    - RxCocoa (~> 4.0)
+    - RxSwift (~> 4.0)
+  - Alamofire (4.6.0)
+  - Kingfisher (4.6.1)
+  - Moya/Core (11.0.0):
+    - Alamofire (~> 4.1)
+    - Result (~> 3.0)
+  - Moya/RxSwift (11.0.0):
+    - Moya/Core
+    - RxSwift (~> 4.0)
+  - Realm (3.1.1):
+    - Realm/Headers (= 3.1.1)
+  - Realm/Headers (3.1.1)
+  - RealmSwift (3.1.1):
+    - Realm (= 3.1.1)
+  - Result (3.2.4)
+  - RxBlocking (4.1.2):
+    - RxSwift (~> 4.0)
+  - RxCocoa (4.1.2):
+    - RxSwift (~> 4.0)
+  - RxRealm (0.7.5):
+    - RealmSwift (~> 3.0)
+    - RxSwift (~> 4.0)
+  - RxSwift (4.1.2)
+  - RxTest (4.1.2):
+    - RxSwift (~> 4.0)
+  - SnapKit (4.0.0)
+
+DEPENDENCIES:
+  - Action
+  - Kingfisher (~> 4.0)
+  - Moya/RxSwift
+  - RealmSwift
+  - RxBlocking
+  - RxCocoa
+  - RxRealm
+  - RxSwift
+  - RxTest
+  - SnapKit (~> 4.0.0)
+
+SPEC CHECKSUMS:
+  Action: d60087ebce41b969d1afdad01e2fa1372a82f26e
+  Alamofire: f41a599bd63041760b26d393ec1069d9d7b917f4
+  Kingfisher: 1f9157d9c02b380cbd0b7cc890161195164eb634
+  Moya: be29766339783963a70d1279d69c891ab3a1393c
+  Realm: 42d1c38a5b1bbcc828b48a7ce702cb86fc68adf4
+  RealmSwift: d31937ca6a6ee54acde64ec839523c0a3c04924b
+  Result: d2d07204ce72856f1fd9130bbe42c35a7b0fea10
+  RxBlocking: f6054985901412fc8c02daa84e92d4ba68c61389
+  RxCocoa: d88ba0f1f6abf040011a9eb4b539324fc426843a
+  RxRealm: a6c6c0a07cb61f34209969ca6657734edfdfff30
+  RxSwift: e49536837d9901277638493ea537394d4b55f570
+  RxTest: e634f15fd2c2cd0e0120132ef7a4f7be69ad0393
+  SnapKit: a42d492c16e80209130a3379f73596c3454b7694
+
+PODFILE CHECKSUM: 02035579693b7bfe3d491663e9416f3c9b0520ed
+
+COCOAPODS: 1.3.1
