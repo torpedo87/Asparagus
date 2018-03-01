@@ -13,7 +13,7 @@ import Action
 
 struct LoginViewModel {
   let sceneCoordinator: SceneCoordinatorType
-  let authAPI: AuthAPIProtocol
+  let authService: AuthServiceRepresentable
   
   //input
   let idTextInput = BehaviorRelay<String>(value: "")
@@ -22,8 +22,8 @@ struct LoginViewModel {
   //output
   let validate: Driver<Bool>
   
-  init(authAPI: AuthAPIProtocol = AuthAPI(), coordinator: SceneCoordinatorType) {
-    self.authAPI = authAPI
+  init(authService: AuthServiceRepresentable = AuthService(), coordinator: SceneCoordinatorType) {
+    self.authService = authService
     self.sceneCoordinator = coordinator
     
     let isIdValid = idTextInput.asObservable()
@@ -54,12 +54,15 @@ struct LoginViewModel {
   }
   
   //토큰 요청
-  func requestLogin(id: String, password: String) -> Observable<AuthAPI.AccountStatus> {
-    return authAPI.requestToken(userId: id, userPassword: password)
+  func requestLogin(id: String, password: String) -> Observable<AuthService.AccountStatus> {
+    return authService.requestToken(userId: id, userPassword: password)
   }
   
   func goToTaskScene() {
-    let taskViewModel = TaskViewModel(coordinator: sceneCoordinator)
+    let issueService = IssueService()
+    let taskService = TaskService()
+    let taskViewModel = TaskViewModel(account: authService.status, issueService: issueService,
+                                      coordinator: sceneCoordinator, taskService: taskService)
     let taskScene = Scene.task(taskViewModel)
     sceneCoordinator.transition(to: taskScene, type: .root)
   }
@@ -81,7 +84,7 @@ struct LoginViewModel {
     }
   }
   
-  lazy var loginAction: Action<(String, String), AuthAPI.AccountStatus> = { this in
+  lazy var loginAction: Action<(String, String), AuthService.AccountStatus> = { this in
     return Action { tuple in
       return this.requestLogin(id: tuple.0, password: tuple.1)
     }

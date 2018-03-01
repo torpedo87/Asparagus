@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       Reachability.shared.startMonitor("github.com")
       let sceneCoordinator = SceneCoordinator()
       self.window = sceneCoordinator.window
-      let account = AuthAPI().status
+      let account = AuthService().status
       let splashViewModel = SplashViewModel(coordinator: sceneCoordinator, account: account)
       let firstScene = Scene.splash(splashViewModel)
       sceneCoordinator.transition(to: firstScene, type: .root)

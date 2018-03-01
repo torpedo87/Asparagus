@@ -1,5 +1,5 @@
 //
-//  AuthAPI.swift
+//  AuthService.swift
 //  HereIssue
 //
 //  Created by junwoo on 2018. 2. 27..
@@ -10,12 +10,13 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-protocol AuthAPIProtocol {
-  func requestToken(userId: String, userPassword: String) -> Observable<AuthAPI.AccountStatus>
-  func removeToken(userId: String, userPassword: String) -> Observable<AuthAPI.AccountStatus>
+protocol AuthServiceRepresentable {
+  var status: Driver<AuthService.AccountStatus> { get }
+  func requestToken(userId: String, userPassword: String) -> Observable<AuthService.AccountStatus>
+  func removeToken(userId: String, userPassword: String) -> Observable<AuthService.AccountStatus>
 }
 
-struct AuthAPI: AuthAPIProtocol {
+struct AuthService: AuthServiceRepresentable {
   enum AccountError: Error {
     case requestFail
     case invalidUserInfo

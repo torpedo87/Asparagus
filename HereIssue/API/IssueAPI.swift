@@ -2,74 +2,59 @@
 //  IssueAPI.swift
 //  HereIssue
 //
-//  Created by junwoo on 2018. 2. 27..
+//  Created by junwoo on 2018. 2. 28..
 //  Copyright © 2018년 samchon. All rights reserved.
 //
 
 import Foundation
-import RxSwift
-import RxCocoa
 import Moya
 
-protocol IssueAPIProtocol {
-  func fetchAllIssues(page: Int) -> Observable<[Issue]>
+enum IssueAPI {
+  
+  case fetchAllIssues(page: Int)
 }
-class IssueAPI: IssueAPIProtocol {
+
+extension IssueAPI: TargetType {
   
-  enum Errors: Error {
-    case requestFailed
+  //for test
+  var sampleData: Data {
+    return Data()
   }
   
-  private let bag = DisposeBag()
-  var provider: MoyaProvider<IssueMoya>!
-  
-  init(provider: MoyaProvider<IssueMoya> = MoyaProvider<IssueMoya>()) {
-    self.provider = provider
+  var headers: [String : String]? {
+    guard let token = UserDefaults.loadToken()?.token else { fatalError() }
+    return [
+      "Content-type": "application/json; charset=utf-8",
+      "Authorization": "Bearer \(token)"
+    ]
   }
   
-  func fetchAllIssues(page: Int) -> Observable<[Issue]> {
-    return paging()
-      .flatMap { [unowned self] in
-        self.provider.rx.request(.fetchAllIssues(page: $0))
-      }
-      .reduce([Issue](), accumulator: { issues, response in
-        let decoded = try! JSONDecoder().decode([Issue].self, from: response.data)
-        return issues + decoded
-      })
-  }
+  var baseURL: URL { return URL(string: "https://api.github.com")! }
   
-  private func paging() -> Observable<Int> {
-    return Observable.create { observer in
-      self.provider.request(.fetchAllIssues(page: 1))
-      { result in
-        
-        var lastPage = Int()
-        if let link = result.value?.response?.allHeaderFields["Link"] as? String {
-          lastPage = (self.getLastPageFromLinkHeader(link: link))
-        }
-        
-        switch result {
-        case .success(let response):
-          if 200 ..< 300 ~= response.statusCode {
-            for page in 1...lastPage {
-              observer.onNext(page)
-            }
-            observer.onCompleted()
-          } else {
-            observer.onError(Errors.requestFailed)
-          }
-        case .failure(let error):
-          observer.onError(error)
-        }
-      }
-      return Disposables.create()
+  var path: String {
+    switch self {
+    case .fetchAllIssues(_):
+      return "/issues"
     }
   }
   
-  //helper
-  func getLastPageFromLinkHeader(link: String) -> Int {
-    let temp = link.components(separatedBy: "=")[7]
-    let lastPage = Int((temp.components(separatedBy: "&")[0]))!
-    return lastPage
+  var method: Moya.Method {
+    switch self {
+    case .fetchAllIssues:
+      return .get
+    }
   }
+  
+  var task: Task {
+    switch self {
+      
+    case let .fetchAllIssues(page):
+      return .requestParameters(parameters: ["sort": "created",
+                                             "state": "all",
+                                             "filter": "all",
+                                             "page": "\(page)"],
+                                encoding: URLEncoding.queryString)
+    }
+  }
+  
 }

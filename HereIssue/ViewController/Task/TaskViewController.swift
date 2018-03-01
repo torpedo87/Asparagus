@@ -7,10 +7,13 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
 
 class TaskViewController: UIViewController, BindableType {
-  
+  private let bag = DisposeBag()
   var viewModel: TaskViewModel!
+  
   private lazy var tableView: UITableView = {
     let view = UITableView()
     view.register(TaskCell.self,
@@ -37,6 +40,23 @@ class TaskViewController: UIViewController, BindableType {
   
   func bindViewModel() {
     
+    viewModel.tasks.asDriver(onErrorJustReturn: [])
+      .drive(onNext: { [unowned self] _ in self.tableView.reloadData() })
+      .disposed(by: bag)
+    
+    //datasource
+    viewModel.tasks.asObservable()
+      .bind(to: tableView.rx.items) {
+        [unowned self] (tableView: UITableView, index: Int, element: TaskItem) in
+        let cell =
+          TaskCell(style: .default, reuseIdentifier: TaskCell.reuseIdentifier)
+        cell.configureCell(item: element, action: self.viewModel.onToggle(task: element))
+        return cell
+      }
+      .disposed(by: bag)
+    
   }
+  
+  
   
 }

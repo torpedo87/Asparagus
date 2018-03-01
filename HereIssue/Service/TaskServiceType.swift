@@ -12,12 +12,16 @@ import RealmSwift
 
 enum TaskServiceError: Error {
   case creationFailed
+  case fetchFailed
   case updateFailed(TaskItem)
   case deletionFailed(TaskItem)
   case toggleFailed(TaskItem)
 }
 
 protocol TaskServiceType {
+  @discardableResult
+  func fetchTasks(tasks: [TaskItem]) -> Observable<[TaskItem]>
+  
   @discardableResult
   func createTask(title: String) -> Observable<TaskItem>
   

@@ -13,15 +13,11 @@ import RxRealm
 
 struct TaskService: TaskServiceType {
   init() {
-    // create a few default tasks
     do {
       let realm = try Realm()
       if realm.objects(TaskItem.self).count == 0 {
-        ["Chapter 5: Filtering operators",
-         "Chapter 4: Observables and Subjects in practice",
-         "Chapter 3: Subjects",
-         "Chapter 2: Observables",
-         "Chapter 1: Hello, RxSwift"].forEach {
+        ["할일 2",
+         "할일 1"].forEach {
           self.createTask(title: $0)
         }
       }
@@ -37,6 +33,26 @@ struct TaskService: TaskServiceType {
       print("Failed \(operation) realm with error: \(err)")
       return nil
     }
+  }
+  
+  func fetchTasks(tasks: [TaskItem]) -> Observable<[TaskItem]> {
+    let result = withRealm("fetch") { realm -> Observable<[TaskItem]> in
+      for task in tasks {
+        if let exTask = realm.objects(TaskItem.self).filter("uid == \(task.uid)").first {
+          try realm.write {
+            exTask.title = task.title
+            exTask.body = task.body
+            exTask.checked = task.checked
+          }
+        } else {
+          try realm.write {
+            realm.add(task)
+          }
+        }
+      }
+      return .just(tasks)
+    }
+    return result ?? .error(TaskServiceError.fetchFailed)
   }
   
   @discardableResult
@@ -79,10 +95,10 @@ struct TaskService: TaskServiceType {
   func toggle(task: TaskItem) -> Observable<TaskItem> {
     let result = withRealm("toggling") { realm -> Observable<TaskItem> in
       try realm.write {
-        if task.checked == nil {
-          task.checked = Date()
+        if task.checked == "open" {
+          task.checked = "closed"
         } else {
-          task.checked = nil
+          task.checked = "open"
         }
       }
       return .just(task)
