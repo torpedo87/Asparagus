@@ -1,5 +1,5 @@
 //
-//  LoginViewController.swift
+//  AuthViewController.swift
 //  HereIssue
 //
 //  Created by junwoo on 2018. 2. 27..
@@ -10,14 +10,28 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class LoginViewController: UIViewController, BindableType {
-  var viewModel: LoginViewModel!
+class AuthViewController: UIViewController, BindableType {
+  var viewModel: AuthViewModel!
   private let bag = DisposeBag()
+  private var cancelButton: UIButton = {
+    let btn = UIButton()
+    btn.setTitle("CANCEL", for: .normal)
+    btn.setTitleColor(UIColor.blue, for: .normal)
+    return btn
+  }()
   private let imgView: UIImageView = {
     let view = UIImageView()
-    view.image = UIImage(named: "issue")
+    view.image = UIImage(named: "ItemChecked")
     view.contentMode = .scaleAspectFill
     return view
+  }()
+  private let stackView: UIStackView = {
+    let stack = UIStackView()
+    stack.axis = .vertical
+    stack.spacing = 10
+    stack.alignment = .fill
+    stack.distribution = .fillEqually
+    return stack
   }()
   private let idTextField: UITextField = {
     let txtField = UITextField()
@@ -34,7 +48,7 @@ class LoginViewController: UIViewController, BindableType {
     txtField.layer.borderWidth = 0.5
     return txtField
   }()
-  private var loginButton: UIButton = {
+  private var authButton: UIButton = {
     let btn = UIButton()
     btn.isEnabled = false
     btn.setTitleColor(UIColor.blue, for: .normal)
@@ -56,41 +70,32 @@ class LoginViewController: UIViewController, BindableType {
   func setupView() {
     title = "Login"
     view.backgroundColor = UIColor.white
+    view.addSubview(cancelButton)
     view.addSubview(imgView)
-    view.addSubview(idTextField)
-    view.addSubview(passWordTextField)
-    view.addSubview(loginButton)
-    view.addSubview(forgotPasswordButton)
+    view.addSubview(stackView)
+    stackView.addArrangedSubview(idTextField)
+    stackView.addArrangedSubview(passWordTextField)
+    stackView.addArrangedSubview(authButton)
+    stackView.addArrangedSubview(forgotPasswordButton)
+    
+    cancelButton.snp.makeConstraints { (make) in
+      cancelButton.sizeToFit()
+      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(20)
+      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(20)
+    }
     
     imgView.snp.makeConstraints { (make) in
       make.centerX.equalToSuperview()
+      make.centerY.equalToSuperview().offset(-UIScreen.main.bounds.height / 8)
       make.width.height.equalTo(UIScreen.main.bounds.height / 4)
-      make.bottom.equalTo(idTextField.snp.top).offset(-10)
+      make.bottom.equalTo(stackView.snp.top).offset(-20)
     }
     
-    idTextField.snp.makeConstraints({ (make) in
+    stackView.snp.makeConstraints { (make) in
       make.centerX.equalToSuperview()
-      make.centerY.equalToSuperview().offset(-100)
-      make.width.equalTo(UIScreen.main.bounds.width * 2 / 3)
-      make.height.equalTo(UIScreen.main.bounds.height / 15)
-    })
-    
-    passWordTextField.snp.makeConstraints({ (make) in
-      make.centerX.equalToSuperview()
-      make.top.equalTo(idTextField.snp.bottom).offset(10)
-      make.width.height.equalTo(idTextField)
-    })
-    
-    loginButton.snp.makeConstraints({ (make) in
-      loginButton.sizeToFit()
-      make.centerX.equalToSuperview()
-      make.top.equalTo(passWordTextField.snp.bottom).offset(10)
-    })
-    
-    forgotPasswordButton.snp.makeConstraints { (make) in
-      forgotPasswordButton.sizeToFit()
-      make.centerX.equalToSuperview()
-      make.top.equalTo(loginButton.snp.bottom).offset(10)
+      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(30)
+      make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-30)
+      make.height.equalTo(UIScreen.main.bounds.height / 4)
     }
   }
   
@@ -103,34 +108,35 @@ class LoginViewController: UIViewController, BindableType {
       .bind(to: viewModel.pwdTextInput)
       .disposed(by: bag)
     
-    viewModel.checkReachability()
-      .debug("----wifi------")
-      .asDriver(onErrorJustReturn: false)
-      .map { $0 ? "login" : "no internet connection." }
-      .drive(loginButton.rx.title())
+    Observable.combineLatest(viewModel.checkReachability().asObservable(),
+                             viewModel.loggedIn.asObservable())
+      .map { (tuple) -> String in
+        if !tuple.0 { return "no internet connection" }
+        else if tuple.1 { return "Logout" }
+        else { return "Login" }
+      }.asDriver(onErrorJustReturn: "failed")
+      .drive(authButton.rx.title())
       .disposed(by: bag)
     
     viewModel.validate
-      .drive(loginButton.rx.isEnabled)
+      .drive(authButton.rx.isEnabled)
       .disposed(by: bag)
     
-    loginButton.rx.tap
+    authButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
-      .map { [unowned self] _ -> (String, String) in
-        if let id = self.idTextField.text,
-          let pwd = self.passWordTextField.text {
-          return (id, pwd)
-        }
-        return ("", "")
-    }
-    .subscribe(viewModel.loginAction.inputs)
-    .disposed(by: bag)
+      .map({ [unowned self] _ -> (String, String) in
+        let id = self.idTextField.text ?? ""
+        let password = self.passWordTextField.text ?? ""
+        return (id, password)
+      })
+      .bind(to: viewModel.onAuth.inputs)
+      .disposed(by: bag)
     
-    viewModel.loginAction.elements
-      .asDriver(onErrorJustReturn: .unavailable("login failed"))
+    viewModel.onAuth.elements
+      .asDriver(onErrorJustReturn: .unavailable("request failed"))
       .drive(onNext: { [unowned self] status in
         switch status {
-        case .authorized(let token): self.viewModel.goToTaskScene()
+        case .authorized: self.viewModel.goToTaskScene()
         case .unavailable(let value): self.alertErrorMsg(message: value)
         }
       })
@@ -138,6 +144,7 @@ class LoginViewController: UIViewController, BindableType {
     
     
     forgotPasswordButton.rx.action = viewModel.onForgotPassword()
+    cancelButton.rx.action = viewModel.onCancel
   }
   
   func alertErrorMsg(message: String) {

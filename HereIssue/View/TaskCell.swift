@@ -54,9 +54,9 @@ class TaskCell: UITableViewCell {
       })
       .disposed(by: bag)
     
-    item.rx.observe(Date.self, "checked")
-      .subscribe(onNext: { [unowned self] date in
-        let image = UIImage(named: date == nil ? "ItemNotChecked" : "ItemChecked")
+    item.rx.observe(String.self, "checked")
+      .subscribe(onNext: { [unowned self] state in
+        let image = UIImage(named: state == "open" ? "ItemNotChecked" : "ItemChecked")
         self.checkButton.setImage(image, for: .normal)
       })
       .disposed(by: bag)

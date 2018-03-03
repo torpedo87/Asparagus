@@ -1,5 +1,5 @@
 //
-//  LoginViewModel.swift
+//  AuthViewModel.swift
 //  HereIssue
 //
 //  Created by junwoo on 2018. 2. 27..
@@ -11,9 +11,12 @@ import RxSwift
 import RxCocoa
 import Action
 
-struct LoginViewModel {
+struct AuthViewModel {
+  private let bag = DisposeBag()
   let sceneCoordinator: SceneCoordinatorType
   let authService: AuthServiceRepresentable
+  let onAuth: Action<(String, String), AuthService.AccountStatus>
+  let onCancel: CocoaAction!
   
   //input
   let idTextInput = BehaviorRelay<String>(value: "")
@@ -21,10 +24,14 @@ struct LoginViewModel {
   
   //output
   let validate: Driver<Bool>
+  let loggedIn: Driver<Bool>
   
-  init(authService: AuthServiceRepresentable = AuthService(), coordinator: SceneCoordinatorType) {
+  init(authService: AuthServiceRepresentable = AuthService(),
+       coordinator: SceneCoordinatorType,
+       authAction: Action<(String, String), AuthService.AccountStatus>) {
     self.authService = authService
     self.sceneCoordinator = coordinator
+    self.onAuth = authAction
     
     let isIdValid = idTextInput.asObservable()
       .map { (text) -> Bool in
@@ -51,11 +58,13 @@ struct LoginViewModel {
         return false
       }
       .asDriver(onErrorJustReturn: false)
-  }
-  
-  //토큰 요청
-  func requestLogin(id: String, password: String) -> Observable<AuthService.AccountStatus> {
-    return authService.requestToken(userId: id, userPassword: password)
+    
+    onCancel = CocoaAction {
+      return coordinator.pop()
+        .asObservable().map { _ in }
+    }
+    
+    loggedIn = authService.isLoggedIn
   }
   
   func goToTaskScene() {
@@ -83,10 +92,4 @@ struct LoginViewModel {
       })
     }
   }
-  
-  lazy var loginAction: Action<(String, String), AuthService.AccountStatus> = { this in
-    return Action { tuple in
-      return this.requestLogin(id: tuple.0, password: tuple.1)
-    }
-  }(self)
 }

@@ -11,6 +11,7 @@ import RxSwift
 import RxCocoa
 
 protocol AuthServiceRepresentable {
+  var isLoggedIn: Driver<Bool> { get }
   var status: Driver<AuthService.AccountStatus> { get }
   func requestToken(userId: String, userPassword: String) -> Observable<AuthService.AccountStatus>
   func removeToken(userId: String, userPassword: String) -> Observable<AuthService.AccountStatus>
@@ -151,5 +152,17 @@ struct AuthService: AuthServiceRepresentable {
       return Disposables.create()
       }
       .asDriver(onErrorJustReturn: .unavailable("unAuthorized"))
+  }
+  
+  var isLoggedIn: Driver<Bool> {
+    return Observable.create { observer in
+      if let _ = UserDefaults.loadToken() {
+        observer.onNext(true)
+      } else {
+        observer.onNext(false)
+      }
+      return Disposables.create()
+      }
+      .asDriver(onErrorJustReturn: false)
   }
 }

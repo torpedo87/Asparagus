@@ -37,16 +37,23 @@ struct TaskService: TaskServiceType {
   
   func fetchTasks(tasks: [TaskItem]) -> Observable<[TaskItem]> {
     let result = withRealm("fetch") { realm -> Observable<[TaskItem]> in
-      for task in tasks {
-        if let exTask = realm.objects(TaskItem.self).filter("uid == \(task.uid)").first {
-          try realm.write {
-            exTask.title = task.title
-            exTask.body = task.body
-            exTask.checked = task.checked
+      for serverTask in tasks {
+        //기존에 있는 task
+        if let localTask = realm.objects(TaskItem.self).filter("uid == \(serverTask.uid)").first {
+          //서버가 최신일때
+          if serverTask.getUpdatedDate() > localTask.getUpdatedDate() {
+            try realm.write {
+              localTask.title = serverTask.title
+              localTask.body = serverTask.body
+              localTask.added = serverTask.added
+              localTask.updated = serverTask.updated
+            }
           }
         } else {
+          //로컬에 없는 task
           try realm.write {
-            realm.add(task)
+            serverTask.setDateWhenUpdated()
+            realm.add(serverTask)
           }
         }
       }
@@ -60,6 +67,8 @@ struct TaskService: TaskServiceType {
     let result = withRealm("creating") { realm -> Observable<TaskItem> in
       let task = TaskItem()
       task.title = title
+      task.checked = "open"
+      task.setDateWhenCreated()
       try realm.write {
         task.uid = (realm.objects(TaskItem.self).max(ofProperty: "uid") ?? 0) + 1
         realm.add(task)
@@ -81,10 +90,12 @@ struct TaskService: TaskServiceType {
   }
   
   @discardableResult
-  func update(task: TaskItem, title: String) -> Observable<TaskItem> {
+  func update(task: TaskItem, title: String, body: String) -> Observable<TaskItem> {
     let result = withRealm("updating title") { realm -> Observable<TaskItem> in
       try realm.write {
         task.title = title
+        task.body = body
+        task.setDateWhenUpdated()
       }
       return .just(task)
     }
@@ -100,6 +111,7 @@ struct TaskService: TaskServiceType {
         } else {
           task.checked = "open"
         }
+        task.setDateWhenUpdated()
       }
       return .just(task)
     }

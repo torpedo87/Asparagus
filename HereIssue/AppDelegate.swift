@@ -22,9 +22,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       let sceneCoordinator = SceneCoordinator()
       self.window = sceneCoordinator.window
       let account = AuthService().status
-      let splashViewModel = SplashViewModel(coordinator: sceneCoordinator, account: account)
-      let firstScene = Scene.splash(splashViewModel)
-      sceneCoordinator.transition(to: firstScene, type: .root)
+      let issueService = IssueService()
+      let taskService = TaskService()
+      let taskViewModel = TaskViewModel(account: account,
+                                        issueService: issueService,
+                                        coordinator: sceneCoordinator,
+                                        taskService: taskService)
+      let taskScene = Scene.task(taskViewModel)
+      sceneCoordinator.transition(to: taskScene, type: .root)
     }
     return true
   }

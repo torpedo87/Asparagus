@@ -9,22 +9,17 @@
 import UIKit
 
 enum Scene {
-  case splash(SplashViewModel)
-  case login(LoginViewModel)
+  case auth(AuthViewModel)
   case task(TaskViewModel)
+  case edit(EditViewModel)
 }
 
 extension Scene {
   func viewController() -> UIViewController {
     
     switch self {
-    case .splash(let viewModel):
-      var vc = SplashViewController()
-      vc.bindViewModel(to: viewModel)
-      return vc
-      
-    case .login(let viewModel):
-      var vc = LoginViewController()
+    case .auth(let viewModel):
+      var vc = AuthViewController()
       vc.bindViewModel(to: viewModel)
       return vc
       
@@ -33,6 +28,10 @@ extension Scene {
       vc.bindViewModel(to: viewModel)
       let nav = UINavigationController(rootViewController: vc)
       return nav
+    case .edit(let viewModel):
+      var vc = EditViewController()
+      vc.bindViewModel(to: viewModel)
+      return vc
     }
   }
 }

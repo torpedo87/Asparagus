@@ -14,6 +14,7 @@ target 'HereIssue' do
   pod 'RealmSwift'
   pod 'RxRealm'
   pod 'Action'
+  pod 'RxDataSources'
 
   target 'HereIssueTests' do
     inherit! :search_paths

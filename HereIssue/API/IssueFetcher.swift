@@ -49,6 +49,7 @@ class IssueFetcher {
       .filter { $0 != nil }
       .map { $0! }
     
+    //인터넷연결 + 로그인 상태에서 api에 요청가능
     issues = reachableWithAccount
       .flatMap({ (token) -> Observable<[TaskItem]> in
         if token != nil {

@@ -29,7 +29,7 @@ protocol TaskServiceType {
   func delete(task: TaskItem) -> Observable<Void>
   
   @discardableResult
-  func update(task: TaskItem, title: String) -> Observable<TaskItem>
+  func update(task: TaskItem, title: String, body: String) -> Observable<TaskItem>
   
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem>
