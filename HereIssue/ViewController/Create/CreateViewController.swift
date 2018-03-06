@@ -1,8 +1,8 @@
 //
-//  EditViewController.swift
+//  CreateViewController.swift
 //  HereIssue
 //
-//  Created by junwoo on 2018. 3. 2..
+//  Created by junwoo on 2018. 3. 5..
 //  Copyright © 2018년 samchon. All rights reserved.
 //
 
@@ -10,9 +10,9 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class EditViewController: UIViewController, BindableType {
+class CreateViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
-  var viewModel: EditViewModel!
+  var viewModel: CreateViewModel!
   private let stackView: UIStackView = {
     let stack = UIStackView()
     stack.axis = .vertical
@@ -66,6 +66,11 @@ class EditViewController: UIViewController, BindableType {
     return view
   }()
   
+  private let pickerView: UIPickerView = {
+    let view = UIPickerView()
+    return view
+  }()
+  
   private let buttonStackView: UIStackView = {
     let stack = UIStackView()
     stack.axis = .horizontal
@@ -92,27 +97,37 @@ class EditViewController: UIViewController, BindableType {
   
   func bindViewModel() {
     
-    titleTextField.rx.text.orEmpty
-      .map { title -> Bool in
-        if title.isEmpty {
+    Observable.combineLatest(titleTextField.rx.text.orEmpty, pickerView.rx.modelSelected(String.self))
+      .map { (tuple) -> Bool in
+        if tuple.0.isEmpty || tuple.1.isEmpty {
           return false
         } else { return true }
       }.bind(to: saveButton.rx.isEnabled)
       .disposed(by: bag)
     
-    titleTextField.text = viewModel.task.title
-    bodyTextView.text = viewModel.task.body
-    selectedRepositoryLabel.text = viewModel.task.repository!.name
+    pickerView.rx.modelSelected(String.self)
+      .map { models -> String in
+        return "\(models)"
+      }.bind(to: selectedRepositoryLabel.rx.text)
+      .disposed(by: bag)
+    
     cancelButton.rx.action = viewModel.onCancel
     
     saveButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
-      .map({ [unowned self] _ -> (String, String) in
+      .map({ [unowned self] _ -> (String, String, String) in
         let title = self.titleTextField.text ?? ""
         let body = self.bodyTextView.text ?? ""
-        return (title, body)
-      }).bind(to: viewModel.onUpdate.inputs)
-        .disposed(by: bag)
+        let repoName = self.selectedRepositoryLabel.text ?? ""
+        return (title, body, repoName)
+      }).bind(to: viewModel.onCreate.inputs)
+      .disposed(by: bag)
+    
+    viewModel.repoTitles
+      .bind(to: pickerView.rx.itemTitles) { _, item in
+        return "\(item)"
+      }
+      .disposed(by: bag)
   }
   
   override func viewDidLoad() {
@@ -130,8 +145,9 @@ class EditViewController: UIViewController, BindableType {
     stackView.addArrangedSubview(bodyTextView)
     repoLabelStackView.addArrangedSubview(repositoryLabel)
     repoLabelStackView.addArrangedSubview(selectedRepositoryLabel)
-
+    
     stackView.addArrangedSubview(repoLabelStackView)
+    stackView.addArrangedSubview(pickerView)
     buttonStackView.addArrangedSubview(cancelButton)
     buttonStackView.addArrangedSubview(saveButton)
     stackView.addArrangedSubview(buttonStackView)

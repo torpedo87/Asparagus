@@ -101,11 +101,12 @@ class AuthViewController: UIViewController, BindableType {
   
   func bindViewModel() {
     
-    idTextField.rx.text.orEmpty
-      .bind(to: viewModel.idTextInput)
-      .disposed(by: bag)
-    passWordTextField.rx.text.orEmpty
-      .bind(to: viewModel.pwdTextInput)
+    Observable.combineLatest(idTextField.rx.text.orEmpty, passWordTextField.rx.text.orEmpty)
+      .map { (tuple) -> Bool in
+        if tuple.0.isEmpty || tuple.1.isEmpty {
+          return false
+        } else { return true }
+      }.bind(to: authButton.rx.isEnabled)
       .disposed(by: bag)
     
     Observable.combineLatest(viewModel.checkReachability().asObservable(),
@@ -116,10 +117,6 @@ class AuthViewController: UIViewController, BindableType {
         else { return "Login" }
       }.asDriver(onErrorJustReturn: "failed")
       .drive(authButton.rx.title())
-      .disposed(by: bag)
-    
-    viewModel.validate
-      .drive(authButton.rx.isEnabled)
       .disposed(by: bag)
     
     authButton.rx.tap

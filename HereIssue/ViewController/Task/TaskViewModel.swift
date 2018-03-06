@@ -17,36 +17,38 @@ struct TaskViewModel {
   let sceneCoordinator: SceneCoordinatorType
   private let fetcher: IssueFetcher
   let account: Driver<AuthService.AccountStatus>
-  let taskService: TaskServiceType
+  let localTaskService: LocalTaskServiceType
   let authService: AuthServiceRepresentable
+  let issueService: IssueServiceRepresentable
   
   init(account: Driver<AuthService.AccountStatus>,
-       issueService: IssueServiceRepresentable,
+       issueService: IssueServiceRepresentable = IssueService(),
        coordinator: SceneCoordinatorType,
-       taskService: TaskServiceType,
-       authService: AuthServiceRepresentable = AuthService()) {
-    self.taskService = taskService
+       localTaskService: LocalTaskServiceType = LocalTaskService(),
+       authService: AuthServiceRepresentable = AuthService(),
+       syncService: SyncServiceRepresentable) {
+    self.localTaskService = localTaskService
     self.sceneCoordinator = coordinator
     self.account = account
     self.authService = authService
-    fetcher = IssueFetcher(account: account, issueService: issueService, taskService: taskService)
+    self.issueService = issueService
+    fetcher = IssueFetcher(account: account, issueService: issueService)
     
-    fetcher.issues
-      .subscribe(onNext: { tasks in
-        taskService.fetchTasks(tasks: tasks)
-      })
-      .disposed(by: bag)
-    
+//    fetcher.issues
+//      .subscribe(onNext: { tasks in
+//        localTaskService.fetchTasks(tasks: tasks, issueService: issueService, syncService: syncService)
+//      })
+//      .disposed(by: bag)
   }
   
   func onToggle(task: TaskItem) -> CocoaAction {
     return CocoaAction {
-      return self.taskService.toggle(task: task).map { _ in }
+      return self.localTaskService.toggle(task: task).map { _ in }
     }
   }
   
   var sectionedItems: Observable<[TaskSection]> {
-    return self.taskService.tasks()
+    return self.localTaskService.tasks()
       .map { results in
         let dueTasks = results
           .filter("checked == 'open'")
@@ -67,7 +69,8 @@ struct TaskViewModel {
     return Action { task in
       let editViewModel = EditViewModel(task: task,
                                         coordinator: this.sceneCoordinator,
-                                        updateAction: this.onUpdateTask(task: task))
+                                        updateAction: this.onUpdateTask(task: task),
+                                        localTaskService: this.localTaskService)
       return this.sceneCoordinator
         .transition(to: Scene.edit(editViewModel), type: .modal)
         .asObservable()
@@ -76,7 +79,13 @@ struct TaskViewModel {
   
   func onUpdateTask(task: TaskItem) -> Action<(String, String), Void> {
     return Action { tuple in
-      return self.taskService.update(task: task, title: tuple.0, body: tuple.1).map { _ in }
+      return self.localTaskService.update(exTask: task, newTitle: tuple.0, newBody: tuple.1).map { _ in }
+    }
+  }
+  
+  func onCreateTask() -> Action<(String, String, String), Void> {
+    return Action { tuple in
+      return self.localTaskService.createTask(title: tuple.0, body: tuple.1, repoName: tuple.2).map { _ in }
     }
   }
   
@@ -90,29 +99,18 @@ struct TaskViewModel {
     }
   }
   
-  func onDelete(task: TaskItem) -> CocoaAction {
-    return CocoaAction {
-      return self.taskService.delete(task: task)
-    }
-  }
-  
-  func onCreateTask() -> CocoaAction {
+  func goToCreate() -> CocoaAction {
     return CocoaAction { _ in
-      return self.taskService
-        .createTask(title: "")
-        .flatMap { task -> Observable<Void> in
-          let editViewModel = EditViewModel(task: task,
-                                            coordinator: self.sceneCoordinator,
-                                            updateAction: self.onUpdateTask(task: task),
-                                            cancelAction: self.onDelete(task: task))
-          return self.sceneCoordinator
-            .transition(to: Scene.edit(editViewModel), type: .modal)
-            .asObservable().map { _ in }
-      }
+      let createViewModel = CreateViewModel(coordinator: self.sceneCoordinator,
+                                            createAction: self.onCreateTask(),
+                                            localTaskService: self.localTaskService)
+      return self.sceneCoordinator
+        .transition(to: Scene.create(createViewModel), type: .modal)
+        .asObservable().map { _ in }
     }
   }
   
-  func onAuth() -> CocoaAction {
+  func goToAuth() -> CocoaAction {
     return CocoaAction { _ in
       let authService = AuthService()
       let isLoggedIn = UserDefaults.loadToken() != nil

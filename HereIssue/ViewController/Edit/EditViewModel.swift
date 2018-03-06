@@ -8,6 +8,7 @@
 
 import Foundation
 import RxSwift
+import RxCocoa
 import Action
 
 struct EditViewModel {
@@ -16,16 +17,17 @@ struct EditViewModel {
   let onCancel: CocoaAction!
   let onUpdate: Action<(String, String), Void>
   let bag = DisposeBag()
+  let localTaskService: LocalTaskServiceType
   
-  init(task: TaskItem, coordinator: SceneCoordinatorType,
-       updateAction: Action<(String, String), Void>, cancelAction: CocoaAction? = nil) {
+  init(task: TaskItem,
+       coordinator: SceneCoordinatorType,
+       updateAction: Action<(String, String), Void>,
+       localTaskService: LocalTaskServiceType) {
     self.task = task
     self.onUpdate = updateAction
+    self.localTaskService = localTaskService
     
     onCancel = CocoaAction {
-      if let cancelAction = cancelAction {
-        cancelAction.execute(())
-      }
       return coordinator.pop()
         .asObservable().map { _ in }
     }
@@ -36,5 +38,7 @@ struct EditViewModel {
         coordinator.pop()
       })
       .disposed(by: bag)
+    
   }
+  
 }

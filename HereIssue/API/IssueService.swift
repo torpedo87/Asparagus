@@ -13,6 +13,9 @@ import Moya
 
 protocol IssueServiceRepresentable {
   func fetchAllIssues(page: Int) -> Observable<[TaskItem]>
+  @discardableResult
+  func editServerTask(newTitle: String, newBody: String, newState: String, exTask: TaskItem) -> Observable<TaskItem>
+  func createIssue(title: String, body: String, repo: Repository) -> Observable<TaskItem>
 }
 class IssueService: IssueServiceRepresentable {
   
@@ -64,6 +67,56 @@ class IssueService: IssueServiceRepresentable {
       }
       return Disposables.create()
     }
+  }
+  
+  func editServerTask(newTitle: String, newBody: String, newState: String, exTask: TaskItem) -> Observable<TaskItem> {
+    return Observable.create({ (observer) -> Disposable in
+      self.provider.request(.editIssue(newTitle: newTitle,
+                                       newBody: newBody,
+                                       newState: newState,
+                                       exTask: exTask))
+      { (result) in
+        switch result {
+        case let .success(moyaResponse):
+          let data = moyaResponse.data
+          let statusCode = moyaResponse.statusCode
+          if 200 ..< 300 ~= statusCode {
+            let newTask = try! JSONDecoder().decode(TaskItem.self, from: data)
+            observer.onNext(newTask)
+          } else {
+            observer.onError(Errors.requestFailed)
+          }
+        case let .failure(error):
+          observer.onError(error)
+        }
+      }
+      return Disposables.create()
+    })
+    
+  }
+  
+  func createIssue(title: String, body: String, repo: Repository) -> Observable<TaskItem> {
+    return Observable.create({ (observer) -> Disposable in
+      self.provider.request(.createIssue(title: title,
+                                         body: body,
+                                         repo: repo)) { (result) in
+      switch result {
+      case let .success(moyaResponse):
+        let data = moyaResponse.data
+        let statusCode = moyaResponse.statusCode
+        if 200 ..< 300 ~= statusCode {
+          let newIssue = try! JSONDecoder().decode(TaskItem.self, from: data)
+          observer.onNext(newIssue)
+        } else {
+          observer.onError(Errors.requestFailed)
+        }
+      case let .failure(error):
+        observer.onError(error)
+      }
+      }
+      return Disposables.create()
+    })
+    
   }
   
   //helper

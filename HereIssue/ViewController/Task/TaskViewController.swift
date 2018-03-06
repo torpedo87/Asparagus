@@ -67,8 +67,8 @@ class TaskViewController: UIViewController, BindableType {
       .drive(authButton.rx.title)
       .disposed(by: bag)
   
-    newTaskButton.rx.action = viewModel.onCreateTask()
-    authButton.rx.action = viewModel.onAuth()
+    newTaskButton.rx.action = viewModel.goToCreate()
+    authButton.rx.action = viewModel.goToAuth()
     
     viewModel.sectionedItems
       .bind(to: tableView.rx.items(dataSource: dataSource))

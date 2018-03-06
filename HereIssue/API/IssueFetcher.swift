@@ -13,16 +13,13 @@ import RealmSwift
 
 class IssueFetcher {
   let issueService: IssueServiceRepresentable
-  let taskService: TaskServiceType
   
   //output
   let issues: Observable<[TaskItem]>
   
   init(account: Driver<AuthService.AccountStatus>,
-       issueService: IssueServiceRepresentable,
-       taskService: TaskServiceType) {
+       issueService: IssueServiceRepresentable) {
     self.issueService = issueService
-    self.taskService = taskService
     
     let currentAccount: Observable<Token> = account
       .filter { account in

@@ -18,12 +18,7 @@ struct AuthViewModel {
   let onAuth: Action<(String, String), AuthService.AccountStatus>
   let onCancel: CocoaAction!
   
-  //input
-  let idTextInput = BehaviorRelay<String>(value: "")
-  let pwdTextInput = BehaviorRelay<String>(value: "")
-  
   //output
-  let validate: Driver<Bool>
   let loggedIn: Driver<Bool>
   
   init(authService: AuthServiceRepresentable = AuthService(),
@@ -32,32 +27,6 @@ struct AuthViewModel {
     self.authService = authService
     self.sceneCoordinator = coordinator
     self.onAuth = authAction
-    
-    let isIdValid = idTextInput.asObservable()
-      .map { (text) -> Bool in
-        if text.isEmpty {
-          return false
-        }
-        return true
-    }
-    
-    let isPwdValid = pwdTextInput.asObservable()
-      .map { (text) -> Bool in
-        if text.isEmpty {
-          return false
-        }
-        return true
-    }
-    
-    //아이디와 비번의 동시 유효성
-    validate = Observable.combineLatest(isIdValid, isPwdValid)
-      .map{ tuple -> Bool in
-        if tuple.0 == true && tuple.1 == true {
-          return true
-        }
-        return false
-      }
-      .asDriver(onErrorJustReturn: false)
     
     onCancel = CocoaAction {
       return coordinator.pop()
@@ -69,9 +38,13 @@ struct AuthViewModel {
   
   func goToTaskScene() {
     let issueService = IssueService()
-    let taskService = TaskService()
-    let taskViewModel = TaskViewModel(account: authService.status, issueService: issueService,
-                                      coordinator: sceneCoordinator, taskService: taskService)
+    let localTaskService = LocalTaskService()
+    let syncService = SyncService(issueService: issueService, localTaskService: localTaskService)
+    let taskViewModel = TaskViewModel(account: authService.status,
+                                      issueService: issueService,
+                                      coordinator: sceneCoordinator,
+                                      localTaskService: localTaskService,
+                                      syncService: syncService)
     let taskScene = Scene.task(taskViewModel)
     sceneCoordinator.transition(to: taskScene, type: .root)
   }

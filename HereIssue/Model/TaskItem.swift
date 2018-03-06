@@ -16,6 +16,22 @@ class TaskItem: Object, Codable {
   @objc dynamic var checked = ""
   @objc dynamic var added = ""
   @objc dynamic var updated = ""
+  @objc dynamic var owner: User?
+  @objc dynamic var repository: Repository?
+  @objc dynamic var number = 0
+  
+  // local only properties
+  var updatedDate: Date {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    return dateFormatter.date(from: self.updated)!
+  }
+//  @objc dynamic var isCreatedInLocal: Bool = true
+//  @objc dynamic var isClosedInLocal: Bool = false
+  
+  var isServerGeneratedType: Bool {
+    return String(self.uid).count != UUID().uuidString.count
+  }
   
   override static func primaryKey() -> String? {
     return "uid"
@@ -28,9 +44,12 @@ class TaskItem: Object, Codable {
     case checked = "state"
     case added = "created_at"
     case updated = "updated_at"
+    case owner = "user"
+    case repository
+    case number
   }
   
-  convenience init(uid: Int, title: String, body: String?, checked: String, added: String, updated: String) {
+  convenience init(uid: Int = Int(UUID().uuidString)!, title: String, body: String?, checked: String, added: String, updated: String, owner: User, repository: Repository, number: Int) {
     self.init()
     self.uid = uid
     self.title = title
@@ -38,6 +57,9 @@ class TaskItem: Object, Codable {
     self.checked = checked
     self.added = added
     self.updated = updated
+    self.owner = owner
+    self.repository = repository
+    self.number = number
   }
   
   convenience required init(from decoder: Decoder) throws {
@@ -48,7 +70,10 @@ class TaskItem: Object, Codable {
     let checked = try container.decode(String.self, forKey: .checked)
     let added = try container.decode(String.self, forKey: .added)
     let updated = try container.decode(String.self, forKey: .updated)
-    self.init(uid: uid, title: title, body: body, checked: checked, added: added, updated: updated)
+    let owner = try container.decode(User.self, forKey: .owner)
+    let repository = try container.decode(Repository.self, forKey: .repository)
+    let number = try container.decode(Int.self, forKey: .number)
+    self.init(uid: uid, title: title, body: body, checked: checked, added: added, updated: updated, owner: owner, repository: repository, number: number)
   }
 }
 

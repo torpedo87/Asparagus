@@ -12,6 +12,7 @@ enum Scene {
   case auth(AuthViewModel)
   case task(TaskViewModel)
   case edit(EditViewModel)
+  case create(CreateViewModel)
 }
 
 extension Scene {
@@ -30,6 +31,10 @@ extension Scene {
       return nav
     case .edit(let viewModel):
       var vc = EditViewController()
+      vc.bindViewModel(to: viewModel)
+      return vc
+    case .create(let viewModel):
+      var vc = CreateViewController()
       vc.bindViewModel(to: viewModel)
       return vc
     }

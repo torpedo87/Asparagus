@@ -23,11 +23,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       self.window = sceneCoordinator.window
       let account = AuthService().status
       let issueService = IssueService()
-      let taskService = TaskService()
+      let localTaskService = LocalTaskService()
+      let syncService = SyncService(issueService: issueService, localTaskService: localTaskService)
       let taskViewModel = TaskViewModel(account: account,
                                         issueService: issueService,
                                         coordinator: sceneCoordinator,
-                                        taskService: taskService)
+                                        localTaskService: localTaskService,
+                                        syncService: syncService)
       let taskScene = Scene.task(taskViewModel)
       sceneCoordinator.transition(to: taskScene, type: .root)
     }
