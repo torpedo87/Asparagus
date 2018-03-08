@@ -158,8 +158,10 @@ struct AuthService: AuthServiceRepresentable {
     return Observable.create { observer in
       if let _ = UserDefaults.loadToken() {
         observer.onNext(true)
+        observer.onCompleted()
       } else {
         observer.onNext(false)
+        observer.onCompleted()
       }
       return Disposables.create()
       }

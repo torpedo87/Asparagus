@@ -107,7 +107,7 @@ class CreateViewController: UIViewController, BindableType {
     
     pickerView.rx.modelSelected(String.self)
       .map { models -> String in
-        return "\(models)"
+        return models.first!
       }.bind(to: selectedRepositoryLabel.rx.text)
       .disposed(by: bag)
     

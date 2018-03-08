@@ -35,7 +35,6 @@
 		487D923520454811008CB44E /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D923420454811008CB44E /* Token.swift */; };
 		487D923A20458E79008CB44E /* RxReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D923920458E79008CB44E /* RxReachability.swift */; };
 		487D923C2046B603008CB44E /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D923B2046B603008CB44E /* TaskItem.swift */; };
-		487D923E2046B874008CB44E /* IssueFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D923D2046B874008CB44E /* IssueFetcher.swift */; };
 		487D92422046BECD008CB44E /* IssueAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D92412046BECD008CB44E /* IssueAPI.swift */; };
 		487D92452046C9B6008CB44E /* TaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D92442046C9B6008CB44E /* TaskCell.swift */; };
 		6BFC5CEBF16A61561A3C9DAA /* Pods_HereIssue.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06C28467874E9FCDA2208317 /* Pods_HereIssue.framework */; };
@@ -87,7 +86,6 @@
 		487D923420454811008CB44E /* Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		487D923920458E79008CB44E /* RxReachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RxReachability.swift; sourceTree = "<group>"; };
 		487D923B2046B603008CB44E /* TaskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
-		487D923D2046B874008CB44E /* IssueFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueFetcher.swift; sourceTree = "<group>"; };
 		487D92412046BECD008CB44E /* IssueAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueAPI.swift; sourceTree = "<group>"; };
 		487D92442046C9B6008CB44E /* TaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCell.swift; sourceTree = "<group>"; };
 		5192D82576729B691B804C17 /* Pods-HereIssueTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HereIssueTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-HereIssueTests/Pods-HereIssueTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -220,7 +218,6 @@
 			children = (
 				487D922D20454421008CB44E /* IssueService.swift */,
 				487D922F20454473008CB44E /* AuthService.swift */,
-				487D923D2046B874008CB44E /* IssueFetcher.swift */,
 				487D92412046BECD008CB44E /* IssueAPI.swift */,
 				4848EC12204A8A2B00B59315 /* SyncService.swift */,
 				487D9228204542A8008CB44E /* LocalTaskService.swift */,
@@ -544,7 +541,6 @@
 				487D923C2046B603008CB44E /* TaskItem.swift in Sources */,
 				487D923A20458E79008CB44E /* RxReachability.swift in Sources */,
 				487D91EB20453735008CB44E /* AppDelegate.swift in Sources */,
-				487D923E2046B874008CB44E /* IssueFetcher.swift in Sources */,
 				487D92232045411D008CB44E /* SceneCoordinatorType.swift in Sources */,
 				487D922120453F8A008CB44E /* TaskViewModel.swift in Sources */,
 				487D92422046BECD008CB44E /* IssueAPI.swift in Sources */,

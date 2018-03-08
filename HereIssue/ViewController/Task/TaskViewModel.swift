@@ -15,11 +15,12 @@ import Action
 struct TaskViewModel {
   private let bag = DisposeBag()
   let sceneCoordinator: SceneCoordinatorType
-  private let fetcher: IssueFetcher
   let account: Driver<AuthService.AccountStatus>
   let localTaskService: LocalTaskServiceType
   let authService: AuthServiceRepresentable
   let issueService: IssueServiceRepresentable
+  let syncService: SyncServiceRepresentable
+  let tasks: Observable<[TaskItem]>
   
   init(account: Driver<AuthService.AccountStatus>,
        issueService: IssueServiceRepresentable = IssueService(),
@@ -32,13 +33,26 @@ struct TaskViewModel {
     self.account = account
     self.authService = authService
     self.issueService = issueService
-    fetcher = IssueFetcher(account: account, issueService: issueService)
+    self.syncService = syncService
     
-//    fetcher.issues
-//      .subscribe(onNext: { tasks in
-//        localTaskService.fetchTasks(tasks: tasks, issueService: issueService, syncService: syncService)
-//      })
-//      .disposed(by: bag)
+    tasks =
+      authService.isLoggedIn.asObservable()
+        .filter { $0 == true }
+        .flatMap({ _ in
+          issueService.fetchAllIssues(page: 1)
+        }).share(replay: 1, scope: .whileConnected)
+    
+//    tasks = Observable.combineLatest(Reachability.rx.status,
+//                                     authService.isLoggedIn.asObservable())
+//    { (isConnected, isLoggedIn) -> Bool in
+//      return (isConnected == .online) && isLoggedIn
+//      }
+//      .filter { $0 == true }
+//      .flatMap { _ in
+//        return issueService.fetchAllIssues(page: 1)
+//    }
+    
+    syncService.syncStart(fetchedTasks: tasks)
   }
   
   func onToggle(task: TaskItem) -> CocoaAction {
@@ -79,7 +93,7 @@ struct TaskViewModel {
   
   func onUpdateTask(task: TaskItem) -> Action<(String, String), Void> {
     return Action { tuple in
-      return self.localTaskService.update(exTask: task, newTitle: tuple.0, newBody: tuple.1).map { _ in }
+      return self.localTaskService.updateTitleBody(exTask: task, newTitle: tuple.0, newBody: tuple.1).map { _ in }
     }
   }
   

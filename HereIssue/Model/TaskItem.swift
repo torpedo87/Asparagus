@@ -26,11 +26,9 @@ class TaskItem: Object, Codable {
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
     return dateFormatter.date(from: self.updated)!
   }
-//  @objc dynamic var isCreatedInLocal: Bool = true
-//  @objc dynamic var isClosedInLocal: Bool = false
   
   var isServerGeneratedType: Bool {
-    return String(self.uid).count != UUID().uuidString.count
+    return self.owner != nil
   }
   
   override static func primaryKey() -> String? {
@@ -49,7 +47,7 @@ class TaskItem: Object, Codable {
     case number
   }
   
-  convenience init(uid: Int = Int(UUID().uuidString)!, title: String, body: String?, checked: String, added: String, updated: String, owner: User, repository: Repository, number: Int) {
+  convenience init(uid: Int, title: String, body: String?, checked: String, added: String, updated: String, owner: User?, repository: Repository?, number: Int) {
     self.init()
     self.uid = uid
     self.title = title
@@ -66,12 +64,12 @@ class TaskItem: Object, Codable {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     let uid = try container.decode(Int.self, forKey: .uid)
     let title = try container.decode(String.self, forKey: .title)
-    let body = try container.decode(String?.self, forKey: .body)
+    let body = try container.decodeIfPresent(String.self, forKey: .body)
     let checked = try container.decode(String.self, forKey: .checked)
     let added = try container.decode(String.self, forKey: .added)
     let updated = try container.decode(String.self, forKey: .updated)
     let owner = try container.decode(User.self, forKey: .owner)
-    let repository = try container.decode(Repository.self, forKey: .repository)
+    let repository = try container.decodeIfPresent(Repository.self, forKey: .repository)
     let number = try container.decode(Int.self, forKey: .number)
     self.init(uid: uid, title: title, body: body, checked: checked, added: added, updated: updated, owner: owner, repository: repository, number: number)
   }
@@ -81,7 +79,8 @@ extension TaskItem {
   func setDateWhenCreated() {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    let now = dateFormatter.string(from: Date())
+    let nowDate = Date(timeInterval: -9 * 60 * 60, since: Date())
+    let now = dateFormatter.string(from: nowDate)
     self.added = now
     self.updated = now
   }
@@ -89,7 +88,8 @@ extension TaskItem {
   func setDateWhenUpdated() {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    let now = dateFormatter.string(from: Date())
+    let nowDate = Date(timeInterval: -9 * 60 * 60, since: Date())
+    let now = dateFormatter.string(from: nowDate)
     self.updated = now
   }
   

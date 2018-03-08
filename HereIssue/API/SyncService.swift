@@ -10,10 +10,14 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-
+//시퀀스를 받아서 처리
+//동기화 작업은 동기적으로
 protocol SyncServiceRepresentable {
-//  func syncWhenTaskEdittedInLocal()
-//  func syncWhenTaskCreatedInLocal()
+  func syncStart(fetchedTasks: Observable<[TaskItem]>)
+  func updateOldServerWithNewLocal(fetchedTasks: Observable<[TaskItem]>)
+  func updateOldServerWithRecentLocal(fetchedTasks: Observable<[TaskItem]>)
+  func updateOldLocalWithNewServer(fetchedTasks: Observable<[TaskItem]>)
+  func updateOldLocalWithRecentServer(fetchedTasks: Observable<[TaskItem]>)
 }
 
 class SyncService: SyncServiceRepresentable {
@@ -24,9 +28,6 @@ class SyncService: SyncServiceRepresentable {
   init(issueService: IssueServiceRepresentable, localTaskService: LocalTaskServiceType) {
     self.issueService = issueService
     self.localTaskService = localTaskService
-    
-//    syncWhenTaskEdittedInLocal()
-//    syncWhenTaskCreatedInLocal()
   }
   
 //  func syncWhenTaskEdittedInLocal(fetchedTasks: Observable<[TaskItem]>) {
@@ -76,21 +77,84 @@ class SyncService: SyncServiceRepresentable {
 //      }.disposed(by: bag)
 //  }
   
+  //동기적으로 sync 하기
+  func syncStart(fetchedTasks: Observable<[TaskItem]>) {
+    updateOldServerWithNewLocal(fetchedTasks: fetchedTasks)
+  }
+  
+  //로컬에서 만든 이슈를 서버에 반영 후 로컬에 업데이트
+  func updateOldServerWithNewLocal(fetchedTasks: Observable<[TaskItem]>) {
+    
+    //로컬에서 생성된 것 필터링
+    self.localTaskService.getLocalCreated()
+      //서버에 새 이슈 생성
+      .flatMap({ [unowned self] createdTask in
+        self.issueService.createIssue(title: createdTask.title,
+                                      body: createdTask.body ?? "",
+                                      repo: createdTask.repository!)
+      })
+      //서버에서 새로 생성된 이슈의 Date로 로컬 변경
+      .flatMap { [unowned self] newIssue in
+        self.localTaskService.updateAll(newTask: newIssue)
+      }
+      //완료 시점 확인
+      .reduce( [TaskItem](), accumulator: { (arr, task) in
+        return arr + [task]
+      })
+      .subscribe(onCompleted: {
+        self.updateOldServerWithRecentLocal(fetchedTasks: fetchedTasks)
+        print("updateOldServerWithNewLocal complete")
+      })
+      .disposed(by: bag)
+  }
+  
+  //기존의 것중에 로컬이 최신인 경우 서버 업데이트
+  func updateOldServerWithRecentLocal(fetchedTasks: Observable<[TaskItem]>) {
+    
+    fetchedTasks
+      //기존의 것 중 로컬이 최신인것만 필터링
+      .flatMap { [unowned self] in
+        self.localTaskService.getRecentLocal(fetchedTasks: $0)
+      }
+      //서버 업데이트 요청
+      .flatMap { [unowned self] in
+        self.issueService.editServerTask(newTitle: $0.title, newBody: $0.body ?? "", newState: $0.checked, exTask: $0)
+      }
+      //업데이트 완료시점 확인
+      .reduce([TaskItem]()) { arr, task in
+        return arr + [task]
+      }
+      .subscribe(onCompleted: {
+          self.updateOldLocalWithNewServer(fetchedTasks: fetchedTasks)
+          print("updateOldServerWithRecentLocal complete")
+      })
+      .disposed(by: bag)
+  }
+  
   //기존에 없는 것이면 로컬에 추가해주기
-  func syncLocalWithNewServerTask(fetchedTasks: Observable<[TaskItem]>) -> Observable<[TaskItem]> {
-    return fetchedTasks
+  func updateOldLocalWithNewServer(fetchedTasks: Observable<[TaskItem]>) {
+    print("updateOldLocalWithNewServer")
+    
+    fetchedTasks
       //서버에만 있는 새로운 것을 로컬에 추가
       .flatMap { [unowned self] in
         self.localTaskService.addNewTask(fetchedTasks: $0)
       }
       .reduce([TaskItem]()) { arr, task in
         return arr + [task]
-    }
+      }
+      .subscribe(onCompleted: {
+          self.updateOldLocalWithRecentServer(fetchedTasks: fetchedTasks)
+          print("updateOldLocalWithNewServer complete")
+      })
+      .disposed(by: bag)
   }
   
   //기존의 것중에 서버가 최신인 경우 로컬 변형
-  func syncLocalWithExistingServerTask(fetchedTasks: Observable<[TaskItem]>) -> Observable<[TaskItem]> {
-    return fetchedTasks
+  func updateOldLocalWithRecentServer(fetchedTasks: Observable<[TaskItem]>) {
+    print("updateOldLocalWithRecentServer")
+
+    fetchedTasks
       //기존의 것 중 서버가 최신인것만 필터링해서 업데이트
       .flatMap { [unowned self] in
         self.localTaskService.updateOldLocal(fetchedTasks: $0)
@@ -98,41 +162,13 @@ class SyncService: SyncServiceRepresentable {
       //업데이트 완료시점 확인
       .reduce([TaskItem]()) { arr, task in
         return arr + [task]
-    }
-  }
-  
-  //로컬에서 생성한 경우 서버버전 Date 로 바꾸기
-  func syncLocalDateToServerDate(fetchedTasks: Observable<[TaskItem]>) -> Observable<[TaskItem]> {
-    //로컬에서 생성된 것 필터링
-    return self.localTaskService.getLocalCreated()
-      //서버에 새 이슈 생성
-      .flatMap({ [unowned self] in
-        self.issueService.createIssue(title: $0.title, body: $0.body ?? "", repo: $0.repository!)
-      })
-      //서버에서 새로 생성된 이슈의 Date로 로컬 변경
-      .flatMap { [unowned self] in
-        self.localTaskService.updateDate(newTask: $0)
       }
-      //완료 시점 확인
-      .reduce( [TaskItem](), accumulator: { (arr, task) in
-        return arr + [task]
+      .subscribe(onCompleted: {
+        print("updateOldLocalWithRecentServer complete")
       })
   }
   
-  //기존의 것중에 로컬이 최신인 경우 로컬에 표식을 변형해서 sync 되도록하기
-  func syncServerWithExistingLocalTask(fetchedTasks: Observable<[TaskItem]>) -> Observable<[TaskItem]> {
-      return fetchedTasks
-        //기존의 것 중 로컬이 최신인것만 필터링
-        .flatMap { [unowned self] in
-          self.localTaskService.getRecentLocal(fetchedTasks: $0)
-        }
-        //서버 업데이트 요청
-        .flatMap { [unowned self] in
-          self.issueService.editServerTask(newTitle: $0.title, newBody: $0.body ?? "", newState: $0.checked, exTask: $0)
-        }
-        //업데이트 완료시점 확인
-        .reduce([TaskItem]()) { arr, task in
-          return arr + [task]
-      }
-  }
+  
+  
+  
 }

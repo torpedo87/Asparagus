@@ -18,11 +18,8 @@ protocol LocalTaskServiceType {
   func createTask(title: String, body: String, repoName: String) -> Observable<TaskItem>
   
   @discardableResult
-  func delete(task: TaskItem) -> Observable<Void>
-  
-  @discardableResult
-  func update(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem>
-  
+  func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem>
+  func updateAll(newTask: TaskItem) -> Observable<TaskItem>
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem>
   
@@ -32,7 +29,7 @@ protocol LocalTaskServiceType {
   func updateOldLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
   func addNewTask(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
   func getLocalCreated() -> Observable<TaskItem>
-  func updateDate(newTask: TaskItem) -> Observable<TaskItem>
+  
 }
 
 struct LocalTaskService: LocalTaskServiceType {
@@ -58,6 +55,7 @@ struct LocalTaskService: LocalTaskServiceType {
     }
   }
   
+  //로컬에서 새로운 이슈 생성
   @discardableResult
   func createTask(title: String, body: String, repoName: String) -> Observable<TaskItem> {
     let result = withRealm("creating") { realm -> Observable<TaskItem> in
@@ -76,19 +74,9 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .error(TaskServiceError.creationFailed)
   }
   
+  //title, body 수정
   @discardableResult
-  func delete(task: TaskItem) -> Observable<Void> {
-    let result = withRealm("deleting") { realm-> Observable<Void> in
-      try realm.write {
-        realm.delete(task)
-      }
-      return .empty()
-    }
-    return result ?? .error(TaskServiceError.deletionFailed(task))
-  }
-  
-  @discardableResult
-  func update(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem> {
+  func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem> {
     let result = withRealm("updating title") { realm -> Observable<TaskItem> in
       try realm.write {
         exTask.title = newTitle
@@ -100,6 +88,7 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .error(TaskServiceError.updateFailed(exTask))
   }
   
+  //이슈 close or open
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem> {
     let result = withRealm("toggling") { realm -> Observable<TaskItem> in
@@ -116,7 +105,9 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .error(TaskServiceError.toggleFailed(task))
   }
   
+  //로컬에 저장된 모든 task 불러오기
   func tasks() -> Observable<Results<TaskItem>> {
+    print("------realmfile-------", Realm.Configuration.defaultConfiguration.fileURL)
     let result = withRealm("getting tasks") { realm -> Observable<Results<TaskItem>> in
       let realm = try Realm()
       let tasks = realm.objects(TaskItem.self)
@@ -125,6 +116,7 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
+  //이슈의 모든 repository 불러오기
   func repositories() -> Observable<Results<Repository>> {
     let result = withRealm("getting repositories") { realm -> Observable<Results<Repository>> in
       let realm = try Realm()
@@ -134,18 +126,19 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
+  //helper
   func getRepository(repoName: String) -> Repository {
     let realm = try! Realm()
-    let repositories = realm.objects(Repository.self).filter("name = 'repoName'")
+    let repositories = realm.objects(Repository.self).filter { $0.name == repoName }
     return repositories.first!
   }
   
-  //기존에 없는것 추가
+  //서버에서 생성한 이슈를 찾아서 로컬에 추가
   func addNewTask(fetchedTasks: [TaskItem]) -> Observable<TaskItem> {
     let result = withRealm("addNewTask") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
         fetchedTasks.forEach { fetchedTask in
-          if realm.objects(TaskItem.self).filter("uid = '\(fetchedTask.uid)'").count == 0 {
+          if realm.objects(TaskItem.self).filter("uid = \(fetchedTask.uid)").count == 0 {
             try! realm.write {
               realm.add(fetchedTask)
             }
@@ -159,7 +152,7 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  //기존에 있는 것중 로컬이 최신인 것만 필터링
+  //로컬이 최신인 것만 필터링
   func getRecentLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem> {
     let result = withRealm("getRecentLocal") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
@@ -177,14 +170,14 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  //기존의 것 중 서버가 최신인 것만 필터링해서 업데이트
+  //서버가 최신인 것 찾아서 로컬을 변형
   func updateOldLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem> {
     let result = withRealm("updateOldLocal") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
         fetchedTasks.forEach { fetchedTask in
           if let localTask = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
             if localTask.updatedDate < fetchedTask.updatedDate {
-              self.update(exTask: localTask, newTitle: fetchedTask.title, newBody: fetchedTask.body ?? "")
+              self.updateAll(newTask: fetchedTask)
               observer.onNext(localTask)
             }
           }
@@ -196,10 +189,36 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
+  @discardableResult
+  func updateAll(newTask: TaskItem) -> Observable<TaskItem> {
+    let result = withRealm("updateAll") { realm in
+      return Observable<TaskItem>.create({ observer -> Disposable in
+        if let exTask = realm.objects(TaskItem.self).filter("uid = \(newTask.uid)").first {
+          try! realm.write {
+            exTask.title = newTask.title
+            exTask.body = newTask.body
+            exTask.added = newTask.added
+            exTask.checked = newTask.checked
+            exTask.number = newTask.number
+            exTask.owner = newTask.owner
+            exTask.repository = newTask.repository
+            exTask.uid = newTask.uid
+            exTask.updated = newTask.updated
+          }
+          observer.onNext(exTask)
+        }
+        observer.onCompleted()
+        return Disposables.create()
+      })
+    }
+    return result ?? .empty()
+  }
+  
+  //로컬에서 생성된 것 찾기
   func getLocalCreated() -> Observable<TaskItem> {
     let result = withRealm("getLocalCreated") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
-        let localCreatedTasks = realm.objects(TaskItem.self).filter("isServerGeneratedType = 'false'").toArray()
+        let localCreatedTasks = realm.objects(TaskItem.self).filter { $0.isServerGeneratedType == false }
         for task in localCreatedTasks {
           observer.onNext(task)
         }
@@ -210,17 +229,5 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  func updateDate(newTask: TaskItem) -> Observable<TaskItem> {
-    let result = withRealm("updateDate") { realm in
-      return Observable<TaskItem>.create({ observer -> Disposable in
-        if let localTask = realm.object(ofType: TaskItem.self, forPrimaryKey: newTask.uid) {
-          self.update(exTask: localTask, newTitle: newTask.title, newBody: newTask.body ?? "")
-          observer.onNext(localTask)
-        }
-        observer.onCompleted()
-        return Disposables.create()
-      })
-    }
-    return result ?? .empty()
-  }
+  
 }

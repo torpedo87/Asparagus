@@ -11,6 +11,8 @@ import RxSwift
 import RxCocoa
 import Moya
 
+//시퀀스를 발생
+
 protocol IssueServiceRepresentable {
   func fetchAllIssues(page: Int) -> Observable<[TaskItem]>
   @discardableResult
@@ -20,7 +22,10 @@ protocol IssueServiceRepresentable {
 class IssueService: IssueServiceRepresentable {
   
   enum Errors: Error {
-    case requestFailed
+    case fetchAllIssuesFailed
+    case editServerTaskFailed
+    case pagingFailed
+    case createIssueFailed
   }
   
   private let bag = DisposeBag()
@@ -45,12 +50,10 @@ class IssueService: IssueServiceRepresentable {
     return Observable.create { observer in
       self.provider.request(.fetchAllIssues(page: 1))
       { result in
-        
         var lastPage = Int()
         if let link = result.value?.response?.allHeaderFields["Link"] as? String {
           lastPage = (self.getLastPageFromLinkHeader(link: link))
         }
-        
         switch result {
         case .success(let response):
           if 200 ..< 300 ~= response.statusCode {
@@ -59,7 +62,7 @@ class IssueService: IssueServiceRepresentable {
             }
             observer.onCompleted()
           } else {
-            observer.onError(Errors.requestFailed)
+            observer.onError(Errors.pagingFailed)
           }
         case .failure(let error):
           observer.onError(error)
@@ -84,7 +87,7 @@ class IssueService: IssueServiceRepresentable {
             let newTask = try! JSONDecoder().decode(TaskItem.self, from: data)
             observer.onNext(newTask)
           } else {
-            observer.onError(Errors.requestFailed)
+            observer.onError(Errors.editServerTaskFailed)
           }
         case let .failure(error):
           observer.onError(error)
@@ -108,7 +111,7 @@ class IssueService: IssueServiceRepresentable {
           let newIssue = try! JSONDecoder().decode(TaskItem.self, from: data)
           observer.onNext(newIssue)
         } else {
-          observer.onError(Errors.requestFailed)
+          observer.onError(Errors.createIssueFailed)
         }
       case let .failure(error):
         observer.onError(error)
