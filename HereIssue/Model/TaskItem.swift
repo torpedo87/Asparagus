@@ -9,8 +9,8 @@
 import Foundation
 import RealmSwift
 
-class TaskItem: Object, Codable {
-  @objc dynamic var uid = 0
+class TaskItem: Object, Decodable {
+  @objc dynamic var uid = ""
   @objc dynamic var title = ""
   @objc dynamic var body: String? = nil
   @objc dynamic var checked = ""
@@ -28,7 +28,7 @@ class TaskItem: Object, Codable {
   }
   
   var isServerGeneratedType: Bool {
-    return self.owner != nil
+    return uid.count != UUID().uuidString.count
   }
   
   override static func primaryKey() -> String? {
@@ -47,7 +47,7 @@ class TaskItem: Object, Codable {
     case number
   }
   
-  convenience init(uid: Int, title: String, body: String?, checked: String, added: String, updated: String, owner: User?, repository: Repository?, number: Int) {
+  convenience init(uid: String = UUID().uuidString, title: String, body: String?, checked: String, added: String, updated: String, owner: User?, repository: Repository?, number: Int) {
     self.init()
     self.uid = uid
     self.title = title
@@ -62,7 +62,8 @@ class TaskItem: Object, Codable {
   
   convenience required init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    let uid = try container.decode(Int.self, forKey: .uid)
+    let intId = try container.decode(Int.self, forKey: .uid)
+    let uid = String(intId)
     let title = try container.decode(String.self, forKey: .title)
     let body = try container.decodeIfPresent(String.self, forKey: .body)
     let checked = try container.decode(String.self, forKey: .checked)
@@ -72,6 +73,20 @@ class TaskItem: Object, Codable {
     let repository = try container.decodeIfPresent(Repository.self, forKey: .repository)
     let number = try container.decode(Int.self, forKey: .number)
     self.init(uid: uid, title: title, body: body, checked: checked, added: added, updated: updated, owner: owner, repository: repository, number: number)
+  }
+}
+
+extension TaskItem: Encodable {
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(Int(uid), forKey: .uid)
+    try container.encode(title, forKey: .title)
+    try container.encode(body, forKey: .body)
+    try container.encode(checked, forKey: .checked)
+    try container.encode(added, forKey: .added)
+    try container.encode(owner, forKey: .owner)
+    try container.encode(repository, forKey: .repository)
+    try container.encode(number, forKey: .number)
   }
 }
 

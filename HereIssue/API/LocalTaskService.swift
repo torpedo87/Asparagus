@@ -29,7 +29,7 @@ protocol LocalTaskServiceType {
   func updateOldLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
   func addNewTask(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
   func getLocalCreated() -> Observable<TaskItem>
-  
+  func deleteTask(exTask: TaskItem) -> Observable<Void>
 }
 
 struct LocalTaskService: LocalTaskServiceType {
@@ -41,13 +41,10 @@ struct LocalTaskService: LocalTaskServiceType {
     case toggleFailed(TaskItem)
   }
   
-  init() {
-
-  }
-  
   fileprivate func withRealm<T>(_ operation: String, action: (Realm) throws -> T) -> T? {
     do {
       let realm = try Realm()
+      print("localtask ------- \(operation)")
       return try action(realm)
     } catch let err {
       print("Failed \(operation) realm with error: \(err)")
@@ -66,7 +63,6 @@ struct LocalTaskService: LocalTaskServiceType {
       task.checked = "open"
       task.setDateWhenCreated()
       try realm.write {
-        task.uid = (realm.objects(TaskItem.self).max(ofProperty: "uid") ?? 0) + 1
         realm.add(task)
       }
       return .just(task)
@@ -129,7 +125,7 @@ struct LocalTaskService: LocalTaskServiceType {
   //helper
   func getRepository(repoName: String) -> Repository {
     let realm = try! Realm()
-    let repositories = realm.objects(Repository.self).filter { $0.name == repoName }
+    let repositories = realm.objects(Repository.self).filter("name = \(repoName)")
     return repositories.first!
   }
   
@@ -194,6 +190,7 @@ struct LocalTaskService: LocalTaskServiceType {
     let result = withRealm("updateAll") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
         if let exTask = realm.objects(TaskItem.self).filter("uid = \(newTask.uid)").first {
+          print("extask-------", exTask)
           try! realm.write {
             exTask.title = newTask.title
             exTask.body = newTask.body
@@ -229,5 +226,15 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  
+  //로컬에서 생성된 것을 지우고 서버에서 생성된 것을 추가
+  @discardableResult
+  func deleteTask(exTask: TaskItem) -> Observable<Void> {
+    let result = withRealm("deleting") { realm-> Observable<Void> in
+      try realm.write {
+        realm.delete(exTask)
+      }
+      return .empty()
+    }
+    return result ?? .error(TaskServiceError.deletionFailed(exTask))
+  }
 }

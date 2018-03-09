@@ -40,7 +40,7 @@ struct TaskViewModel {
         .filter { $0 == true }
         .flatMap({ _ in
           issueService.fetchAllIssues(page: 1)
-        }).share(replay: 1, scope: .whileConnected)
+        })
     
 //    tasks = Observable.combineLatest(Reachability.rx.status,
 //                                     authService.isLoggedIn.asObservable())
@@ -52,7 +52,7 @@ struct TaskViewModel {
 //        return issueService.fetchAllIssues(page: 1)
 //    }
     
-    syncService.syncStart(fetchedTasks: tasks)
+    syncService.syncStart(fetchedTasks: issueService.fetchAllIssues(page: 1))
   }
   
   func onToggle(task: TaskItem) -> CocoaAction {

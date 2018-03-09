@@ -88,20 +88,22 @@ class SyncService: SyncServiceRepresentable {
     //로컬에서 생성된 것 필터링
     self.localTaskService.getLocalCreated()
       //서버에 새 이슈 생성
-      .flatMap({ [unowned self] createdTask in
-        self.issueService.createIssue(title: createdTask.title,
-                                      body: createdTask.body ?? "",
-                                      repo: createdTask.repository!)
+      .flatMap({ [unowned self] in
+        self.issueService.createIssue(title: $0.title,
+                                      body: $0.body ?? "",
+                                      repo: $0.repository!)
       })
       //서버에서 새로 생성된 이슈의 Date로 로컬 변경
-      .flatMap { [unowned self] newIssue in
-        self.localTaskService.updateAll(newTask: newIssue)
+      .flatMap { [unowned self] in
+        self.localTaskService.updateAll(newTask: $0)
       }
       //완료 시점 확인
       .reduce( [TaskItem](), accumulator: { (arr, task) in
         return arr + [task]
       })
-      .subscribe(onCompleted: {
+      .subscribe(onNext: { _ in
+        print("updateOldServerWithNewLocal next")
+      }, onCompleted: {
         self.updateOldServerWithRecentLocal(fetchedTasks: fetchedTasks)
         print("updateOldServerWithNewLocal complete")
       })
@@ -118,13 +120,18 @@ class SyncService: SyncServiceRepresentable {
       }
       //서버 업데이트 요청
       .flatMap { [unowned self] in
-        self.issueService.editServerTask(newTitle: $0.title, newBody: $0.body ?? "", newState: $0.checked, exTask: $0)
+        self.issueService.editServerTask(newTitle: $0.title,
+                                         newBody: $0.body ?? "",
+                                         newState: $0.checked,
+                                         exTask: $0)
       }
       //업데이트 완료시점 확인
       .reduce([TaskItem]()) { arr, task in
         return arr + [task]
       }
-      .subscribe(onCompleted: {
+      .subscribe(onNext: { _ in
+        print("updateOldServerWithRecentLocal next")
+      }, onCompleted: {
           self.updateOldLocalWithNewServer(fetchedTasks: fetchedTasks)
           print("updateOldServerWithRecentLocal complete")
       })
@@ -166,6 +173,7 @@ class SyncService: SyncServiceRepresentable {
       .subscribe(onCompleted: {
         print("updateOldLocalWithRecentServer complete")
       })
+      .disposed(by: bag)
   }
   
   
