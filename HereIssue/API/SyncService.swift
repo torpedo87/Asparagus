@@ -10,7 +10,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-//시퀀스를 받아서 처리
+//시퀀스를 받아서 처리하는 것들
 //동기화 작업은 동기적으로
 protocol SyncServiceRepresentable {
   func syncStart(fetchedTasks: Observable<[TaskItem]>)
@@ -21,6 +21,7 @@ protocol SyncServiceRepresentable {
 }
 
 class SyncService: SyncServiceRepresentable {
+  
   private let bag = DisposeBag()
   private let issueService: IssueServiceRepresentable
   private let localTaskService: LocalTaskServiceType
@@ -89,13 +90,15 @@ class SyncService: SyncServiceRepresentable {
     self.localTaskService.getLocalCreated()
       //서버에 새 이슈 생성
       .flatMap({ [unowned self] in
-        self.issueService.createIssue(title: $0.title,
-                                      body: $0.body ?? "",
-                                      repo: $0.repository!)
+        self.issueService.createIssueWithLocalTask(localTaskWithRef: $0)
       })
-      //서버에서 새로 생성된 이슈의 Date로 로컬 변경
+      //로컬에 기존 task 삭제
       .flatMap { [unowned self] in
-        self.localTaskService.updateAll(newTask: $0)
+        self.localTaskService.deleteTask(newTaskWithRef: $0)
+      }
+      //서버에서 생성한 새로운 이슈를 로컬에 추가
+      .flatMap { [unowned self] in
+        self.localTaskService.add(newTask: $0)
       }
       //완료 시점 확인
       .reduce( [TaskItem](), accumulator: { (arr, task) in
@@ -118,6 +121,7 @@ class SyncService: SyncServiceRepresentable {
       .flatMap { [unowned self] in
         self.localTaskService.getRecentLocal(fetchedTasks: $0)
       }
+      .debug("---------recent----------")
       //서버 업데이트 요청
       .flatMap { [unowned self] in
         self.issueService.editServerTask(newTitle: $0.title,
@@ -159,8 +163,6 @@ class SyncService: SyncServiceRepresentable {
   
   //기존의 것중에 서버가 최신인 경우 로컬 변형
   func updateOldLocalWithRecentServer(fetchedTasks: Observable<[TaskItem]>) {
-    print("updateOldLocalWithRecentServer")
-
     fetchedTasks
       //기존의 것 중 서버가 최신인것만 필터링해서 업데이트
       .flatMap { [unowned self] in
@@ -175,8 +177,5 @@ class SyncService: SyncServiceRepresentable {
       })
       .disposed(by: bag)
   }
-  
-  
-  
   
 }

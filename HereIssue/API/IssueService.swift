@@ -11,13 +11,13 @@ import RxSwift
 import RxCocoa
 import Moya
 
-//시퀀스를 발생
-
+//시퀀스를 발생시키는 것들
 protocol IssueServiceRepresentable {
   func fetchAllIssues(page: Int) -> Observable<[TaskItem]>
   @discardableResult
   func editServerTask(newTitle: String, newBody: String, newState: String, exTask: TaskItem) -> Observable<TaskItem>
   func createIssue(title: String, body: String, repo: Repository) -> Observable<TaskItem>
+  func createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<LocalTaskService.TaskItemWithReference>
 }
 class IssueService: IssueServiceRepresentable {
   
@@ -41,7 +41,7 @@ class IssueService: IssueServiceRepresentable {
         self.provider.rx.request(.fetchAllIssues(page: $0))
       }
       .reduce([TaskItem](), accumulator: { items, response in
-        let decoded = try! JSONDecoder().decode([TaskItem].self, from: response.data)
+        let decoded = try JSONDecoder().decode([TaskItem].self, from: response.data)
         return items + decoded
       })
   }
@@ -110,6 +110,30 @@ class IssueService: IssueServiceRepresentable {
         if 200 ..< 300 ~= statusCode {
           let newIssue = try! JSONDecoder().decode(TaskItem.self, from: data)
           observer.onNext(newIssue)
+        } else {
+          observer.onError(Errors.createIssueFailed)
+        }
+      case let .failure(error):
+        observer.onError(error)
+      }
+      }
+      return Disposables.create()
+    })
+  }
+  
+  func createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<LocalTaskService.TaskItemWithReference> {
+    return Observable.create({ (observer) -> Disposable in
+      self.provider.request(.createIssue(title: localTaskWithRef.0.title,
+                                         body: localTaskWithRef.0.body ?? "",
+                                         repo: localTaskWithRef.0.repository!)) { (result) in
+      switch result {
+      case let .success(moyaResponse):
+        let data = moyaResponse.data
+        let statusCode = moyaResponse.statusCode
+        if 200 ..< 300 ~= statusCode {
+          let newIssue = try! JSONDecoder().decode(TaskItem.self, from: data)
+          let tuple = (newIssue, localTaskWithRef.1)
+          observer.onNext(tuple)
         } else {
           observer.onError(Errors.createIssueFailed)
         }

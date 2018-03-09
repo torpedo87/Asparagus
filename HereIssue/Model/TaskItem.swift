@@ -24,6 +24,8 @@ class TaskItem: Object, Decodable {
   var updatedDate: Date {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     return dateFormatter.date(from: self.updated)!
   }
   
@@ -63,7 +65,7 @@ class TaskItem: Object, Decodable {
   convenience required init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     let intId = try container.decode(Int.self, forKey: .uid)
-    let uid = String(intId)
+    let uid = "\(intId)"
     let title = try container.decode(String.self, forKey: .title)
     let body = try container.decodeIfPresent(String.self, forKey: .body)
     let checked = try container.decode(String.self, forKey: .checked)
@@ -79,7 +81,7 @@ class TaskItem: Object, Decodable {
 extension TaskItem: Encodable {
   func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode(Int(uid), forKey: .uid)
+    try container.encodeIfPresent(Int(uid), forKey: .uid)
     try container.encode(title, forKey: .title)
     try container.encode(body, forKey: .body)
     try container.encode(checked, forKey: .checked)
@@ -94,8 +96,10 @@ extension TaskItem {
   func setDateWhenCreated() {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    let nowDate = Date(timeInterval: -9 * 60 * 60, since: Date())
-    let now = dateFormatter.string(from: nowDate)
+    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    //let nowDate = Date(timeInterval: -9 * 60 * 60, since: Date())
+    let now = dateFormatter.string(from: Date())
     self.added = now
     self.updated = now
   }
@@ -103,14 +107,18 @@ extension TaskItem {
   func setDateWhenUpdated() {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    let nowDate = Date(timeInterval: -9 * 60 * 60, since: Date())
-    let now = dateFormatter.string(from: nowDate)
+    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    //let nowDate = Date(timeInterval: -9 * 60 * 60, since: Date())
+    let now = dateFormatter.string(from: Date())
     self.updated = now
   }
   
-  func getUpdatedDate() -> Date {
+  func getUpdatedDate() -> Date? {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    return dateFormatter.date(from: self.updated)!
+    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    return dateFormatter.date(from: self.updated)
   }
 }

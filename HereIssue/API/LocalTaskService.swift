@@ -19,7 +19,6 @@ protocol LocalTaskServiceType {
   
   @discardableResult
   func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem>
-  func updateAll(newTask: TaskItem) -> Observable<TaskItem>
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem>
   
@@ -28,28 +27,22 @@ protocol LocalTaskServiceType {
   func getRecentLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
   func updateOldLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
   func addNewTask(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
-  func getLocalCreated() -> Observable<TaskItem>
-  func deleteTask(exTask: TaskItem) -> Observable<Void>
+  func getLocalCreated() -> Observable<LocalTaskService.TaskItemWithReference>
+  func deleteTask(newTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<TaskItem>
+  func add(newTask: TaskItem) -> Observable<TaskItem>
 }
 
-struct LocalTaskService: LocalTaskServiceType {
+class LocalTaskService: LocalTaskServiceType {
+  typealias TaskItemReference = ThreadSafeReference<TaskItem>
+  typealias TaskItemWithReference = (TaskItem, TaskItemReference)
+  private let backgroundQueue = DispatchQueue(label: "samchon.background.realm")
   
   enum TaskServiceError: Error {
+    case some(String)
     case creationFailed
     case updateFailed(TaskItem)
-    case deletionFailed(TaskItem)
+    case deletionFailed
     case toggleFailed(TaskItem)
-  }
-  
-  fileprivate func withRealm<T>(_ operation: String, action: (Realm) throws -> T) -> T? {
-    do {
-      let realm = try Realm()
-      print("localtask ------- \(operation)")
-      return try action(realm)
-    } catch let err {
-      print("Failed \(operation) realm with error: \(err)")
-      return nil
-    }
   }
   
   //로컬에서 새로운 이슈 생성
@@ -134,7 +127,9 @@ struct LocalTaskService: LocalTaskServiceType {
     let result = withRealm("addNewTask") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
         fetchedTasks.forEach { fetchedTask in
-          if realm.objects(TaskItem.self).filter("uid = \(fetchedTask.uid)").count == 0 {
+          
+          if let _ = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
+          } else {
             try! realm.write {
               realm.add(fetchedTask)
             }
@@ -166,14 +161,23 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  //서버가 최신인 것 찾아서 로컬을 변형
+  //서버가 최신인 것 찾아서 로컬변형
   func updateOldLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem> {
     let result = withRealm("updateOldLocal") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
         fetchedTasks.forEach { fetchedTask in
           if let localTask = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
             if localTask.updatedDate < fetchedTask.updatedDate {
-              self.updateAll(newTask: fetchedTask)
+              try! realm.write {
+                localTask.title = fetchedTask.title
+                localTask.body = fetchedTask.body
+                localTask.added = fetchedTask.added
+                localTask.checked = fetchedTask.checked
+                localTask.number = fetchedTask.number
+                localTask.owner = fetchedTask.owner
+                localTask.repository = fetchedTask.repository
+                localTask.updated = fetchedTask.updated
+              }
               observer.onNext(localTask)
             }
           }
@@ -185,39 +189,15 @@ struct LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  @discardableResult
-  func updateAll(newTask: TaskItem) -> Observable<TaskItem> {
-    let result = withRealm("updateAll") { realm in
-      return Observable<TaskItem>.create({ observer -> Disposable in
-        if let exTask = realm.objects(TaskItem.self).filter("uid = \(newTask.uid)").first {
-          print("extask-------", exTask)
-          try! realm.write {
-            exTask.title = newTask.title
-            exTask.body = newTask.body
-            exTask.added = newTask.added
-            exTask.checked = newTask.checked
-            exTask.number = newTask.number
-            exTask.owner = newTask.owner
-            exTask.repository = newTask.repository
-            exTask.uid = newTask.uid
-            exTask.updated = newTask.updated
-          }
-          observer.onNext(exTask)
-        }
-        observer.onCompleted()
-        return Disposables.create()
-      })
-    }
-    return result ?? .empty()
-  }
-  
   //로컬에서 생성된 것 찾기
-  func getLocalCreated() -> Observable<TaskItem> {
+  func getLocalCreated() -> Observable<TaskItemWithReference> {
     let result = withRealm("getLocalCreated") { realm in
-      return Observable<TaskItem>.create({ observer -> Disposable in
+      return Observable<TaskItemWithReference>.create({ observer -> Disposable in
         let localCreatedTasks = realm.objects(TaskItem.self).filter { $0.isServerGeneratedType == false }
         for task in localCreatedTasks {
-          observer.onNext(task)
+          let ref = TaskItemReference(to: task)
+          let tuple = (task, ref)
+          observer.onNext(tuple)
         }
         observer.onCompleted()
         return Disposables.create()
@@ -228,13 +208,85 @@ struct LocalTaskService: LocalTaskServiceType {
   
   //로컬에서 생성된 것을 지우고 서버에서 생성된 것을 추가
   @discardableResult
-  func deleteTask(exTask: TaskItem) -> Observable<Void> {
-    let result = withRealm("deleting") { realm-> Observable<Void> in
-      try realm.write {
-        realm.delete(exTask)
-      }
-      return .empty()
+  func deleteTask(newTaskWithRef: TaskItemWithReference) -> Observable<TaskItem> {
+    let result = withRealm("deleteTask") { realm in
+      return Observable<TaskItem>.create({ observer -> Disposable in
+        if let exTask = realm.resolve(newTaskWithRef.1) {
+          try! realm.write {
+            realm.delete(exTask)
+          }
+          observer.onNext(newTaskWithRef.0)
+        }
+        observer.onCompleted()
+        return Disposables.create()
+      })
     }
-    return result ?? .error(TaskServiceError.deletionFailed(exTask))
+    return result ?? .empty()
+  }
+  
+  @discardableResult
+  func add(newTask: TaskItem) -> Observable<TaskItem> {
+    let result = withRealm("add") { realm in
+      return Observable<TaskItem>.create({ observer -> Disposable in
+        try! realm.write {
+          realm.add(newTask)
+        }
+        observer.onNext(newTask)
+        observer.onCompleted()
+        return Disposables.create()
+      })
+    }
+    return result ?? .empty()
+  }
+}
+
+extension LocalTaskService {
+  
+  fileprivate func withRealm<T>(_ operation: String, action: (Realm) throws -> T) -> T? {
+    do {
+      let realm = try Realm()
+      print(Thread.current, "thread \(#function)")
+      return try action(realm)
+    } catch let err {
+      print("Failed \(operation) realm with error: \(err)")
+      return nil
+    }
+  }
+  
+  fileprivate func writeOnBackground(action: @escaping (Realm) throws -> Void) -> Completable {
+      return Completable.create { [unowned self] completable in
+        self.backgroundQueue.async {
+          do {
+            let realm = try Realm()
+            print(Thread.current, "thread \(#function)")
+            if let _ = try? action(realm) {
+              completable(.completed)
+            }
+            completable(.error(TaskServiceError.some(#function)))
+          } catch {
+            completable(.error(TaskServiceError.some(#function)))
+          }
+        }
+        return Disposables.create()
+      }
+  }
+  
+  fileprivate func writeOnMain(action: @escaping (Realm) throws -> Void)
+    -> Completable {
+      return Completable.create { completable in
+        DispatchQueue.main.async {
+          do {
+            let realm = try Realm()
+            print(Thread.current, "thread \(#function)")
+            if let _ = try? action(realm) {
+              completable(.completed)
+            }
+            completable(.error(TaskServiceError.some(#function)))
+          } catch {
+            completable(.error(TaskServiceError.some(#function)))
+          }
+        }
+        return Disposables.create()
+      }
   }
 }

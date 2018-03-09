@@ -20,7 +20,6 @@ struct TaskViewModel {
   let authService: AuthServiceRepresentable
   let issueService: IssueServiceRepresentable
   let syncService: SyncServiceRepresentable
-  let tasks: Observable<[TaskItem]>
   
   init(account: Driver<AuthService.AccountStatus>,
        issueService: IssueServiceRepresentable = IssueService(),
@@ -35,24 +34,15 @@ struct TaskViewModel {
     self.issueService = issueService
     self.syncService = syncService
     
-    tasks =
-      authService.isLoggedIn.asObservable()
-        .filter { $0 == true }
-        .flatMap({ _ in
-          issueService.fetchAllIssues(page: 1)
-        })
     
-//    tasks = Observable.combineLatest(Reachability.rx.status,
-//                                     authService.isLoggedIn.asObservable())
-//    { (isConnected, isLoggedIn) -> Bool in
-//      return (isConnected == .online) && isLoggedIn
-//      }
-//      .filter { $0 == true }
-//      .flatMap { _ in
-//        return issueService.fetchAllIssues(page: 1)
-//    }
-    
-    syncService.syncStart(fetchedTasks: issueService.fetchAllIssues(page: 1))
+    let globalScheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue.global())
+    authService.isLoggedIn.asObservable()
+      .filter { $0 == true }
+      .subscribeOn(globalScheduler)
+      .subscribe(onNext: { _ in
+        syncService.syncStart(fetchedTasks: issueService.fetchAllIssues(page: 1))
+      })
+      .disposed(by: bag)
   }
   
   func onToggle(task: TaskItem) -> CocoaAction {

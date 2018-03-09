@@ -14,6 +14,7 @@ enum IssueAPI {
   case fetchAllIssues(page: Int)
   case createIssue(title: String, body: String, repo: Repository)
   case editIssue(newTitle: String, newBody: String, newState: String, exTask: TaskItem)
+  case createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference)
 }
 
 extension IssueAPI: TargetType {
@@ -41,6 +42,8 @@ extension IssueAPI: TargetType {
       return "/repos/\(exTask.owner!.name)/\(exTask.repository!.name)/issues/\(exTask.number)"
     case .createIssue(_, _, let repo):
       return "/repos/\(repo.owner!.name)/\(repo.name)/issues"
+    case .createIssueWithLocalTask(let tuple):
+      return "/repos/\(tuple.0.repository!.owner!.name)/\(tuple.0.repository!.name)/issues"
     }
   }
   
@@ -51,6 +54,8 @@ extension IssueAPI: TargetType {
     case .editIssue:
       return .patch
     case .createIssue:
+      return .post
+    case .createIssueWithLocalTask:
       return .post
     }
   }
@@ -71,6 +76,10 @@ extension IssueAPI: TargetType {
     case let .createIssue(title, body, _):
       return .requestParameters(parameters: ["body": body,
                                              "title": title],
+                                encoding: JSONEncoding.default)
+    case let .createIssueWithLocalTask(tuple):
+      return .requestParameters(parameters: ["body": tuple.0.body ?? "",
+                                             "title": tuple.0.title],
                                 encoding: JSONEncoding.default)
     }
   }
