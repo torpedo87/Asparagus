@@ -50,6 +50,7 @@ class LocalTaskService: LocalTaskServiceType {
   func createTask(title: String, body: String, repoName: String) -> Observable<TaskItem> {
     let result = withRealm("creating") { realm -> Observable<TaskItem> in
       let task = TaskItem()
+      task.uid = UUID().uuidString
       task.title = title
       task.body = body
       task.repository = getRepository(repoName: repoName)
@@ -118,7 +119,7 @@ class LocalTaskService: LocalTaskServiceType {
   //helper
   func getRepository(repoName: String) -> Repository {
     let realm = try! Realm()
-    let repositories = realm.objects(Repository.self).filter("name = \(repoName)")
+    let repositories = realm.objects(Repository.self).filter { $0.name == repoName }
     return repositories.first!
   }
   
