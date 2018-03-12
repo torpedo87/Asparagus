@@ -94,9 +94,7 @@ class EditViewController: UIViewController, BindableType {
     
     titleTextField.rx.text.orEmpty
       .map { title -> Bool in
-        if title.isEmpty {
-          return false
-        } else { return true }
+        return !title.isEmpty
       }.bind(to: saveButton.rx.isEnabled)
       .disposed(by: bag)
     

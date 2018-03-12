@@ -14,7 +14,6 @@ extension UserDefaults {
     
     let dict = token.asDictionary
     UserDefaults.standard.set(dict, forKey: "token")
-    
   }
   
   static func loadToken() -> Token? {
@@ -29,6 +28,16 @@ extension UserDefaults {
   
   static func removeLocalToken() {
     UserDefaults.standard.removeObject(forKey: "token")
+  }
+  
+  static func saveMe(me: User) {
+    let name = me.name
+    UserDefaults.standard.set(name, forKey: "me")
+  }
+  
+  static func loadUser() -> User? {
+    guard let name = UserDefaults.standard.string(forKey: "me") else { return nil}
+    return User(name: name)
   }
 }
 

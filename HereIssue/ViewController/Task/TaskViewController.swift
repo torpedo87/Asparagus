@@ -38,6 +38,12 @@ class TaskViewController: UIViewController, BindableType {
                       action: nil)
     return item
   }()
+  private let activityIndicator: UIActivityIndicatorView = {
+    let spinner = UIActivityIndicatorView()
+    spinner.color = UIColor.blue
+    spinner.isHidden = false
+    return spinner
+  }()
   
   var dataSource: RxTableViewSectionedReloadDataSource<TaskSection>!
   
@@ -50,6 +56,7 @@ class TaskViewController: UIViewController, BindableType {
   func setupView() {
     title = "Task"
     view.addSubview(tableView)
+    view.addSubview(activityIndicator)
     navigationItem.rightBarButtonItem = newTaskButton
     navigationItem.leftBarButtonItem = authButton
     tableView.snp.makeConstraints({ (make) in
@@ -58,11 +65,15 @@ class TaskViewController: UIViewController, BindableType {
       make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
       make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
     })
+    activityIndicator.snp.makeConstraints { (make) in
+      make.width.height.equalTo(UIScreen.main.bounds.height / 10)
+      make.center.equalToSuperview()
+    }
   }
   
   func bindViewModel() {
     
-    viewModel.authService.isLoggedIn.asDriver(onErrorJustReturn: false)
+    viewModel.isLoggedIn.asDriver(onErrorJustReturn: false)
       .map { $0 ? "Logout" : "Login" }
       .drive(authButton.rx.title)
       .disposed(by: bag)
@@ -82,6 +93,17 @@ class TaskViewController: UIViewController, BindableType {
         try! self.dataSource.model(at: indexPath) as! TaskItem
       }
       .subscribe(viewModel.editAction.inputs)
+      .disposed(by: bag)
+    
+    viewModel.running.asDriver()
+      .drive(activityIndicator.rx.isAnimating)
+      .disposed(by: bag)
+    
+    viewModel.running.asDriver()
+      .map({ (bool) in
+        return !bool
+      })
+      .drive(tableView.rx.isUserInteractionEnabled)
       .disposed(by: bag)
   }
   

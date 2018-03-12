@@ -30,6 +30,9 @@ protocol LocalTaskServiceType {
   func getLocalCreated() -> Observable<LocalTaskService.TaskItemWithReference>
   func deleteTask(newTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<TaskItem>
   func add(newTask: TaskItem) -> Observable<TaskItem>
+  func observeEditTask() -> Observable<[TaskItem]>
+  func observeCreateTask() -> Observable<[TaskItem]>
+  func convertToTaskWithRef(task: TaskItem) -> Observable<LocalTaskService.TaskItemWithReference>
 }
 
 class LocalTaskService: LocalTaskServiceType {
@@ -51,6 +54,7 @@ class LocalTaskService: LocalTaskServiceType {
     let result = withRealm("creating") { realm -> Observable<TaskItem> in
       let task = TaskItem()
       task.uid = UUID().uuidString
+      task.owner = UserDefaults.loadUser()
       task.title = title
       task.body = body
       task.repository = getRepository(repoName: repoName)
@@ -198,6 +202,51 @@ class LocalTaskService: LocalTaskServiceType {
         for task in localCreatedTasks {
           let ref = TaskItemReference(to: task)
           let tuple = (task, ref)
+          observer.onNext(tuple)
+        }
+        observer.onCompleted()
+        return Disposables.create()
+      })
+    }
+    return result ?? .empty()
+  }
+  
+  func observeEditTask() -> Observable<[TaskItem]> {
+    let result = withRealm("observeEditTask") { realm -> Observable<[TaskItem]> in
+      let tasks = realm.objects(TaskItem.self)
+      return Observable.arrayWithChangeset(from: tasks)
+        .map { (arr, changes) -> [TaskItem] in
+          if let changes = changes, let updatedIndex = changes.updated.first {
+            return [arr[updatedIndex]]
+          }
+          return []
+      }
+    }
+    return result ?? .empty()
+  }
+  
+  func observeCreateTask() -> Observable<[TaskItem]> {
+    let result = withRealm("observeCreateTask") { realm -> Observable<[TaskItem]> in
+      let tasks = realm.objects(TaskItem.self)
+      return Observable.arrayWithChangeset(from: tasks)
+        .map { (arr, changes) -> [TaskItem] in
+          if let changes = changes, let insertedIndex = changes.inserted.first {
+            if !arr[insertedIndex].isServerGeneratedType {
+              return [arr[insertedIndex]]
+            }
+            return []
+          }
+          return []
+      }
+    }
+    return result ?? .empty()
+  }
+  
+  func convertToTaskWithRef(task: TaskItem) -> Observable<TaskItemWithReference> {
+    let result = withRealm("convertToTaskWithRef") { realm in
+      return Observable<TaskItemWithReference>.create({ observer -> Disposable in
+        if let insertedTask = realm.object(ofType: TaskItem.self, forPrimaryKey: task.uid) {
+          let tuple = (insertedTask, TaskItemReference(to: insertedTask))
           observer.onNext(tuple)
         }
         observer.onCompleted()

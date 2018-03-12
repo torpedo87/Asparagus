@@ -13,11 +13,11 @@ import Action
 
 struct EditViewModel {
   
-  var task: TaskItem
+  let task: TaskItem
   let onCancel: CocoaAction!
   let onUpdate: Action<(String, String), Void>
-  let bag = DisposeBag()
-  let localTaskService: LocalTaskServiceType
+  private let bag = DisposeBag()
+  private let localTaskService: LocalTaskServiceType
   
   init(task: TaskItem,
        coordinator: SceneCoordinatorType,

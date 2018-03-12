@@ -68,7 +68,6 @@ class AuthViewController: UIViewController, BindableType {
   }
   
   func setupView() {
-    title = "Login"
     view.backgroundColor = UIColor.white
     view.addSubview(cancelButton)
     view.addSubview(imgView)
@@ -144,7 +143,7 @@ class AuthViewController: UIViewController, BindableType {
     cancelButton.rx.action = viewModel.onCancel
   }
   
-  func alertErrorMsg(message: String) {
+  private func alertErrorMsg(message: String) {
     let alert = UIAlertController(title: "Login Failed",
                                   message: message,
                                   preferredStyle: .alert)

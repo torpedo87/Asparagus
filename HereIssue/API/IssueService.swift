@@ -18,6 +18,7 @@ protocol IssueServiceRepresentable {
   func editServerTask(newTitle: String, newBody: String, newState: String, exTask: TaskItem) -> Observable<TaskItem>
   func createIssue(title: String, body: String, repo: Repository) -> Observable<TaskItem>
   func createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<LocalTaskService.TaskItemWithReference>
+  func getUser() -> Observable<User>
 }
 class IssueService: IssueServiceRepresentable {
   
@@ -26,6 +27,7 @@ class IssueService: IssueServiceRepresentable {
     case editServerTaskFailed
     case pagingFailed
     case createIssueFailed
+    case getUserFailed
   }
   
   private let bag = DisposeBag()
@@ -132,6 +134,7 @@ class IssueService: IssueServiceRepresentable {
         let statusCode = moyaResponse.statusCode
         if 200 ..< 300 ~= statusCode {
           let newIssue = try! JSONDecoder().decode(TaskItem.self, from: data)
+          newIssue.repository = localTaskWithRef.0.repository
           let tuple = (newIssue, localTaskWithRef.1)
           observer.onNext(tuple)
         } else {
@@ -143,7 +146,27 @@ class IssueService: IssueServiceRepresentable {
       }
       return Disposables.create()
     })
-    
+  }
+  
+  func getUser() -> Observable<User> {
+    return Observable.create({ (observer) -> Disposable in
+      self.provider.request(.getUser(), completion: { (result) in
+        switch result {
+        case let .success(moyaResponse):
+          let data = moyaResponse.data
+          let statusCode = moyaResponse.statusCode
+          if 200 ..< 300 ~= statusCode {
+            let me = try! JSONDecoder().decode(User.self, from: data)
+            observer.onNext(me)
+          } else {
+            observer.onError(Errors.getUserFailed)
+          }
+        case let .failure(error):
+          observer.onError(error)
+        }
+      })
+      return Disposables.create()
+    })
   }
   
   //helper

@@ -25,8 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       let issueService = IssueService()
       let localTaskService = LocalTaskService()
       let syncService = SyncService(issueService: issueService, localTaskService: localTaskService)
-      let taskViewModel = TaskViewModel(account: account,
-                                        issueService: issueService,
+      let taskViewModel = TaskViewModel(issueService: issueService,
                                         coordinator: sceneCoordinator,
                                         localTaskService: localTaskService,
                                         syncService: syncService)

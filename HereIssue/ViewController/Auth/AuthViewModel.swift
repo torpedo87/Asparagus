@@ -13,16 +13,17 @@ import Action
 
 struct AuthViewModel {
   private let bag = DisposeBag()
-  let sceneCoordinator: SceneCoordinatorType
-  let authService: AuthServiceRepresentable
+  private let sceneCoordinator: SceneCoordinatorType
+  private let authService: AuthServiceRepresentable
+  
   let onAuth: Action<(String, String), AuthService.AccountStatus>
   let onCancel: CocoaAction!
   
   //output
-  let loggedIn: Driver<Bool>
+  let loggedIn = BehaviorRelay<Bool>(value: false)
   
   init(authService: AuthServiceRepresentable = AuthService(),
-       coordinator: SceneCoordinatorType,
+       coordinator: SceneCoordinatorType = SceneCoordinator(),
        authAction: Action<(String, String), AuthService.AccountStatus>) {
     self.authService = authService
     self.sceneCoordinator = coordinator
@@ -33,15 +34,20 @@ struct AuthViewModel {
         .asObservable().map { _ in }
     }
     
-    loggedIn = authService.isLoggedIn
+    bindOutput()
+  }
+  
+  private func bindOutput() {
+    authService.isLoggedIn
+      .drive(loggedIn)
+      .disposed(by: bag)
   }
   
   func goToTaskScene() {
     let issueService = IssueService()
     let localTaskService = LocalTaskService()
     let syncService = SyncService(issueService: issueService, localTaskService: localTaskService)
-    let taskViewModel = TaskViewModel(account: authService.status,
-                                      issueService: issueService,
+    let taskViewModel = TaskViewModel(issueService: issueService,
                                       coordinator: sceneCoordinator,
                                       localTaskService: localTaskService,
                                       syncService: syncService)

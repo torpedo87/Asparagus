@@ -14,27 +14,28 @@ import Action
 
 struct TaskViewModel {
   private let bag = DisposeBag()
-  let sceneCoordinator: SceneCoordinatorType
-  let account: Driver<AuthService.AccountStatus>
-  let localTaskService: LocalTaskServiceType
-  let authService: AuthServiceRepresentable
-  let issueService: IssueServiceRepresentable
-  let syncService: SyncServiceRepresentable
+  private let sceneCoordinator: SceneCoordinatorType
+  private let localTaskService: LocalTaskServiceType
+  private let authService: AuthServiceRepresentable
+  private let issueService: IssueServiceRepresentable
+  private let syncService: SyncServiceRepresentable
   
-  init(account: Driver<AuthService.AccountStatus>,
-       issueService: IssueServiceRepresentable = IssueService(),
-       coordinator: SceneCoordinatorType,
+  //output
+  let isLoggedIn = BehaviorRelay<Bool>(value: false)
+  let running = BehaviorRelay<Bool>(value: true)
+  
+  init(issueService: IssueServiceRepresentable = IssueService(),
+       coordinator: SceneCoordinatorType = SceneCoordinator(),
        localTaskService: LocalTaskServiceType = LocalTaskService(),
        authService: AuthServiceRepresentable = AuthService(),
        syncService: SyncServiceRepresentable) {
     self.localTaskService = localTaskService
     self.sceneCoordinator = coordinator
-    self.account = account
     self.authService = authService
     self.issueService = issueService
     self.syncService = syncService
     
-    
+    //로그인상태시 이슈 가져오기
     let globalScheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue.global())
     authService.isLoggedIn.asObservable()
       .filter { $0 == true }
@@ -42,6 +43,29 @@ struct TaskViewModel {
       .subscribe(onNext: { _ in
         syncService.syncStart(fetchedTasks: issueService.fetchAllIssues(page: 1))
       })
+      .disposed(by: bag)
+    
+    //로그인 상태시 내 정보 가져오기
+    authService.isLoggedIn.asObservable()
+      .filter { $0 == true }
+      .flatMap { _ -> Observable<User> in
+        return issueService.getUser()
+      }.subscribe(onNext: { user in
+        UserDefaults.saveMe(me: user)
+      })
+      .disposed(by: bag)
+    
+    bindOutput()
+  }
+  
+  func bindOutput() {
+    authService.isLoggedIn
+      .drive(isLoggedIn)
+      .disposed(by: bag)
+    
+    syncService.running
+      .asDriver()
+      .drive(running)
       .disposed(by: bag)
   }
   

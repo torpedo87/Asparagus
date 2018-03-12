@@ -18,6 +18,7 @@ protocol SyncServiceRepresentable {
   func updateOldServerWithRecentLocal(fetchedTasks: Observable<[TaskItem]>)
   func updateOldLocalWithNewServer(fetchedTasks: Observable<[TaskItem]>)
   func updateOldLocalWithRecentServer(fetchedTasks: Observable<[TaskItem]>)
+  var running: BehaviorRelay<Bool> { get }
 }
 
 class SyncService: SyncServiceRepresentable {
@@ -25,60 +26,58 @@ class SyncService: SyncServiceRepresentable {
   private let bag = DisposeBag()
   private let issueService: IssueServiceRepresentable
   private let localTaskService: LocalTaskServiceType
+  let running = BehaviorRelay<Bool>(value: true)
   
   init(issueService: IssueServiceRepresentable, localTaskService: LocalTaskServiceType) {
     self.issueService = issueService
     self.localTaskService = localTaskService
   }
   
-//  func syncWhenTaskEdittedInLocal(fetchedTasks: Observable<[TaskItem]>) {
-//    let realm = try! Realm()
-//    let tasks = realm.objects(TaskItem.self)
-//
-//    Observable.arrayWithChangeset(from: tasks)
-//      .map { (arr, changes) -> [TaskItem] in
-//        if let changes = changes, let updatedIndex = changes.updated.first {
-//          return [arr[updatedIndex]]
-//        }
-//        return []
-//      }
-//      .flatMap { taskArr -> Observable<TaskItem> in
-//        if let task = taskArr.first {
-//          return self.issueService.editServerTask(newTitle: task.title,
-//                                      newBody: task.body ?? "",
-//                                      newState: task.checked,
-//                                      exTask: task)
-//        }
-//        return Observable<TaskItem>.empty()
-//      }.subscribe {
-//        print("update task on Server succeed")
-//      }.disposed(by: bag)
-//  }
-//
-//  func syncWhenTaskCreatedInLocal() {
-//    let realm = try! Realm()
-//    let tasks = realm.objects(TaskItem.self)
-//
-//    Observable.arrayWithChangeset(from: tasks)
-//      .map { (arr, changes) -> [TaskItem] in
-//        if let changes = changes, let createdIndex = changes.inserted.first {
-//          return [arr[createdIndex]]
-//        }
-//        return []
-//      }
-//      .flatMap { taskArr -> Observable<TaskItem> in
-//        if let task = taskArr.first {
-//          return self.issueService.createIssue(title: task.title,
-//                                               body: task.body ?? "",
-//                                               repo: task.repository!)
-//        }
-//        return Observable<TaskItem>.empty()
-//      }.subscribe {
-//        print("update task on Server succeed")
-//      }.disposed(by: bag)
-//  }
+  func syncWhenTaskEdittedInLocal() {
+    localTaskService.observeEditTask()
+      .flatMap { taskArr -> Observable<TaskItem> in
+        if let task = taskArr.first {
+          print(task, "-------------------------realtime edit task----------------------")
+          return self.issueService.editServerTask(newTitle: task.title,
+                                      newBody: task.body ?? "",
+                                      newState: task.checked,
+                                      exTask: task)
+        }
+        return Observable<TaskItem>.empty()
+      }.subscribe(onNext: { [unowned self] _ in
+        self.running.accept(true)
+      }, onCompleted: {
+        self.running.accept(false)
+      })
+      .disposed(by: bag)
+  }
+
+  func syncWhenTaskCreatedInLocal() {
+    //로컬에서 이슈생성시 observable 발생
+    localTaskService.observeCreateTask()
+      .filter { $0.count > 0 }
+      .flatMap({ [unowned self] in
+        self.localTaskService.convertToTaskWithRef(task: $0.first!)
+      })
+      //서버에 새 이슈 생성
+      .flatMap({ [unowned self] in
+        self.issueService.createIssueWithLocalTask(localTaskWithRef: $0)
+      })
+      //로컬에 기존 task 삭제
+      .flatMap { [unowned self] in
+        self.localTaskService.deleteTask(newTaskWithRef: $0)
+      }
+      //서버에서 생성한 새로운 이슈를 로컬에 추가
+      .flatMap { [unowned self] in
+        self.localTaskService.add(newTask: $0)
+      }.subscribe(onNext: { [unowned self] _ in
+        self.running.accept(true)
+        }, onCompleted: {
+          self.running.accept(false)
+      })
+      .disposed(by: bag)
+  }
   
-  //동기적으로 sync 하기
   func syncStart(fetchedTasks: Observable<[TaskItem]>) {
     updateOldServerWithNewLocal(fetchedTasks: fetchedTasks)
   }
@@ -105,10 +104,11 @@ class SyncService: SyncServiceRepresentable {
         return arr + [task]
       })
       .subscribe(onNext: { _ in
-        print("updateOldServerWithNewLocal next")
+        self.running.accept(true)
       }, onCompleted: {
-        self.updateOldServerWithRecentLocal(fetchedTasks: fetchedTasks)
+        //self.running.accept(false)
         print("updateOldServerWithNewLocal complete")
+        self.updateOldServerWithRecentLocal(fetchedTasks: fetchedTasks)
       })
       .disposed(by: bag)
   }
@@ -134,10 +134,11 @@ class SyncService: SyncServiceRepresentable {
         return arr + [task]
       }
       .subscribe(onNext: { _ in
-        print("updateOldServerWithRecentLocal next")
+        self.running.accept(true)
       }, onCompleted: {
+        //self.running.accept(false)
+        print("updateOldServerWithRecentLocal complete")
           self.updateOldLocalWithNewServer(fetchedTasks: fetchedTasks)
-          print("updateOldServerWithRecentLocal complete")
       })
       .disposed(by: bag)
   }
@@ -154,9 +155,12 @@ class SyncService: SyncServiceRepresentable {
       .reduce([TaskItem]()) { arr, task in
         return arr + [task]
       }
-      .subscribe(onCompleted: {
+      .subscribe(onNext: { _ in
+        self.running.accept(true)
+      }, onCompleted: {
+        //self.running.accept(false)
+        print("updateOldLocalWithNewServer complete")
           self.updateOldLocalWithRecentServer(fetchedTasks: fetchedTasks)
-          print("updateOldLocalWithNewServer complete")
       })
       .disposed(by: bag)
   }
@@ -172,8 +176,13 @@ class SyncService: SyncServiceRepresentable {
       .reduce([TaskItem]()) { arr, task in
         return arr + [task]
       }
-      .subscribe(onCompleted: {
+      .subscribe(onNext: { _ in
+        self.running.accept(true)
+      }, onCompleted: {
         print("updateOldLocalWithRecentServer complete")
+        self.running.accept(false)
+        self.syncWhenTaskEdittedInLocal()
+        self.syncWhenTaskCreatedInLocal()
       })
       .disposed(by: bag)
   }
