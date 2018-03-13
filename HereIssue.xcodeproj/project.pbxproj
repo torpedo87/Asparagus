@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		4840921A204D42C9007C6EE5 /* CreateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48409219204D42C9007C6EE5 /* CreateViewModel.swift */; };
 		4840921C204D42D2007C6EE5 /* CreateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4840921B204D42D2007C6EE5 /* CreateViewController.swift */; };
+		4848BEBE20566E34009C1B97 /* SidebarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEBD20566E34009C1B97 /* SidebarViewController.swift */; };
+		4848BEC020566E54009C1B97 /* LeftViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEBF20566E54009C1B97 /* LeftViewController.swift */; };
+		4848BEC4205675C1009C1B97 /* LeftViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEC3205675C1009C1B97 /* LeftViewModel.swift */; };
+		4848BEC620569AA0009C1B97 /* SidebarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEC520569AA0009C1B97 /* SidebarViewModel.swift */; };
 		4848EC052047F68200B59315 /* TaskSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848EC042047F68200B59315 /* TaskSection.swift */; };
 		4848EC082048FE9500B59315 /* EditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848EC072048FE9500B59315 /* EditViewModel.swift */; };
 		4848EC0A2048FEA000B59315 /* EditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848EC092048FEA000B59315 /* EditViewController.swift */; };
@@ -56,6 +60,10 @@
 		2F5A48A11EEF3E38AA8F75E3 /* Pods-HereIssue.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HereIssue.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HereIssue/Pods-HereIssue.debug.xcconfig"; sourceTree = "<group>"; };
 		48409219204D42C9007C6EE5 /* CreateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateViewModel.swift; sourceTree = "<group>"; };
 		4840921B204D42D2007C6EE5 /* CreateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateViewController.swift; sourceTree = "<group>"; };
+		4848BEBD20566E34009C1B97 /* SidebarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewController.swift; sourceTree = "<group>"; };
+		4848BEBF20566E54009C1B97 /* LeftViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftViewController.swift; sourceTree = "<group>"; };
+		4848BEC3205675C1009C1B97 /* LeftViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftViewModel.swift; sourceTree = "<group>"; };
+		4848BEC520569AA0009C1B97 /* SidebarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewModel.swift; sourceTree = "<group>"; };
 		4848EC042047F68200B59315 /* TaskSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskSection.swift; sourceTree = "<group>"; };
 		4848EC072048FE9500B59315 /* EditViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditViewModel.swift; sourceTree = "<group>"; };
 		4848EC092048FEA000B59315 /* EditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditViewController.swift; sourceTree = "<group>"; };
@@ -123,6 +131,17 @@
 			path = Create;
 			sourceTree = "<group>";
 		};
+		4848BEBC20566DF7009C1B97 /* Slidebar */ = {
+			isa = PBXGroup;
+			children = (
+				4848BEBD20566E34009C1B97 /* SidebarViewController.swift */,
+				4848BEBF20566E54009C1B97 /* LeftViewController.swift */,
+				4848BEC3205675C1009C1B97 /* LeftViewModel.swift */,
+				4848BEC520569AA0009C1B97 /* SidebarViewModel.swift */,
+			);
+			path = Slidebar;
+			sourceTree = "<group>";
+		};
 		4848EC062048FE1C00B59315 /* Edit */ = {
 			isa = PBXGroup;
 			children = (
@@ -181,6 +200,7 @@
 		487D920A2045375F008CB44E /* ViewController */ = {
 			isa = PBXGroup;
 			children = (
+				4848BEBC20566DF7009C1B97 /* Slidebar */,
 				48409218204D42B8007C6EE5 /* Create */,
 				4848EC062048FE1C00B59315 /* Edit */,
 				487D923820455886008CB44E /* Task */,
@@ -521,13 +541,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4848BEBE20566E34009C1B97 /* SidebarViewController.swift in Sources */,
 				4848EC0A2048FEA000B59315 /* EditViewController.swift in Sources */,
+				4848BEC620569AA0009C1B97 /* SidebarViewModel.swift in Sources */,
 				487D921B20453F5D008CB44E /* AuthViewController.swift in Sources */,
 				487D921D20453F75008CB44E /* TaskViewController.swift in Sources */,
 				4848EC11204A87E600B59315 /* User.swift in Sources */,
+				4848BEC020566E54009C1B97 /* LeftViewController.swift in Sources */,
 				4848EC13204A8A2B00B59315 /* SyncService.swift in Sources */,
 				487D922E20454421008CB44E /* IssueService.swift in Sources */,
 				487D92452046C9B6008CB44E /* TaskCell.swift in Sources */,
+				4848BEC4205675C1009C1B97 /* LeftViewModel.swift in Sources */,
 				4848EC052047F68200B59315 /* TaskSection.swift in Sources */,
 				487D923020454473008CB44E /* AuthService.swift in Sources */,
 				487D921520453808008CB44E /* BindableType.swift in Sources */,

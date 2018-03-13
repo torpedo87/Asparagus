@@ -33,6 +33,7 @@ protocol LocalTaskServiceType {
   func observeEditTask() -> Observable<[TaskItem]>
   func observeCreateTask() -> Observable<[TaskItem]>
   func convertToTaskWithRef(task: TaskItem) -> Observable<LocalTaskService.TaskItemWithReference>
+  func tasksForRepo(repoName: String) -> Observable<[TaskItem]>
 }
 
 class LocalTaskService: LocalTaskServiceType {
@@ -110,12 +111,39 @@ class LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
+  func tasksForRepo(repoName: String) -> Observable<[TaskItem]> {
+    let result = withRealm("getting tasks") { realm -> Observable<[TaskItem]> in
+      return Observable<[TaskItem]>.create({ (observer) -> Disposable in
+        let tasks = realm.objects(TaskItem.self)
+          .filter("repository.name = '\(repoName)'")
+          .sorted(byKeyPath: "added", ascending: false)
+          .toArray()
+        observer.onNext(tasks)
+        observer.onCompleted()
+        return Disposables.create()
+      })
+    }
+    return result ?? .empty()
+  }
+  
   //이슈의 모든 repository 불러오기
   func repositories() -> Observable<Results<Repository>> {
     let result = withRealm("getting repositories") { realm -> Observable<Results<Repository>> in
-      let realm = try Realm()
       let repositories = realm.objects(Repository.self)
       return Observable.collection(from: repositories)
+    }
+    return result ?? .empty()
+  }
+  
+  func repoLists() -> Observable<[Repository]> {
+    let result = withRealm("repoLists") { realm in
+      return Observable<[Repository]>.create({ observer -> Disposable in
+        let repos = realm.objects(Repository.self)
+        let repoList = Array(Set(repos))
+        observer.onNext(repoList)
+        observer.onCompleted()
+        return Disposables.create()
+      })
     }
     return result ?? .empty()
   }

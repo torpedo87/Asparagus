@@ -21,16 +21,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       Reachability.shared.startMonitor("github.com")
       let sceneCoordinator = SceneCoordinator()
       self.window = sceneCoordinator.window
-      let account = AuthService().status
       let issueService = IssueService()
       let localTaskService = LocalTaskService()
       let syncService = SyncService(issueService: issueService, localTaskService: localTaskService)
+      let leftViewModel = LeftViewModel(authService: AuthService(), coordinator: sceneCoordinator)
       let taskViewModel = TaskViewModel(issueService: issueService,
                                         coordinator: sceneCoordinator,
                                         localTaskService: localTaskService,
                                         syncService: syncService)
-      let taskScene = Scene.task(taskViewModel)
-      sceneCoordinator.transition(to: taskScene, type: .root)
+      let sideBarScene = Scene.sidebar(leftViewModel, taskViewModel)
+      sceneCoordinator.transition(to: sideBarScene, type: .root)
     }
     return true
   }

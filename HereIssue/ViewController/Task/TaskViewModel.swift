@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RealmSwift
 import RxSwift
 import RxCocoa
 import Action
@@ -19,10 +18,12 @@ struct TaskViewModel {
   private let authService: AuthServiceRepresentable
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
+  let selectedRepo = BehaviorRelay<String>(value: "local")
+  let tasksForSelectedRepo = BehaviorRelay<[TaskItem]>(value: [])
   
   //output
-  let isLoggedIn = BehaviorRelay<Bool>(value: false)
   let running = BehaviorRelay<Bool>(value: true)
+  let menuTap = BehaviorRelay<Void>(value: ())
   
   init(issueService: IssueServiceRepresentable = IssueService(),
        coordinator: SceneCoordinatorType = SceneCoordinator(),
@@ -55,18 +56,22 @@ struct TaskViewModel {
       })
       .disposed(by: bag)
     
+    selectedRepo.asObservable()
+      .flatMap { (name) -> Observable<[TaskItem]> in
+        return localTaskService.tasksForRepo(repoName: name)
+      }.bind(to: tasksForSelectedRepo)
+      .disposed(by: bag)
+    
     bindOutput()
   }
   
   func bindOutput() {
-    authService.isLoggedIn
-      .drive(isLoggedIn)
-      .disposed(by: bag)
-    
+   
     syncService.running
       .asDriver()
       .drive(running)
       .disposed(by: bag)
+    
   }
   
   func onToggle(task: TaskItem) -> CocoaAction {
@@ -76,19 +81,17 @@ struct TaskViewModel {
   }
   
   var sectionedItems: Observable<[TaskSection]> {
-    return self.localTaskService.tasks()
+    return self.tasksForSelectedRepo
       .map { results in
         let dueTasks = results
-          .filter("checked == 'open'")
-          .sorted(byKeyPath: "added", ascending: false)
+          .filter{ $0.checked == "open" }
         
         let doneTasks = results
-          .filter("checked == 'closed'")
-          .sorted(byKeyPath: "added", ascending: false)
+          .filter { $0.checked == "closed" }
         
         return [
-          TaskSection(header: "Due Tasks", items: dueTasks.toArray()),
-          TaskSection(header: "Done Tasks", items: doneTasks.toArray())
+          TaskSection(header: "Due Tasks", items: dueTasks),
+          TaskSection(header: "Done Tasks", items: doneTasks)
         ]
     }
   }
@@ -117,15 +120,7 @@ struct TaskViewModel {
     }
   }
   
-  func onAuthTask(isLoggedIn: Bool) -> Action<(String, String), AuthService.AccountStatus> {
-    return Action { tuple in
-      if isLoggedIn {
-        return self.authService.removeToken(userId: tuple.0, userPassword: tuple.1)
-      } else {
-        return self.authService.requestToken(userId: tuple.0, userPassword: tuple.1)
-      }
-    }
-  }
+  
   
   func goToCreate() -> CocoaAction {
     return CocoaAction { _ in
@@ -138,16 +133,5 @@ struct TaskViewModel {
     }
   }
   
-  func goToAuth() -> CocoaAction {
-    return CocoaAction { _ in
-      let authService = AuthService()
-      let isLoggedIn = UserDefaults.loadToken() != nil
-      let authViewModel = AuthViewModel(authService: authService,
-                                        coordinator: self.sceneCoordinator,
-                                        authAction: self.onAuthTask(isLoggedIn: isLoggedIn))
-      let authScene = Scene.auth(authViewModel)
-      return self.sceneCoordinator.transition(to: authScene, type: .modal)
-        .asObservable().map { _ in }
-    }
-  }
+  
 }

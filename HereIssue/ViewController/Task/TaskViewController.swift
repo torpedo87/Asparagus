@@ -30,9 +30,9 @@ class TaskViewController: UIViewController, BindableType {
                       action: nil)
     return item
   }()
-  private lazy var authButton: UIBarButtonItem = {
+  lazy var menuButton: UIBarButtonItem = {
     let item =
-      UIBarButtonItem(image: nil,
+      UIBarButtonItem(image: UIImage(named: "menu"),
                       style: .plain,
                       target: self,
                       action: nil)
@@ -58,7 +58,8 @@ class TaskViewController: UIViewController, BindableType {
     view.addSubview(tableView)
     view.addSubview(activityIndicator)
     navigationItem.rightBarButtonItem = newTaskButton
-    navigationItem.leftBarButtonItem = authButton
+    navigationItem.leftBarButtonItem = menuButton
+    
     tableView.snp.makeConstraints({ (make) in
       make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
       make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
@@ -72,14 +73,7 @@ class TaskViewController: UIViewController, BindableType {
   }
   
   func bindViewModel() {
-    
-    viewModel.isLoggedIn.asDriver(onErrorJustReturn: false)
-      .map { $0 ? "Logout" : "Login" }
-      .drive(authButton.rx.title)
-      .disposed(by: bag)
-  
     newTaskButton.rx.action = viewModel.goToCreate()
-    authButton.rx.action = viewModel.goToAuth()
     
     viewModel.sectionedItems
       .bind(to: tableView.rx.items(dataSource: dataSource))
@@ -104,6 +98,12 @@ class TaskViewController: UIViewController, BindableType {
         return !bool
       })
       .drive(tableView.rx.isUserInteractionEnabled)
+      .disposed(by: bag)
+    
+    menuButton.rx.tap
+      .throttle(0.5, scheduler: MainScheduler.instance)
+      .asDriver(onErrorJustReturn: ())
+      .drive(viewModel.menuTap)
       .disposed(by: bag)
   }
   
