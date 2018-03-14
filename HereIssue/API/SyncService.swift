@@ -45,7 +45,7 @@ class SyncService: SyncServiceRepresentable {
         }
         return Observable<TaskItem>.empty()
       }.subscribe(onNext: { [unowned self] _ in
-        self.running.accept(true)
+        self.running.accept(false)
       }, onCompleted: {
         self.running.accept(false)
       })
@@ -71,7 +71,7 @@ class SyncService: SyncServiceRepresentable {
       .flatMap { [unowned self] in
         self.localTaskService.add(newTask: $0)
       }.subscribe(onNext: { [unowned self] _ in
-        self.running.accept(true)
+        self.running.accept(false)
         }, onCompleted: {
           self.running.accept(false)
       })
@@ -106,7 +106,7 @@ class SyncService: SyncServiceRepresentable {
       .subscribe(onNext: { _ in
         self.running.accept(true)
       }, onCompleted: {
-        //self.running.accept(false)
+        self.running.accept(false)
         print("updateOldServerWithNewLocal complete")
         self.updateOldServerWithRecentLocal(fetchedTasks: fetchedTasks)
       })
@@ -136,7 +136,7 @@ class SyncService: SyncServiceRepresentable {
       .subscribe(onNext: { _ in
         self.running.accept(true)
       }, onCompleted: {
-        //self.running.accept(false)
+        self.running.accept(false)
         print("updateOldServerWithRecentLocal complete")
           self.updateOldLocalWithNewServer(fetchedTasks: fetchedTasks)
       })
@@ -145,8 +145,6 @@ class SyncService: SyncServiceRepresentable {
   
   //기존에 없는 것이면 로컬에 추가해주기
   func updateOldLocalWithNewServer(fetchedTasks: Observable<[TaskItem]>) {
-    print("updateOldLocalWithNewServer")
-    
     fetchedTasks
       //서버에만 있는 새로운 것을 로컬에 추가
       .flatMap { [unowned self] in

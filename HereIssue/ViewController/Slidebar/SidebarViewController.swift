@@ -15,7 +15,7 @@ class SidebarViewController: UIViewController, BindableType {
   var viewModel: SidebarViewModel!
   private let bag = DisposeBag()
   var leftViewController: LeftViewController!
-  var mainViewController: UINavigationController!
+  var mainNav: UINavigationController!
   var overlap: CGFloat = 70
   var scrollView: UIScrollView = {
     let view = UIScrollView()
@@ -30,10 +30,10 @@ class SidebarViewController: UIViewController, BindableType {
     return view
   }()
   
-  convenience init(leftVC: LeftViewController, mainVC: TaskViewController){
+  convenience init(leftVC: LeftViewController, mainNav: UINavigationController){
     self.init()
     self.leftViewController = leftVC
-    self.mainViewController = UINavigationController(rootViewController: mainVC)
+    self.mainNav = mainNav
   }
   
   override func viewDidLoad() {
@@ -76,16 +76,16 @@ class SidebarViewController: UIViewController, BindableType {
   
   func setupViewControllers() {
     addViewController(leftViewController)
-    addViewController(mainViewController)
+    addViewController(mainNav)
     
     leftViewController.view.snp.makeConstraints { (make) in
       make.left.top.equalTo(contentView)
       make.width.equalTo(view.frame.width - overlap)
       make.height.equalTo(view)
-      make.right.equalTo(mainViewController.view.snp.left)
+      make.right.equalTo(mainNav.view.snp.left)
     }
     
-    mainViewController.view.snp.makeConstraints { (make) in
+    mainNav.view.snp.makeConstraints { (make) in
       make.right.top.equalTo(contentView)
       make.width.equalTo(view.frame.width)
       make.height.equalTo(view)

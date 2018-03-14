@@ -14,7 +14,6 @@ import Action
 struct EditViewModel {
   
   let task: TaskItem
-  let onCancel: CocoaAction!
   let onUpdate: Action<(String, String), Void>
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
@@ -26,11 +25,6 @@ struct EditViewModel {
     self.task = task
     self.onUpdate = updateAction
     self.localTaskService = localTaskService
-    
-    onCancel = CocoaAction {
-      return coordinator.pop()
-        .asObservable().map { _ in }
-    }
     
     onUpdate.executionObservables
       .take(1)

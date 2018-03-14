@@ -42,6 +42,8 @@ struct LeftViewModel {
       }.asDriver(onErrorJustReturn: [])
       .drive(repoList)
       .disposed(by: bag)
+    
+    selectedRepo.accept("Inbox")
   }
   
   func onAuthTask(isLoggedIn: Bool) -> Action<(String, String), AuthService.AccountStatus> {

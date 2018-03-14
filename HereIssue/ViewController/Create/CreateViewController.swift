@@ -97,11 +97,9 @@ class CreateViewController: UIViewController, BindableType {
   
   func bindViewModel() {
     
-    Observable.combineLatest(titleTextField.rx.text.orEmpty, pickerView.rx.modelSelected(String.self))
-      .map { (tuple) -> Bool in
-        if tuple.0.isEmpty || tuple.1.isEmpty {
-          return false
-        } else { return true }
+    titleTextField.rx.text.orEmpty
+      .map { title -> Bool in
+        return !title.isEmpty
       }.bind(to: saveButton.rx.isEnabled)
       .disposed(by: bag)
     
@@ -133,6 +131,7 @@ class CreateViewController: UIViewController, BindableType {
   override func viewDidLoad() {
     super.viewDidLoad()
     setupView()
+    titleTextField.becomeFirstResponder()
   }
   
   func setupView() {

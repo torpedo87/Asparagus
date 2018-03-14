@@ -40,8 +40,12 @@ class SceneCoordinator: SceneCoordinatorType {
       subject.onCompleted()
       
     case .push:
-      guard let navigationController = currentViewController.navigationController else {
-        fatalError("Can't push a view controller without a current navigation controller")
+      print("-----push current-------- \(currentViewController)")
+      var navigationController: UINavigationController
+      if let _ = currentViewController as? SidebarViewController {
+        navigationController = currentViewController.childViewControllers.last as! UINavigationController
+      } else {
+        navigationController = currentViewController.navigationController!
       }
       // one-off subscription to be notified when push complete
       _ = navigationController.rx.delegate
@@ -49,7 +53,7 @@ class SceneCoordinator: SceneCoordinatorType {
         .map { _ in }
         .bind(to: subject)
       navigationController.pushViewController(viewController, animated: true)
-      currentViewController = SceneCoordinator.actualViewController(for: viewController)
+      //currentViewController = SceneCoordinator.actualViewController(for: viewController)
       
     case .modal:
       currentViewController.present(viewController, animated: true) {
@@ -64,8 +68,15 @@ class SceneCoordinator: SceneCoordinatorType {
   
   @discardableResult
   func pop(animated: Bool) -> Completable {
+    print("-----pop current-------- \(currentViewController)")
     let subject = PublishSubject<Void>()
-    if let presenter = currentViewController.presentingViewController {
+    if let _ = currentViewController as? SidebarViewController {
+      if let nav = currentViewController.childViewControllers.last as? UINavigationController {
+        nav.popViewController(animated: true)
+        subject.onCompleted()
+      }
+    }
+    else if let presenter = currentViewController.presentingViewController {
       // dismiss a modal controller
       currentViewController.dismiss(animated: animated) {
         self.currentViewController = SceneCoordinator.actualViewController(for: presenter)

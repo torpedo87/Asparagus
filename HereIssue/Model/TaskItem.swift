@@ -83,11 +83,11 @@ extension TaskItem: Encodable {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encodeIfPresent(Int(uid), forKey: .uid)
     try container.encode(title, forKey: .title)
-    try container.encode(body, forKey: .body)
+    try container.encodeIfPresent(body, forKey: .body)
     try container.encode(checked, forKey: .checked)
     try container.encode(added, forKey: .added)
-    try container.encode(owner, forKey: .owner)
-    try container.encode(repository, forKey: .repository)
+    try container.encodeIfPresent(owner, forKey: .owner)
+    try container.encodeIfPresent(repository, forKey: .repository)
     try container.encode(number, forKey: .number)
   }
 }

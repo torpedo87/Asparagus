@@ -9,10 +9,14 @@
 import Foundation
 import RealmSwift
 
-class Repository: Object, Codable {
+class Repository: Object, Decodable {
   @objc dynamic var name = ""
-  @objc dynamic var uid = 0
+  @objc dynamic var uid = ""
   @objc dynamic var owner: User?
+  
+  var isServerGeneratedType: Bool {
+    return uid.count != UUID().uuidString.count
+  }
   
   enum CodingKeys: String, CodingKey {
     case uid = "id"
@@ -20,7 +24,7 @@ class Repository: Object, Codable {
     case owner
   }
   
-  convenience init(uid: Int, name: String, owner: User) {
+  convenience init(uid: String = UUID().uuidString, name: String, owner: User?) {
     self.init()
     self.uid = uid
     self.name = name
@@ -29,9 +33,19 @@ class Repository: Object, Codable {
   
   convenience required init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    let uid = try container.decode(Int.self, forKey: .uid)
+    let intId = try container.decode(Int.self, forKey: .uid)
+    let uid = "\(intId)"
     let name = try container.decode(String.self, forKey: .name)
-    let owner = try container.decode(User.self, forKey: .owner)
+    let owner = try container.decodeIfPresent(User.self, forKey: .owner)
     self.init(uid: uid, name: name, owner: owner)
+  }
+}
+
+extension Repository: Encodable {
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encodeIfPresent(Int(uid), forKey: .uid)
+    try container.encode(name, forKey: .name)
+    try container.encodeIfPresent(owner, forKey: .owner)
   }
 }

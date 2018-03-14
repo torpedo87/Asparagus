@@ -13,8 +13,13 @@ import Action
 class TaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "TaskCell"
+  private let numberLabel: UILabel = {
+    let label = UILabel()
+    return label
+  }()
   private let titleLabel: UILabel = {
     let label = UILabel()
+    label.textAlignment = .left
     return label
   }()
   private var checkButton: UIButton = {
@@ -24,20 +29,25 @@ class TaskCell: UITableViewCell {
   
   override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
     super.init(style: style, reuseIdentifier: reuseIdentifier)
-    
+    addSubview(numberLabel)
     addSubview(titleLabel)
     addSubview(checkButton)
     
-    titleLabel.snp.makeConstraints { (make) in
+    numberLabel.snp.makeConstraints { (make) in
+      make.width.height.equalTo(50)
       make.left.equalTo(safeAreaLayoutGuide.snp.left).offset(10)
+      make.centerY.equalTo(contentView)
+    }
+    titleLabel.snp.makeConstraints { (make) in
+      make.left.equalTo(numberLabel.snp.right).offset(5)
       make.top.equalTo(safeAreaLayoutGuide.snp.top)
       make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom)
+      make.right.equalTo(checkButton.snp.left).offset(-5)
     }
     checkButton.snp.makeConstraints { (make) in
-      make.left.equalTo(titleLabel.snp.right).offset(10)
       make.right.equalTo(safeAreaLayoutGuide.snp.right).offset(-10)
       make.centerY.equalToSuperview()
-      make.width.height.equalTo(30)
+      make.width.height.equalTo(50)
     }
   }
   
@@ -47,6 +57,12 @@ class TaskCell: UITableViewCell {
   
   func configureCell(item: TaskItem, action: CocoaAction) {
     checkButton.rx.action = action
+    
+    item.rx.observe(Int.self, "number")
+      .subscribe(onNext: { [unowned self] number in
+        self.numberLabel.text = "#\(number!)"
+      })
+      .disposed(by: bag)
     
     item.rx.observe(String.self, "title")
       .subscribe(onNext: { [unowned self] title in

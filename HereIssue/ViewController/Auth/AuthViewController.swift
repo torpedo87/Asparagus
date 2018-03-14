@@ -132,7 +132,7 @@ class AuthViewController: UIViewController, BindableType {
       .asDriver(onErrorJustReturn: .unavailable("request failed"))
       .drive(onNext: { [unowned self] status in
         switch status {
-        case .authorized: self.viewModel.goToTaskScene()
+        case .authorized: self.viewModel.pop()
         case .unavailable(let value): self.alertErrorMsg(message: value)
         }
       })

@@ -89,21 +89,27 @@ class TaskViewController: UIViewController, BindableType {
       .subscribe(viewModel.editAction.inputs)
       .disposed(by: bag)
     
-    viewModel.running.asDriver()
-      .drive(activityIndicator.rx.isAnimating)
+    viewModel.running.asObservable()
+      .bind(to: activityIndicator.rx.isAnimating)
       .disposed(by: bag)
     
-    viewModel.running.asDriver()
+    viewModel.running.asObservable()
       .map({ (bool) in
         return !bool
       })
-      .drive(tableView.rx.isUserInteractionEnabled)
+      .bind(to: tableView.rx.isUserInteractionEnabled)
       .disposed(by: bag)
-    
+
     menuButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .asDriver(onErrorJustReturn: ())
       .drive(viewModel.menuTap)
+      .disposed(by: bag)
+    
+    viewModel.selectedRepo.asObservable()
+      .subscribe(onNext: { [unowned self] name in
+        self.title = name
+      })
       .disposed(by: bag)
   }
   

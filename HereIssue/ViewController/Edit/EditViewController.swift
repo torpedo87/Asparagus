@@ -66,22 +66,6 @@ class EditViewController: UIViewController, BindableType {
     return view
   }()
   
-  private let buttonStackView: UIStackView = {
-    let stack = UIStackView()
-    stack.axis = .horizontal
-    stack.spacing = 10
-    stack.alignment = .fill
-    stack.distribution = .fillEqually
-    return stack
-  }()
-  
-  private var cancelButton: UIButton = {
-    let btn = UIButton()
-    btn.backgroundColor = UIColor.yellow
-    btn.setTitle("CANCEL", for: .normal)
-    return btn
-  }()
-  
   private var saveButton: UIButton = {
     let btn = UIButton()
     btn.backgroundColor = UIColor.red
@@ -101,7 +85,6 @@ class EditViewController: UIViewController, BindableType {
     titleTextField.text = viewModel.task.title
     bodyTextView.text = viewModel.task.body
     selectedRepositoryLabel.text = viewModel.task.repository!.name
-    cancelButton.rx.action = viewModel.onCancel
     
     saveButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
@@ -116,6 +99,7 @@ class EditViewController: UIViewController, BindableType {
   override func viewDidLoad() {
     super.viewDidLoad()
     setupView()
+    titleTextField.becomeFirstResponder()
   }
   
   func setupView() {
@@ -128,11 +112,8 @@ class EditViewController: UIViewController, BindableType {
     stackView.addArrangedSubview(bodyTextView)
     repoLabelStackView.addArrangedSubview(repositoryLabel)
     repoLabelStackView.addArrangedSubview(selectedRepositoryLabel)
-
     stackView.addArrangedSubview(repoLabelStackView)
-    buttonStackView.addArrangedSubview(cancelButton)
-    buttonStackView.addArrangedSubview(saveButton)
-    stackView.addArrangedSubview(buttonStackView)
+    stackView.addArrangedSubview(saveButton)
     
     stackView.snp.makeConstraints { (make) in
       make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)

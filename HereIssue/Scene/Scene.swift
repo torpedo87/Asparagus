@@ -11,7 +11,6 @@ import UIKit
 enum Scene {
   case sidebar(LeftViewModel, TaskViewModel)
   case auth(AuthViewModel)
-  case task(TaskViewModel)
   case edit(EditViewModel)
   case create(CreateViewModel)
 }
@@ -24,12 +23,6 @@ extension Scene {
       var vc = AuthViewController()
       vc.bindViewModel(to: viewModel)
       return vc
-      
-    case .task(let viewModel):
-      var vc = TaskViewController()
-      vc.bindViewModel(to: viewModel)
-      let nav = UINavigationController(rootViewController: vc)
-      return nav
     case .edit(let viewModel):
       var vc = EditViewController()
       vc.bindViewModel(to: viewModel)
@@ -44,7 +37,8 @@ extension Scene {
       var taskVC = TaskViewController()
       taskVC.bindViewModel(to: taskViewModel)
       let sidebarViewModel = SidebarViewModel(leftViewModel: leftViewModel, taskViewModel: taskViewModel)
-      var sidebarVC = SidebarViewController(leftVC: leftVC, mainVC: taskVC)
+      let nav = UINavigationController(rootViewController: taskVC)
+      var sidebarVC = SidebarViewController(leftVC: leftVC, mainNav: nav)
       sidebarVC.bindViewModel(to: sidebarViewModel)
       return sidebarVC
     }

@@ -10,6 +10,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 import Action
+import RealmSwift
 
 struct TaskViewModel {
   private let bag = DisposeBag()
@@ -18,8 +19,7 @@ struct TaskViewModel {
   private let authService: AuthServiceRepresentable
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
-  let selectedRepo = BehaviorRelay<String>(value: "local")
-  let tasksForSelectedRepo = BehaviorRelay<[TaskItem]>(value: [])
+  let selectedRepo = BehaviorRelay<String>(value: "Inbox")
   
   //output
   let running = BehaviorRelay<Bool>(value: true)
@@ -56,12 +56,6 @@ struct TaskViewModel {
       })
       .disposed(by: bag)
     
-    selectedRepo.asObservable()
-      .flatMap { (name) -> Observable<[TaskItem]> in
-        return localTaskService.tasksForRepo(repoName: name)
-      }.bind(to: tasksForSelectedRepo)
-      .disposed(by: bag)
-    
     bindOutput()
   }
   
@@ -81,17 +75,22 @@ struct TaskViewModel {
   }
   
   var sectionedItems: Observable<[TaskSection]> {
-    return self.tasksForSelectedRepo
+    return selectedRepo
+      .flatMap({ name in
+        return self.localTaskService.tasksForSelectedRepo(repoName: name)
+      })
       .map { results in
         let dueTasks = results
-          .filter{ $0.checked == "open" }
+          .filter("checked == 'open'")
+          .sorted(byKeyPath: "added", ascending: false)
         
         let doneTasks = results
-          .filter { $0.checked == "closed" }
+          .filter("checked == 'closed'")
+          .sorted(byKeyPath: "added", ascending: false)
         
         return [
-          TaskSection(header: "Due Tasks", items: dueTasks),
-          TaskSection(header: "Done Tasks", items: doneTasks)
+          TaskSection(header: "Due Tasks", items: dueTasks.toArray()),
+          TaskSection(header: "Done Tasks", items: doneTasks.toArray())
         ]
     }
   }
@@ -103,7 +102,7 @@ struct TaskViewModel {
                                         updateAction: this.onUpdateTask(task: task),
                                         localTaskService: this.localTaskService)
       return this.sceneCoordinator
-        .transition(to: Scene.edit(editViewModel), type: .modal)
+        .transition(to: Scene.edit(editViewModel), type: .push)
         .asObservable()
     }
   }(self)

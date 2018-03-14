@@ -21,7 +21,6 @@ protocol LocalTaskServiceType {
   func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem>
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem>
-  
   func tasks() -> Observable<Results<TaskItem>>
   func repositories() -> Observable<Results<Repository>>
   func getRecentLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
@@ -33,13 +32,12 @@ protocol LocalTaskServiceType {
   func observeEditTask() -> Observable<[TaskItem]>
   func observeCreateTask() -> Observable<[TaskItem]>
   func convertToTaskWithRef(task: TaskItem) -> Observable<LocalTaskService.TaskItemWithReference>
-  func tasksForRepo(repoName: String) -> Observable<[TaskItem]>
+  func tasksForSelectedRepo(repoName: String) -> Observable<Results<TaskItem>>
 }
 
 class LocalTaskService: LocalTaskServiceType {
   typealias TaskItemReference = ThreadSafeReference<TaskItem>
   typealias TaskItemWithReference = (TaskItem, TaskItemReference)
-  private let backgroundQueue = DispatchQueue(label: "samchon.background.realm")
   
   enum TaskServiceError: Error {
     case some(String)
@@ -55,16 +53,26 @@ class LocalTaskService: LocalTaskServiceType {
     let result = withRealm("creating") { realm -> Observable<TaskItem> in
       let task = TaskItem()
       task.uid = UUID().uuidString
-      task.owner = UserDefaults.loadUser()
+      task.owner = UserDefaults.loadUser() ?? nil
       task.title = title
       task.body = body
-      task.repository = getRepository(repoName: repoName)
+      if let repo = getRepository(repoName: repoName) {
+        task.repository = repo
+      } else {
+        let inbox = Repository(uid: UUID().uuidString, name: "Inbox", owner: task.owner ?? nil)
+        task.repository = inbox
+      }
       task.checked = "open"
       task.setDateWhenCreated()
       try realm.write {
         realm.add(task)
+        print(Thread.current, "write thread \(#function)")
       }
-      return .just(task)
+
+      if let managedTask = realm.object(ofType: TaskItem.self, forPrimaryKey: task.uid) {
+        return .just(managedTask)
+      }
+      return .empty()
     }
     return result ?? .error(TaskServiceError.creationFailed)
   }
@@ -73,11 +81,12 @@ class LocalTaskService: LocalTaskServiceType {
   @discardableResult
   func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem> {
     let result = withRealm("updating title") { realm -> Observable<TaskItem> in
-      try realm.write {
-        exTask.title = newTitle
-        exTask.body = newBody
-        exTask.setDateWhenUpdated()
-      }
+      realm.writeAsync(obj: exTask, block: { (realm, exTask) in
+        exTask?.title = newTitle
+        exTask?.body = newBody
+        exTask?.setDateWhenUpdated()
+        print(Thread.current, "write thread \(#function)")
+      })
       return .just(exTask)
     }
     return result ?? .error(TaskServiceError.updateFailed(exTask))
@@ -87,14 +96,15 @@ class LocalTaskService: LocalTaskServiceType {
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem> {
     let result = withRealm("toggling") { realm -> Observable<TaskItem> in
-      try realm.write {
-        if task.checked == "open" {
-          task.checked = "closed"
+      realm.writeAsync(obj: task, block: { (realm, task) in
+        if task?.checked == "open" {
+          task?.checked = "closed"
         } else {
-          task.checked = "open"
+          task?.checked = "open"
         }
-        task.setDateWhenUpdated()
-      }
+        task?.setDateWhenUpdated()
+        print(Thread.current, "write thread \(#function)")
+      })
       return .just(task)
     }
     return result ?? .error(TaskServiceError.toggleFailed(task))
@@ -104,29 +114,22 @@ class LocalTaskService: LocalTaskServiceType {
   func tasks() -> Observable<Results<TaskItem>> {
     print("------realmfile-------", Realm.Configuration.defaultConfiguration.fileURL)
     let result = withRealm("getting tasks") { realm -> Observable<Results<TaskItem>> in
-      let realm = try Realm()
       let tasks = realm.objects(TaskItem.self)
       return Observable.collection(from: tasks)
     }
     return result ?? .empty()
   }
   
-  func tasksForRepo(repoName: String) -> Observable<[TaskItem]> {
-    let result = withRealm("getting tasks") { realm -> Observable<[TaskItem]> in
-      return Observable<[TaskItem]>.create({ (observer) -> Disposable in
-        let tasks = realm.objects(TaskItem.self)
-          .filter("repository.name = '\(repoName)'")
-          .sorted(byKeyPath: "added", ascending: false)
-          .toArray()
-        observer.onNext(tasks)
-        observer.onCompleted()
-        return Disposables.create()
-      })
+  func tasksForSelectedRepo(repoName: String) -> Observable<Results<TaskItem>> {
+    let result = withRealm("getting tasks") { realm -> Observable<Results<TaskItem>> in
+      let tasks = realm.objects(TaskItem.self)
+        .filter("repository.name = '\(repoName)'")
+        .sorted(byKeyPath: "added", ascending: false)
+      return Observable.collection(from: tasks)
     }
     return result ?? .empty()
   }
   
-  //이슈의 모든 repository 불러오기
   func repositories() -> Observable<Results<Repository>> {
     let result = withRealm("getting repositories") { realm -> Observable<Results<Repository>> in
       let repositories = realm.objects(Repository.self)
@@ -149,10 +152,10 @@ class LocalTaskService: LocalTaskServiceType {
   }
   
   //helper
-  func getRepository(repoName: String) -> Repository {
+  func getRepository(repoName: String) -> Repository? {
     let realm = try! Realm()
     let repositories = realm.objects(Repository.self).filter { $0.name == repoName }
-    return repositories.first!
+    return repositories.first ?? nil
   }
   
   //서버에서 생성한 이슈를 찾아서 로컬에 추가
@@ -160,13 +163,16 @@ class LocalTaskService: LocalTaskServiceType {
     let result = withRealm("addNewTask") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
         fetchedTasks.forEach { fetchedTask in
-          
           if let _ = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
           } else {
             try! realm.write {
               realm.add(fetchedTask)
+              print(Thread.current, "write thread \(#function)")
             }
-            observer.onNext(fetchedTask)
+
+            if let managedTask = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
+              observer.onNext(managedTask)
+            }
           }
         }
         observer.onCompleted()
@@ -201,16 +207,17 @@ class LocalTaskService: LocalTaskServiceType {
         fetchedTasks.forEach { fetchedTask in
           if let localTask = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
             if localTask.updatedDate < fetchedTask.updatedDate {
-              try! realm.write {
-                localTask.title = fetchedTask.title
-                localTask.body = fetchedTask.body
-                localTask.added = fetchedTask.added
-                localTask.checked = fetchedTask.checked
-                localTask.number = fetchedTask.number
-                localTask.owner = fetchedTask.owner
-                localTask.repository = fetchedTask.repository
-                localTask.updated = fetchedTask.updated
-              }
+              realm.writeAsync(obj: localTask, block: { (realm, localTask) in
+                localTask?.title = fetchedTask.title
+                localTask?.body = fetchedTask.body
+                localTask?.added = fetchedTask.added
+                localTask?.checked = fetchedTask.checked
+                localTask?.number = fetchedTask.number
+                localTask?.owner = fetchedTask.owner
+                localTask?.repository = fetchedTask.repository
+                localTask?.updated = fetchedTask.updated
+                print(Thread.current, "write thread \(#function)")
+              })
               observer.onNext(localTask)
             }
           }
@@ -226,7 +233,8 @@ class LocalTaskService: LocalTaskServiceType {
   func getLocalCreated() -> Observable<TaskItemWithReference> {
     let result = withRealm("getLocalCreated") { realm in
       return Observable<TaskItemWithReference>.create({ observer -> Disposable in
-        let localCreatedTasks = realm.objects(TaskItem.self).filter { $0.isServerGeneratedType == false }
+        let localCreatedTasks = realm.objects(TaskItem.self)
+          .filter { !$0.isServerGeneratedType && $0.repository!.isServerGeneratedType }
         for task in localCreatedTasks {
           let ref = TaskItemReference(to: task)
           let tuple = (task, ref)
@@ -245,7 +253,11 @@ class LocalTaskService: LocalTaskServiceType {
       return Observable.arrayWithChangeset(from: tasks)
         .map { (arr, changes) -> [TaskItem] in
           if let changes = changes, let updatedIndex = changes.updated.first {
-            return [arr[updatedIndex]]
+            let task = arr[updatedIndex]
+            if task.repository!.isServerGeneratedType {
+              return [task]
+            }
+            return []
           }
           return []
       }
@@ -259,8 +271,9 @@ class LocalTaskService: LocalTaskServiceType {
       return Observable.arrayWithChangeset(from: tasks)
         .map { (arr, changes) -> [TaskItem] in
           if let changes = changes, let insertedIndex = changes.inserted.first {
-            if !arr[insertedIndex].isServerGeneratedType {
-              return [arr[insertedIndex]]
+            let task = arr[insertedIndex]
+            if !task.isServerGeneratedType && task.repository!.isServerGeneratedType {
+              return [task]
             }
             return []
           }
@@ -290,9 +303,10 @@ class LocalTaskService: LocalTaskServiceType {
     let result = withRealm("deleteTask") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
         if let exTask = realm.resolve(newTaskWithRef.1) {
-          try! realm.write {
-            realm.delete(exTask)
-          }
+          realm.writeAsync(obj: exTask, block: { (realm, exTask) in
+            realm.delete(exTask!)
+            print(Thread.current, "write thread \(#function)")
+          })
           observer.onNext(newTaskWithRef.0)
         }
         observer.onCompleted()
@@ -308,6 +322,7 @@ class LocalTaskService: LocalTaskServiceType {
       return Observable<TaskItem>.create({ observer -> Disposable in
         try! realm.write {
           realm.add(newTask)
+          print(Thread.current, "write thread \(#function)")
         }
         observer.onNext(newTask)
         observer.onCompleted()
@@ -323,48 +338,31 @@ extension LocalTaskService {
   fileprivate func withRealm<T>(_ operation: String, action: (Realm) throws -> T) -> T? {
     do {
       let realm = try Realm()
-      print(Thread.current, "thread \(#function)")
       return try action(realm)
     } catch let err {
       print("Failed \(operation) realm with error: \(err)")
       return nil
     }
   }
-  
-  fileprivate func writeOnBackground(action: @escaping (Realm) throws -> Void) -> Completable {
-      return Completable.create { [unowned self] completable in
-        self.backgroundQueue.async {
-          do {
-            let realm = try Realm()
-            print(Thread.current, "thread \(#function)")
-            if let _ = try? action(realm) {
-              completable(.completed)
-            }
-            completable(.error(TaskServiceError.some(#function)))
-          } catch {
-            completable(.error(TaskServiceError.some(#function)))
+}
+
+extension Realm {
+  func writeAsync<T : ThreadConfined>(obj: T, errorHandler: @escaping ((_ error : Swift.Error) -> Void) = { _ in return }, block: @escaping ((Realm, T?) -> Void)) {
+    let wrappedObj = ThreadSafeReference(to: obj)
+    let config = self.configuration
+    DispatchQueue(label: "background").async {
+      autoreleasepool {
+        do {
+          let realm = try Realm(configuration: config)
+          let obj = realm.resolve(wrappedObj)
+          try realm.write {
+            block(realm, obj)
           }
         }
-        return Disposables.create()
-      }
-  }
-  
-  fileprivate func writeOnMain(action: @escaping (Realm) throws -> Void)
-    -> Completable {
-      return Completable.create { completable in
-        DispatchQueue.main.async {
-          do {
-            let realm = try Realm()
-            print(Thread.current, "thread \(#function)")
-            if let _ = try? action(realm) {
-              completable(.completed)
-            }
-            completable(.error(TaskServiceError.some(#function)))
-          } catch {
-            completable(.error(TaskServiceError.some(#function)))
-          }
+        catch {
+          errorHandler(error)
         }
-        return Disposables.create()
       }
+    }
   }
 }

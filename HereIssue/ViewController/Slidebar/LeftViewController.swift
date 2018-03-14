@@ -12,13 +12,10 @@ import RxCocoa
 
 class LeftViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
-  private lazy var authButton: UIBarButtonItem = {
-    let item =
-      UIBarButtonItem(image: nil,
-                      style: .plain,
-                      target: self,
-                      action: nil)
-    return item
+  private lazy var authButton: UIButton = {
+    let btn = UIButton()
+    btn.setTitleColor(UIColor.blue, for: .normal)
+    return btn
   }()
   var viewModel: LeftViewModel!
   private lazy var tableView: UITableView = {
@@ -36,12 +33,19 @@ class LeftViewController: UIViewController, BindableType {
   func setupView() {
     view.backgroundColor = UIColor.green
     view.addSubview(tableView)
+    view.addSubview(authButton)
     
     tableView.snp.makeConstraints { (make) in
       make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
       make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
       make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
       make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+    }
+    
+    authButton.snp.makeConstraints { (make) in
+      authButton.sizeToFit()
+      make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
+      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
     }
   }
   
@@ -50,7 +54,7 @@ class LeftViewController: UIViewController, BindableType {
     
     viewModel.isLoggedIn.asDriver(onErrorJustReturn: false)
       .map { $0 ? "Logout" : "Login" }
-      .drive(authButton.rx.title)
+      .drive(authButton.rx.title())
       .disposed(by: bag)
     
     viewModel.repoList.asDriver()
@@ -71,7 +75,6 @@ class LeftViewController: UIViewController, BindableType {
     //delegate
     tableView.rx.itemSelected
       .subscribe(onNext: { [unowned self] indexPath in
-        self.tableView.deselectRow(at: indexPath, animated: true)
         let selectedRepo = self.viewModel.repoList.value[indexPath.row]
         self.viewModel.selectedRepo.accept(selectedRepo)
       })
