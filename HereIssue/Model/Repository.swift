@@ -14,10 +14,6 @@ class Repository: Object, Decodable {
   @objc dynamic var uid = ""
   @objc dynamic var owner: User?
   
-  var isServerGeneratedType: Bool {
-    return uid.count != UUID().uuidString.count
-  }
-  
   enum CodingKeys: String, CodingKey {
     case uid = "id"
     case name

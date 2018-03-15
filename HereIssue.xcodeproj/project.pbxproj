@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		4840921A204D42C9007C6EE5 /* CreateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48409219204D42C9007C6EE5 /* CreateViewModel.swift */; };
 		4840921C204D42D2007C6EE5 /* CreateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4840921B204D42D2007C6EE5 /* CreateViewController.swift */; };
+		4842DB2320592B590093B496 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB2220592B590093B496 /* UIColor.swift */; };
+		4842DB2520592F170093B496 /* RepositoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB2420592F170093B496 /* RepositoryCell.swift */; };
+		4842DB272059348B0093B496 /* GroupSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB262059348B0093B496 /* GroupSection.swift */; };
+		4842DB2920596A610093B496 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB2820596A610093B496 /* Group.swift */; };
 		4848BEBE20566E34009C1B97 /* SidebarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEBD20566E34009C1B97 /* SidebarViewController.swift */; };
 		4848BEC020566E54009C1B97 /* LeftViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEBF20566E54009C1B97 /* LeftViewController.swift */; };
 		4848BEC4205675C1009C1B97 /* LeftViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEC3205675C1009C1B97 /* LeftViewModel.swift */; };
@@ -60,6 +64,10 @@
 		2F5A48A11EEF3E38AA8F75E3 /* Pods-HereIssue.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HereIssue.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HereIssue/Pods-HereIssue.debug.xcconfig"; sourceTree = "<group>"; };
 		48409219204D42C9007C6EE5 /* CreateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateViewModel.swift; sourceTree = "<group>"; };
 		4840921B204D42D2007C6EE5 /* CreateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateViewController.swift; sourceTree = "<group>"; };
+		4842DB2220592B590093B496 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
+		4842DB2420592F170093B496 /* RepositoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryCell.swift; sourceTree = "<group>"; };
+		4842DB262059348B0093B496 /* GroupSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupSection.swift; sourceTree = "<group>"; };
+		4842DB2820596A610093B496 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		4848BEBD20566E34009C1B97 /* SidebarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewController.swift; sourceTree = "<group>"; };
 		4848BEBF20566E54009C1B97 /* LeftViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftViewController.swift; sourceTree = "<group>"; };
 		4848BEC3205675C1009C1B97 /* LeftViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftViewModel.swift; sourceTree = "<group>"; };
@@ -229,6 +237,8 @@
 				4848EC042047F68200B59315 /* TaskSection.swift */,
 				4848EC10204A87E600B59315 /* User.swift */,
 				4848EC14204A8C5200B59315 /* Repository.swift */,
+				4842DB262059348B0093B496 /* GroupSection.swift */,
+				4842DB2820596A610093B496 /* Group.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -250,6 +260,7 @@
 			children = (
 				487D9232204547DC008CB44E /* UserDefaults.swift */,
 				487D923920458E79008CB44E /* RxReachability.swift */,
+				4842DB2220592B590093B496 /* UIColor.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -276,6 +287,7 @@
 			isa = PBXGroup;
 			children = (
 				487D92442046C9B6008CB44E /* TaskCell.swift */,
+				4842DB2420592F170093B496 /* RepositoryCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -546,6 +558,8 @@
 				4848BEC620569AA0009C1B97 /* SidebarViewModel.swift in Sources */,
 				487D921B20453F5D008CB44E /* AuthViewController.swift in Sources */,
 				487D921D20453F75008CB44E /* TaskViewController.swift in Sources */,
+				4842DB2320592B590093B496 /* UIColor.swift in Sources */,
+				4842DB2520592F170093B496 /* RepositoryCell.swift in Sources */,
 				4848EC11204A87E600B59315 /* User.swift in Sources */,
 				4848BEC020566E54009C1B97 /* LeftViewController.swift in Sources */,
 				4848EC13204A8A2B00B59315 /* SyncService.swift in Sources */,
@@ -560,12 +574,14 @@
 				487D921920453F15008CB44E /* Scene.swift in Sources */,
 				487D923520454811008CB44E /* Token.swift in Sources */,
 				487D9229204542A8008CB44E /* LocalTaskService.swift in Sources */,
+				4842DB272059348B0093B496 /* GroupSection.swift in Sources */,
 				4840921A204D42C9007C6EE5 /* CreateViewModel.swift in Sources */,
 				4840921C204D42D2007C6EE5 /* CreateViewController.swift in Sources */,
 				487D923C2046B603008CB44E /* TaskItem.swift in Sources */,
 				487D923A20458E79008CB44E /* RxReachability.swift in Sources */,
 				487D91EB20453735008CB44E /* AppDelegate.swift in Sources */,
 				487D92232045411D008CB44E /* SceneCoordinatorType.swift in Sources */,
+				4842DB2920596A610093B496 /* Group.swift in Sources */,
 				487D922120453F8A008CB44E /* TaskViewModel.swift in Sources */,
 				487D92422046BECD008CB44E /* IssueAPI.swift in Sources */,
 				4848EC082048FE9500B59315 /* EditViewModel.swift in Sources */,

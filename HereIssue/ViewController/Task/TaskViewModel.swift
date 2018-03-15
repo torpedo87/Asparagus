@@ -19,7 +19,7 @@ struct TaskViewModel {
   private let authService: AuthServiceRepresentable
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
-  let selectedRepo = BehaviorRelay<String>(value: "Inbox")
+  let selectedGroupTitle = BehaviorRelay<String>(value: "Inbox")
   
   //output
   let running = BehaviorRelay<Bool>(value: true)
@@ -38,8 +38,9 @@ struct TaskViewModel {
     
     //로그인상태시 이슈 가져오기
     let globalScheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue.global())
-    authService.isLoggedIn.asObservable()
-      .filter { $0 == true }
+    Observable.combineLatest(checkReachability().asObservable(),
+                             authService.isLoggedIn.asObservable())
+      .filter { $0.0 && $0.1 }
       .subscribeOn(globalScheduler)
       .subscribe(onNext: { _ in
         syncService.syncStart(fetchedTasks: issueService.fetchAllIssues(page: 1))
@@ -47,8 +48,9 @@ struct TaskViewModel {
       .disposed(by: bag)
     
     //로그인 상태시 내 정보 가져오기
-    authService.isLoggedIn.asObservable()
-      .filter { $0 == true }
+    Observable.combineLatest(checkReachability().asObservable(),
+                             authService.isLoggedIn.asObservable())
+      .filter { $0.0 && $0.1 }
       .flatMap { _ -> Observable<User> in
         return issueService.getUser()
       }.subscribe(onNext: { user in
@@ -65,7 +67,10 @@ struct TaskViewModel {
       .asDriver()
       .drive(running)
       .disposed(by: bag)
-    
+  }
+  func checkReachability() -> Observable<Bool> {
+    return Reachability.rx.status
+      .map { $0 == .online }
   }
   
   func onToggle(task: TaskItem) -> CocoaAction {
@@ -75,17 +80,21 @@ struct TaskViewModel {
   }
   
   var sectionedItems: Observable<[TaskSection]> {
-    return selectedRepo
-      .flatMap({ name in
-        return self.localTaskService.tasksForSelectedRepo(repoName: name)
+    return selectedGroupTitle
+      .flatMap({ title -> Observable<Results<TaskItem>> in
+        if title == "Inbox" {
+          return self.localTaskService.openTasks()
+        } else {
+          return self.localTaskService.tasksForGroup(groupTitle: title)
+        }
       })
       .map { results in
         let dueTasks = results
-          .filter("checked == 'open'")
+          .filter("checked = 'open'")
           .sorted(byKeyPath: "added", ascending: false)
         
         let doneTasks = results
-          .filter("checked == 'closed'")
+          .filter("checked = 'closed'")
           .sorted(byKeyPath: "added", ascending: false)
         
         return [
@@ -107,15 +116,15 @@ struct TaskViewModel {
     }
   }(self)
   
-  func onUpdateTask(task: TaskItem) -> Action<(String, String), Void> {
+  func onUpdateTask(task: TaskItem) -> Action<(String, String, [String]), Void> {
     return Action { tuple in
-      return self.localTaskService.updateTitleBody(exTask: task, newTitle: tuple.0, newBody: tuple.1).map { _ in }
+      return self.localTaskService.updateTitleBody(exTask: task, newTitle: tuple.0, newBody: tuple.1, newTags: tuple.2).map { _ in }
     }
   }
   
-  func onCreateTask() -> Action<(String, String, String), Void> {
+  func onCreateTask() -> Action<(String, String, String, [String]), Void> {
     return Action { tuple in
-      return self.localTaskService.createTask(title: tuple.0, body: tuple.1, repoName: tuple.2).map { _ in }
+      return self.localTaskService.createTask(title: tuple.0, body: tuple.1, repoName: tuple.2, tags: tuple.3).map { _ in }
     }
   }
   

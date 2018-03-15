@@ -15,10 +15,9 @@ import RxRealm
 protocol LocalTaskServiceType {
   
   @discardableResult
-  func createTask(title: String, body: String, repoName: String) -> Observable<TaskItem>
-  
+  func createTask(title: String, body: String, repoName: String, tags: [String]) -> Observable<TaskItem>
   @discardableResult
-  func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem>
+  func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String, newTags: [String]) -> Observable<TaskItem>
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem>
   func tasks() -> Observable<Results<TaskItem>>
@@ -32,7 +31,9 @@ protocol LocalTaskServiceType {
   func observeEditTask() -> Observable<[TaskItem]>
   func observeCreateTask() -> Observable<[TaskItem]>
   func convertToTaskWithRef(task: TaskItem) -> Observable<LocalTaskService.TaskItemWithReference>
-  func tasksForSelectedRepo(repoName: String) -> Observable<Results<TaskItem>>
+  func tasksForGroup(groupTitle: String) -> Observable<Results<TaskItem>>
+  func groups() -> Observable<Results<Group>>
+  func openTasks() -> Observable<Results<TaskItem>>
 }
 
 class LocalTaskService: LocalTaskServiceType {
@@ -49,26 +50,33 @@ class LocalTaskService: LocalTaskServiceType {
   
   //로컬에서 새로운 이슈 생성
   @discardableResult
-  func createTask(title: String, body: String, repoName: String) -> Observable<TaskItem> {
+  func createTask(title: String, body: String, repoName: String, tags: [String]) -> Observable<TaskItem> {
     let result = withRealm("creating") { realm -> Observable<TaskItem> in
       let task = TaskItem()
       task.uid = UUID().uuidString
       task.owner = UserDefaults.loadUser() ?? nil
       task.title = title
       task.body = body
-      if let repo = getRepository(repoName: repoName) {
-        task.repository = repo
-      } else {
-        let inbox = Repository(uid: UUID().uuidString, name: "Inbox", owner: task.owner ?? nil)
-        task.repository = inbox
-      }
       task.checked = "open"
       task.setDateWhenCreated()
       try realm.write {
-        realm.add(task)
+        //레퍼지토리 있으면 레퍼지토리 태그 추가
+        if let repo = getRepository(repoName: repoName) {
+          task.repository = repo
+          let group = defaultGroup(realm: realm, groupTitle: repoName)
+          group.isCreatedInServer = true
+          group.tasks.append(task)
+        }
+        //태그 있으면 추가
+        if tags.count > 0 {
+          for tag in tags {
+            let group = defaultGroup(realm: realm, groupTitle: tag)
+            group.isCreatedInServer = true
+            group.tasks.append(task)
+          }
+        }
         print(Thread.current, "write thread \(#function)")
       }
-
       if let managedTask = realm.object(ofType: TaskItem.self, forPrimaryKey: task.uid) {
         return .just(managedTask)
       }
@@ -79,17 +87,59 @@ class LocalTaskService: LocalTaskServiceType {
   
   //title, body 수정
   @discardableResult
-  func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem> {
+  func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String, newTags: [String]) -> Observable<TaskItem> {
     let result = withRealm("updating title") { realm -> Observable<TaskItem> in
       realm.writeAsync(obj: exTask, block: { (realm, exTask) in
-        exTask?.title = newTitle
-        exTask?.body = newBody
-        exTask?.setDateWhenUpdated()
+        if let exTask = exTask {
+          exTask.title = newTitle
+          exTask.body = newBody
+          exTask.setDateWhenUpdated()
+          self.deleteTaskIndeletedTags(realm: realm, exTask: exTask, newTags: newTags)
+          self.addTaskInCreatedTags(realm: realm, exTask: exTask, newTags: newTags)
+        }
         print(Thread.current, "write thread \(#function)")
       })
       return .just(exTask)
     }
     return result ?? .error(TaskServiceError.updateFailed(exTask))
+  }
+  
+  func deleteTaskIndeletedTags(realm: Realm, exTask: TaskItem, newTags: [String]) {
+    let exTags = exTask.group.toArray().map{ $0.title }
+    var deletedTags = [String]()
+    for exTag in exTags {
+      if !newTags.contains(exTag) {
+        deletedTags.append(exTag)
+      }
+    }
+    for deletedTag in deletedTags {
+      let group = defaultGroup(realm: realm, groupTitle: deletedTag)
+      let i = findIndex(tasks: group.tasks.toArray(), exTask: exTask)
+      group.tasks.remove(at: i)
+    }
+  }
+  
+  func addTaskInCreatedTags(realm: Realm, exTask: TaskItem, newTags: [String]) {
+    let exTags = exTask.group.toArray().map{ $0.title }
+    var createdTags = [String]()
+    for newTag in newTags {
+      if !exTags.contains(newTag) {
+        createdTags.append(newTag)
+      }
+    }
+    for createdTag in createdTags {
+      let group = defaultGroup(realm: realm, groupTitle: createdTag)
+      group.tasks.append(exTask)
+    }
+  }
+  
+  func findIndex(tasks: [TaskItem], exTask: TaskItem) -> Int {
+    for i in 0..<tasks.count {
+      if tasks[i].uid == exTask.uid {
+        return i
+      }
+    }
+    return -1
   }
   
   //이슈 close or open
@@ -120,12 +170,30 @@ class LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  func tasksForSelectedRepo(repoName: String) -> Observable<Results<TaskItem>> {
+  func openTasks() -> Observable<Results<TaskItem>> {
     let result = withRealm("getting tasks") { realm -> Observable<Results<TaskItem>> in
-      let tasks = realm.objects(TaskItem.self)
-        .filter("repository.name = '\(repoName)'")
-        .sorted(byKeyPath: "added", ascending: false)
+      let tasks = realm.objects(TaskItem.self).filter("checked = 'open'")
       return Observable.collection(from: tasks)
+    }
+    return result ?? .empty()
+  }
+  
+  func groups() -> Observable<Results<Group>> {
+    let result = withRealm("getting groups") { realm -> Observable<Results<Group>> in
+      let groups = realm.objects(Group.self)
+      return Observable.collection(from: groups)
+    }
+    return result ?? .empty()
+  }
+  
+  func tasksForGroup(groupTitle: String) -> Observable<Results<TaskItem>> {
+    let result = withRealm("tasksForTag") { realm -> Observable<Results<TaskItem>> in
+      if let group = realm.object(ofType: Group.self, forPrimaryKey: groupTitle) {
+        let tasks = group.tasks
+          .sorted(byKeyPath: "added", ascending: false)
+        return Observable.collection(from: tasks)
+      }
+      return Observable.empty()
     }
     return result ?? .empty()
   }
@@ -166,10 +234,11 @@ class LocalTaskService: LocalTaskServiceType {
           if let _ = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
           } else {
             try! realm.write {
-              realm.add(fetchedTask)
+              let group = self.defaultGroup(realm: realm, groupTitle: fetchedTask.repository!.name)
+              group.isCreatedInServer = true
+              group.tasks.append(fetchedTask)
               print(Thread.current, "write thread \(#function)")
             }
-
             if let managedTask = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
               observer.onNext(managedTask)
             }
@@ -234,7 +303,7 @@ class LocalTaskService: LocalTaskServiceType {
     let result = withRealm("getLocalCreated") { realm in
       return Observable<TaskItemWithReference>.create({ observer -> Disposable in
         let localCreatedTasks = realm.objects(TaskItem.self)
-          .filter { !$0.isServerGeneratedType && $0.repository!.isServerGeneratedType }
+          .filter { !$0.isServerGeneratedType && $0.repository != nil }
         for task in localCreatedTasks {
           let ref = TaskItemReference(to: task)
           let tuple = (task, ref)
@@ -254,7 +323,7 @@ class LocalTaskService: LocalTaskServiceType {
         .map { (arr, changes) -> [TaskItem] in
           if let changes = changes, let updatedIndex = changes.updated.first {
             let task = arr[updatedIndex]
-            if task.repository!.isServerGeneratedType {
+            if task.isServerGeneratedType {
               return [task]
             }
             return []
@@ -272,7 +341,7 @@ class LocalTaskService: LocalTaskServiceType {
         .map { (arr, changes) -> [TaskItem] in
           if let changes = changes, let insertedIndex = changes.inserted.first {
             let task = arr[insertedIndex]
-            if !task.isServerGeneratedType && task.repository!.isServerGeneratedType {
+            if !task.isServerGeneratedType && task.group.first!.isCreatedInServer {
               return [task]
             }
             return []
@@ -321,7 +390,9 @@ class LocalTaskService: LocalTaskServiceType {
     let result = withRealm("add") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
         try! realm.write {
-          realm.add(newTask)
+          let group = self.defaultGroup(realm: realm, groupTitle: newTask.repository!.name)
+          group.isCreatedInServer = true
+          group.tasks.append(newTask)
           print(Thread.current, "write thread \(#function)")
         }
         observer.onNext(newTask)
@@ -334,7 +405,6 @@ class LocalTaskService: LocalTaskServiceType {
 }
 
 extension LocalTaskService {
-  
   fileprivate func withRealm<T>(_ operation: String, action: (Realm) throws -> T) -> T? {
     do {
       let realm = try Realm()
@@ -343,6 +413,17 @@ extension LocalTaskService {
       print("Failed \(operation) realm with error: \(err)")
       return nil
     }
+  }
+  
+  func defaultGroup(realm: Realm, groupTitle: String) -> Group {
+    if let group = realm.object(ofType: Group.self, forPrimaryKey: groupTitle) {
+      return group
+    }
+    let newGroup = Group()
+    newGroup.title = groupTitle
+    newGroup.setDateWhenCreated()
+    realm.add(newGroup)
+    return realm.object(ofType: Group.self, forPrimaryKey: groupTitle)!
   }
 }
 

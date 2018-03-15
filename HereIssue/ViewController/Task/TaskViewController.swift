@@ -106,7 +106,7 @@ class TaskViewController: UIViewController, BindableType {
       .drive(viewModel.menuTap)
       .disposed(by: bag)
     
-    viewModel.selectedRepo.asObservable()
+    viewModel.selectedGroupTitle.asObservable()
       .subscribe(onNext: { [unowned self] name in
         self.title = name
       })

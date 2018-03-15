@@ -71,6 +71,14 @@ class CreateViewController: UIViewController, BindableType {
     return view
   }()
   
+  private let tagTextField: UITextField = {
+    let view = UITextField()
+    view.placeholder = "add tag with #"
+    view.layer.borderColor = UIColor.black.cgColor
+    view.layer.borderWidth = 0.5
+    return view
+  }()
+  
   private let buttonStackView: UIStackView = {
     let stack = UIStackView()
     stack.axis = .horizontal
@@ -113,11 +121,13 @@ class CreateViewController: UIViewController, BindableType {
     
     saveButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
-      .map({ [unowned self] _ -> (String, String, String) in
+      .map({ [unowned self] _ -> (String, String, String, [String]) in
         let title = self.titleTextField.text ?? ""
         let body = self.bodyTextView.text ?? ""
         let repoName = self.selectedRepositoryLabel.text ?? ""
-        return (title, body, repoName)
+        let tagText = self.tagTextField.text ?? ""
+        let tags = self.viewModel.findAllTagsFromText(tagText: tagText)
+        return (title, body, repoName, tags)
       }).bind(to: viewModel.onCreate.inputs)
       .disposed(by: bag)
     
@@ -144,9 +154,9 @@ class CreateViewController: UIViewController, BindableType {
     stackView.addArrangedSubview(bodyTextView)
     repoLabelStackView.addArrangedSubview(repositoryLabel)
     repoLabelStackView.addArrangedSubview(selectedRepositoryLabel)
-    
     stackView.addArrangedSubview(repoLabelStackView)
     stackView.addArrangedSubview(pickerView)
+    stackView.addArrangedSubview(tagTextField)
     buttonStackView.addArrangedSubview(cancelButton)
     buttonStackView.addArrangedSubview(saveButton)
     stackView.addArrangedSubview(buttonStackView)

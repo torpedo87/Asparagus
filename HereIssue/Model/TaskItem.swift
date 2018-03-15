@@ -19,6 +19,7 @@ class TaskItem: Object, Decodable {
   @objc dynamic var owner: User?
   @objc dynamic var repository: Repository?
   @objc dynamic var number = 0
+  let group = LinkingObjects(fromType: Group.self, property: "tasks")
   
   // local only properties
   var updatedDate: Date {
@@ -98,7 +99,6 @@ extension TaskItem {
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
     dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-    //let nowDate = Date(timeInterval: -9 * 60 * 60, since: Date())
     let now = dateFormatter.string(from: Date())
     self.added = now
     self.updated = now
@@ -109,7 +109,6 @@ extension TaskItem {
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
     dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-    //let nowDate = Date(timeInterval: -9 * 60 * 60, since: Date())
     let now = dateFormatter.string(from: Date())
     self.updated = now
   }

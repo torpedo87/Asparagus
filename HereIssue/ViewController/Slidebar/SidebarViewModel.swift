@@ -25,11 +25,11 @@ struct SidebarViewModel {
   }
   
   func bindOutput() {
-    leftViewModel.selectedRepo
-      .bind(to: taskViewModel.selectedRepo)
+    leftViewModel.selectedGroupTitle
+      .bind(to: taskViewModel.selectedGroupTitle)
       .disposed(by: bag)
     
-    leftViewModel.selectedRepo
+    leftViewModel.selectedGroupTitle
       .map { _ in }
       .bind(to: repoTap)
       .disposed(by: bag)

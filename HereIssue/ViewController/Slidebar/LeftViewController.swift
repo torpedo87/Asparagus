@@ -9,29 +9,35 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import RxDataSources
+import Action
 
 class LeftViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
   private lazy var authButton: UIButton = {
     let btn = UIButton()
-    btn.setTitleColor(UIColor.blue, for: .normal)
+    btn.setTitleColor(UIColor.white, for: .normal)
     return btn
   }()
   var viewModel: LeftViewModel!
   private lazy var tableView: UITableView = {
     let view = UITableView()
-    view.register(UITableViewCell.self,
-                  forCellReuseIdentifier: "TableViewCell")
+    view.backgroundColor = UIColor(hex: "2E3136")
+    view.register(RepositoryCell.self,
+                  forCellReuseIdentifier: RepositoryCell.reuseIdentifier)
     view.rowHeight = UIScreen.main.bounds.height / 15
+    view.separatorStyle = .none
     return view
   }()
+  var dataSource: RxTableViewSectionedReloadDataSource<GroupSection>!
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     setupView()
+    configureDataSource()
   }
   
   func setupView() {
-    view.backgroundColor = UIColor.green
     view.addSubview(tableView)
     view.addSubview(authButton)
     
@@ -57,27 +63,30 @@ class LeftViewController: UIViewController, BindableType {
       .drive(authButton.rx.title())
       .disposed(by: bag)
     
-    viewModel.repoList.asDriver()
-      .drive(onNext: { [unowned self] _ in self.tableView.reloadData() })
+    viewModel.sectionedItems
+      .bind(to: tableView.rx.items(dataSource: dataSource))
       .disposed(by: bag)
     
-    //datasource
-    viewModel.repoList.asObservable()
-      .bind(to: tableView.rx.items) {
-        (tableView: UITableView, index: Int, element: String) in
-        let cell =
-          UITableViewCell(style: .default, reuseIdentifier: "TableViewCell")
-        cell.textLabel?.text = element
-        return cell
-      }
-      .disposed(by: bag)
-    
-    //delegate
     tableView.rx.itemSelected
-      .subscribe(onNext: { [unowned self] indexPath in
-        let selectedRepo = self.viewModel.repoList.value[indexPath.row]
-        self.viewModel.selectedRepo.accept(selectedRepo)
+      .map { [unowned self] indexPath in
+        try! self.dataSource.model(at: indexPath) as! String
+      }
+      .subscribe(onNext: { [unowned self] title in
+        self.viewModel.selectedGroupTitle.accept(title)
       })
       .disposed(by: bag)
+  }
+  
+  func configureDataSource() {
+    dataSource = RxTableViewSectionedReloadDataSource<GroupSection> (
+      configureCell: { dataSource, tableView, indexPath, item in
+        let cell = tableView.dequeueReusableCell(withIdentifier: RepositoryCell.reuseIdentifier, for: indexPath) as! RepositoryCell
+        cell.configureCell(repoName: item)
+        return cell
+      },
+      titleForHeaderInSection: { dataSource, index in
+        dataSource.sectionModels[index].header
+    }
+    )
   }
 }

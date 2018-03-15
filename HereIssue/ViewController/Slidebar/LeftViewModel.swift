@@ -17,8 +17,7 @@ struct LeftViewModel {
   private let sceneCoordinator: SceneCoordinatorType
   private let localTaskService: LocalTaskServiceType
   let isLoggedIn = BehaviorRelay<Bool>(value: false)
-  let repoList = BehaviorRelay<[String]>(value: [])
-  let selectedRepo = BehaviorRelay<String>(value: "")
+  let selectedGroupTitle = BehaviorRelay<String>(value: "")
   
   init(authService: AuthServiceRepresentable = AuthService(),
        coordinator: SceneCoordinatorType = SceneCoordinator(),
@@ -34,16 +33,25 @@ struct LeftViewModel {
       .drive(isLoggedIn)
       .disposed(by: bag)
     
-    localTaskService.repositories()
-      .map { results -> [String] in
-        let titles = results.map { $0.name }
-        let filteredTitles = Array(Set(titles))
-        return filteredTitles
-      }.asDriver(onErrorJustReturn: [])
-      .drive(repoList)
-      .disposed(by: bag)
-    
-    selectedRepo.accept("Inbox")
+    selectedGroupTitle.accept("Inbox")
+  }
+  
+  var sectionedItems: Observable<[GroupSection]> {
+    return localTaskService.groups()
+      .map { results in
+        let inboxItems = ["Inbox"]
+        let groupItems = results
+          .filter("tasks.@count > 0")
+          .sorted(byKeyPath: "title", ascending: true)
+          .toArray()
+        
+        return [
+          GroupSection(header: "Inbox", items: inboxItems),
+          GroupSection(header: "Tags", items: groupItems
+            .map{ $0.title }
+            .filter{ $0 != "Inbox"})
+        ]
+    }
   }
   
   func onAuthTask(isLoggedIn: Bool) -> Action<(String, String), AuthService.AccountStatus> {

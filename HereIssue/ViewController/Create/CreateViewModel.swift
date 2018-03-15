@@ -16,11 +16,11 @@ struct CreateViewModel {
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
   let onCancel: CocoaAction!
-  let onCreate: Action<(String, String, String), Void>
+  let onCreate: Action<(String, String, String, [String]), Void>
   let repoTitles = BehaviorRelay<[String]>(value: [])
   
   init(coordinator: SceneCoordinatorType,
-       createAction: Action<(String, String, String), Void>,
+       createAction: Action<(String, String, String, [String]), Void>,
        localTaskService: LocalTaskServiceType) {
     self.onCreate = createAction
     self.localTaskService = localTaskService
@@ -50,6 +50,11 @@ struct CreateViewModel {
       }.asDriver(onErrorJustReturn: [])
       .drive(repoTitles)
       .disposed(by: bag)
+  }
+  
+  func findAllTagsFromText(tagText: String) -> [String] {
+    let tagsArr = tagText.trimmingCharacters(in: .whitespaces).components(separatedBy: "#").filter{ $0 != "" }
+    return tagsArr
   }
 }
 

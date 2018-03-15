@@ -43,20 +43,19 @@ struct AuthViewModel {
       .disposed(by: bag)
   }
   
-//  func goToTaskScene() {
-//    let issueService = IssueService()
-//    let localTaskService = LocalTaskService()
-//    let syncService = SyncService(issueService: issueService, localTaskService: localTaskService)
-//    let taskViewModel = TaskViewModel(issueService: issueService,
-//                                      coordinator: sceneCoordinator,
-//                                      localTaskService: localTaskService,
-//                                      syncService: syncService)
-//    let taskScene = Scene.task(taskViewModel)
-//    sceneCoordinator.transition(to: taskScene, type: .root)
-//  }
-  
-  func pop() {
-    sceneCoordinator.pop(animated: true)
+  func goToSidebarScene() {
+    let issueService = IssueService()
+    let localTaskService = LocalTaskService()
+    let syncService = SyncService(issueService: issueService, localTaskService: localTaskService)
+    let taskViewModel = TaskViewModel(issueService: issueService,
+                                      coordinator: sceneCoordinator,
+                                      localTaskService: localTaskService,
+                                      syncService: syncService)
+    let leftViewModel = LeftViewModel(authService: authService,
+                                      coordinator: sceneCoordinator,
+                                      localTaskService: localTaskService)
+    let sidebarScene = Scene.sidebar(leftViewModel, taskViewModel)
+    sceneCoordinator.transition(to: sidebarScene, type: .root)
   }
   
   func checkReachability() -> Observable<Bool> {

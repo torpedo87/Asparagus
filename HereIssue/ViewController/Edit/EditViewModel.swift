@@ -14,13 +14,13 @@ import Action
 struct EditViewModel {
   
   let task: TaskItem
-  let onUpdate: Action<(String, String), Void>
+  let onUpdate: Action<(String, String, [String]), Void>
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
   
   init(task: TaskItem,
        coordinator: SceneCoordinatorType,
-       updateAction: Action<(String, String), Void>,
+       updateAction: Action<(String, String, [String]), Void>,
        localTaskService: LocalTaskServiceType) {
     self.task = task
     self.onUpdate = updateAction
@@ -33,6 +33,11 @@ struct EditViewModel {
       })
       .disposed(by: bag)
     
+  }
+  
+  func findAllTagsFromText(tagText: String) -> [String] {
+    let tagsArr = tagText.trimmingCharacters(in: .whitespaces).components(separatedBy: "#").filter{ $0 != "" }
+    return tagsArr
   }
   
 }

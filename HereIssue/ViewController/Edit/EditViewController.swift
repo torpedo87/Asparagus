@@ -65,6 +65,13 @@ class EditViewController: UIViewController, BindableType {
     view.layer.borderWidth = 0.5
     return view
   }()
+  private let tagTextField: UITextField = {
+    let view = UITextField()
+    view.placeholder = "add tag with #"
+    view.layer.borderColor = UIColor.black.cgColor
+    view.layer.borderWidth = 0.5
+    return view
+  }()
   
   private var saveButton: UIButton = {
     let btn = UIButton()
@@ -84,14 +91,25 @@ class EditViewController: UIViewController, BindableType {
     
     titleTextField.text = viewModel.task.title
     bodyTextView.text = viewModel.task.body
-    selectedRepositoryLabel.text = viewModel.task.repository!.name
+    tagTextField.text = viewModel.task.group.toArray()
+      .map{ $0.title }
+      .reduce("", { (tags, tag) -> String in
+        return tags + "#\(tag)"
+    })
+    if let repo = viewModel.task.repository {
+      selectedRepositoryLabel.text = repo.name
+    } else {
+      selectedRepositoryLabel.text = ""
+    }
     
     saveButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
-      .map({ [unowned self] _ -> (String, String) in
+      .map({ [unowned self] _ -> (String, String, [String]) in
         let title = self.titleTextField.text ?? ""
         let body = self.bodyTextView.text ?? ""
-        return (title, body)
+        let tagText = self.tagTextField.text ?? ""
+        let tags = self.viewModel.findAllTagsFromText(tagText: tagText)
+        return (title, body, tags)
       }).bind(to: viewModel.onUpdate.inputs)
         .disposed(by: bag)
   }
@@ -113,6 +131,7 @@ class EditViewController: UIViewController, BindableType {
     repoLabelStackView.addArrangedSubview(repositoryLabel)
     repoLabelStackView.addArrangedSubview(selectedRepositoryLabel)
     stackView.addArrangedSubview(repoLabelStackView)
+    stackView.addArrangedSubview(tagTextField)
     stackView.addArrangedSubview(saveButton)
     
     stackView.snp.makeConstraints { (make) in
