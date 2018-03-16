@@ -16,7 +16,7 @@ class LeftViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
   private lazy var authButton: UIButton = {
     let btn = UIButton()
-    btn.setTitleColor(UIColor.white, for: .normal)
+    btn.setTitleColor(UIColor.lightGray, for: .normal)
     return btn
   }()
   var viewModel: LeftViewModel!
@@ -38,11 +38,12 @@ class LeftViewController: UIViewController, BindableType {
   }
   
   func setupView() {
+    view.backgroundColor = UIColor(hex: "2E3136")
     view.addSubview(tableView)
     view.addSubview(authButton)
     
     tableView.snp.makeConstraints { (make) in
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(50)
       make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
       make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
       make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
@@ -50,8 +51,8 @@ class LeftViewController: UIViewController, BindableType {
     
     authButton.snp.makeConstraints { (make) in
       authButton.sizeToFit()
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
-      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
+      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(10)
+      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
     }
   }
   

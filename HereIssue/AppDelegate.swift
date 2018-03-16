@@ -31,6 +31,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                         syncService: syncService)
       let sideBarScene = Scene.sidebar(leftViewModel, taskViewModel)
       sceneCoordinator.transition(to: sideBarScene, type: .root)
+      
+      let navigationBarAppearace = UINavigationBar.appearance()
+      navigationBarAppearace.tintColor = UIColor.lightGray
+      navigationBarAppearace.barTintColor = UIColor.white
+      navigationBarAppearace.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.black]
     }
     return true
   }

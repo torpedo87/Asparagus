@@ -20,6 +20,7 @@ struct TaskViewModel {
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
   let selectedGroupTitle = BehaviorRelay<String>(value: "Inbox")
+  let searchSections = BehaviorRelay<[TaskSection]>(value: [])
   
   //output
   let running = BehaviorRelay<Bool>(value: true)

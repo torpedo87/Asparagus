@@ -23,9 +23,10 @@ class TaskViewController: UIViewController, BindableType {
     view.rowHeight = UIScreen.main.bounds.height / 15
     return view
   }()
-  private lazy var newTaskButton: UIBarButtonItem = {
+  private lazy var searchButton: UIBarButtonItem = {
     let item =
-      UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.add,
+      UIBarButtonItem(title: "SEARCH",
+                      style: UIBarButtonItemStyle.plain,
                       target: self,
                       action: nil)
     return item
@@ -38,14 +39,41 @@ class TaskViewController: UIViewController, BindableType {
                       action: nil)
     return item
   }()
+  lazy var newTaskButton: UIButton = {
+    let btn = UIButton()
+    btn.backgroundColor = UIColor.white
+    btn.layer.cornerRadius = 35
+    btn.setImage(UIImage(named: "add"), for: .normal)
+    return btn
+  }()
   private let activityIndicator: UIActivityIndicatorView = {
     let spinner = UIActivityIndicatorView()
     spinner.color = UIColor.blue
     spinner.isHidden = false
     return spinner
   }()
+  private lazy var blurEffectView: UIVisualEffectView = {
+    let darkBlur = UIBlurEffect(style: UIBlurEffectStyle.light)
+    let view = UIVisualEffectView(effect: darkBlur)
+    view.isHidden = true
+    return view
+  }()
+  private lazy var searchTableView: UITableView = {
+    let view = UITableView()
+    view.register(TaskCell.self,
+                  forCellReuseIdentifier: TaskCell.reuseIdentifier)
+    view.rowHeight = UIScreen.main.bounds.height / 15
+    return view
+  }()
+  
+  private lazy var searchBar: UISearchBar = {
+    let bar = UISearchBar()
+    bar.isHidden = true
+    return bar
+  }()
   
   var dataSource: RxTableViewSectionedReloadDataSource<TaskSection>!
+  var searchDataSource: RxTableViewSectionedReloadDataSource<TaskSection>!
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -57,8 +85,12 @@ class TaskViewController: UIViewController, BindableType {
     title = "Task"
     view.addSubview(tableView)
     view.addSubview(activityIndicator)
-    navigationItem.rightBarButtonItem = newTaskButton
+    view.addSubview(newTaskButton)
+    view.addSubview(blurEffectView)
+    blurEffectView.contentView.addSubview(searchTableView)
+    navigationItem.rightBarButtonItem = searchButton
     navigationItem.leftBarButtonItem = menuButton
+    navigationItem.titleView = self.searchBar
     
     tableView.snp.makeConstraints({ (make) in
       make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
@@ -70,6 +102,18 @@ class TaskViewController: UIViewController, BindableType {
       make.width.height.equalTo(UIScreen.main.bounds.height / 10)
       make.center.equalToSuperview()
     }
+    newTaskButton.snp.makeConstraints { (make) in
+      make.width.height.equalTo(70)
+      make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
+      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
+    }
+    blurEffectView.snp.makeConstraints { (make) in
+      make.edges.equalTo(tableView)
+    }
+    searchBar.sizeToFit()
+    searchTableView.snp.makeConstraints { (make) in
+      make.left.top.right.equalTo(blurEffectView.contentView)
+    }
   }
   
   func bindViewModel() {
@@ -79,12 +123,26 @@ class TaskViewController: UIViewController, BindableType {
       .bind(to: tableView.rx.items(dataSource: dataSource))
       .disposed(by: bag)
     
+    viewModel.searchSections.asObservable()
+      .bind(to: searchTableView.rx.items(dataSource: searchDataSource))
+      .disposed(by: bag)
+    
     tableView.rx.itemSelected
       .do(onNext: { [unowned self] indexPath in
         self.tableView.deselectRow(at: indexPath, animated: false)
       })
       .map { [unowned self] indexPath in
         try! self.dataSource.model(at: indexPath) as! TaskItem
+      }
+      .subscribe(viewModel.editAction.inputs)
+      .disposed(by: bag)
+    
+    searchTableView.rx.itemSelected
+      .do(onNext: { [unowned self] indexPath in
+        self.searchTableView.deselectRow(at: indexPath, animated: false)
+      })
+      .map { [unowned self] indexPath in
+        try! self.searchDataSource.model(at: indexPath) as! TaskItem
       }
       .subscribe(viewModel.editAction.inputs)
       .disposed(by: bag)
@@ -106,11 +164,49 @@ class TaskViewController: UIViewController, BindableType {
       .drive(viewModel.menuTap)
       .disposed(by: bag)
     
+    searchButton.rx.tap
+      .throttle(0.5, scheduler: MainScheduler.instance)
+      .asObservable()
+      .subscribe(onNext: { [unowned self] _ in
+        self.toggleSearchBar()
+      })
+      .disposed(by: bag)
+    
     viewModel.selectedGroupTitle.asObservable()
       .subscribe(onNext: { [unowned self] name in
         self.title = name
       })
       .disposed(by: bag)
+    
+    viewModel.searchSections
+      .asDriver()
+      .drive(onNext: { [unowned self] _ in
+        self.searchTableView.frame.size.height = self.searchTableView.contentSize.height
+      })
+      .disposed(by: bag)
+    
+    searchBar.rx.text.orEmpty
+      .map({ [unowned self] query in
+        var section = TaskSection(header: "due tasks", items: [])
+        section.items = self.dataSource.sectionModels[0].items.filter{ $0.title.contains(query) }
+        return [section]
+      })
+      .bind(to: viewModel.searchSections)
+      .disposed(by: bag)
+  }
+  
+  func toggleSearchBar() {
+    if blurEffectView.isHidden {
+      blurEffectView.isHidden = false
+      searchBar.isHidden = false
+      searchButton.title = "CANCEL"
+      searchBar.becomeFirstResponder()
+    } else {
+      blurEffectView.isHidden = true
+      searchBar.isHidden = true
+      searchButton.title = "SEARCH"
+      searchBar.resignFirstResponder()
+    }
   }
   
   func configureDataSource() {
@@ -124,6 +220,18 @@ class TaskViewController: UIViewController, BindableType {
       titleForHeaderInSection: { dataSource, index in
         dataSource.sectionModels[index].header
       }
+    )
+    
+    searchDataSource = RxTableViewSectionedReloadDataSource<TaskSection> (
+      configureCell: {
+        [unowned self] dataSource, tableView, indexPath, item in
+        let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier, for: indexPath) as! TaskCell
+        cell.configureCell(item: item, action: self.viewModel.onToggle(task: item))
+        return cell
+      },
+      titleForHeaderInSection: { dataSource, index in
+        dataSource.sectionModels[index].header
+    }
     )
   }
   
