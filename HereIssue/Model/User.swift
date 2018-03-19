@@ -11,19 +11,38 @@ import RealmSwift
 
 class User: Object, Codable {
   @objc dynamic var name = ""
+  @objc dynamic var avatar = ""
   
   enum CodingKeys: String, CodingKey {
     case name = "login"
+    case avatar = "avatar_url"
   }
   
-  convenience init(name: String) {
+  var asDictionary: [String:Any] {
+    return [
+      "name": name,
+      "avatar": avatar
+    ]
+  }
+  
+  var imgUrl: URL? {
+    if let url = URL(string: self.avatar) {
+      return url
+    } else {
+      return nil
+    }
+  }
+  
+  convenience init(name: String, avatar: String = "") {
     self.init()
     self.name = name
+    self.avatar = avatar
   }
   
   convenience required init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     let name = try container.decode(String.self, forKey: .name)
-    self.init(name: name)
+    let avatar = try container.decode(String.self, forKey: .avatar)
+    self.init(name: name, avatar: avatar)
   }
 }

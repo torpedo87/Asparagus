@@ -223,7 +223,7 @@ class LocalTaskService: LocalTaskServiceType {
   
   //helper
   func getRepository(repoName: String) -> Repository? {
-    let realm = try! Realm()
+    let realm = try! Realm(configuration: RealmConfig.main.configuration)
     let repositories = realm.objects(Repository.self).filter { $0.name == repoName }
     return repositories.first ?? nil
   }

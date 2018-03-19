@@ -122,6 +122,7 @@ struct AuthService: AuthServiceRepresentable {
       .map({ (response, data) -> AccountStatus in
         if 200..<300 ~= response.statusCode {
           UserDefaults.removeLocalToken()
+          UserDefaults.removeMe()
           return .authorized(nil)
         } else if 401 == response.statusCode {
           throw AccountError.invalidUserInfo

@@ -10,6 +10,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 import RxGesture
+import Kingfisher
 
 class AuthViewController: UIViewController, BindableType {
   var viewModel: AuthViewModel!
@@ -22,7 +23,6 @@ class AuthViewController: UIViewController, BindableType {
   }()
   private let imgView: UIImageView = {
     let view = UIImageView()
-    view.image = UIImage(named: "ItemChecked")
     view.contentMode = .scaleAspectFill
     return view
   }()
@@ -115,7 +115,8 @@ class AuthViewController: UIViewController, BindableType {
         if !tuple.0 { return "no internet connection" }
         else if tuple.1 { return "Logout" }
         else { return "Login" }
-      }.asDriver(onErrorJustReturn: "failed")
+      }
+      .asDriver(onErrorJustReturn: "failed")
       .drive(authButton.rx.title())
       .disposed(by: bag)
     
@@ -147,6 +148,18 @@ class AuthViewController: UIViewController, BindableType {
       .when(UIGestureRecognizerState.recognized)
       .subscribe(onNext: { [unowned self] _ in
         self.view.endEditing(true)
+      })
+      .disposed(by: bag)
+    
+    viewModel.authService.isLoggedIn.asObservable()
+      .subscribe(onNext: { [unowned self] bool in
+        if bool {
+          if let me = UserDefaults.loadUser(), let imgUrl = me.imgUrl {
+            self.imgView.kf.setImage(with: imgUrl)
+          }
+        } else {
+          self.imgView.image = UIImage(named: "user")
+        }
       })
       .disposed(by: bag)
   }

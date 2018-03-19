@@ -31,13 +31,22 @@ extension UserDefaults {
   }
   
   static func saveMe(me: User) {
-    let name = me.name
-    UserDefaults.standard.set(name, forKey: "me")
+    let dict = me.asDictionary
+    UserDefaults.standard.set(dict, forKey: "me")
   }
   
   static func loadUser() -> User? {
-    guard let name = UserDefaults.standard.string(forKey: "me") else { return nil}
-    return User(name: name)
+    guard let dict =
+      UserDefaults.standard.dictionary(forKey: "me") else { return nil }
+    if let name = dict["name"] as? String, let avatar = dict["avatar"] as? String {
+      let me = User(name: name, avatar: avatar)
+      return me
+    }
+    return nil
+  }
+  
+  static func removeMe() {
+    UserDefaults.standard.removeObject(forKey: "me")
   }
 }
 

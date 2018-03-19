@@ -14,7 +14,7 @@ import Action
 struct AuthViewModel {
   private let bag = DisposeBag()
   private let sceneCoordinator: SceneCoordinatorType
-  private let authService: AuthServiceRepresentable
+  let authService: AuthServiceRepresentable
   
   let onAuth: Action<(String, String), AuthService.AccountStatus>
   let onCancel: CocoaAction!
