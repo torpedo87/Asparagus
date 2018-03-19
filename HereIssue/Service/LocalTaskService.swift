@@ -31,8 +31,8 @@ protocol LocalTaskServiceType {
   func observeEditTask() -> Observable<[TaskItem]>
   func observeCreateTask() -> Observable<[TaskItem]>
   func convertToTaskWithRef(task: TaskItem) -> Observable<LocalTaskService.TaskItemWithReference>
-  func tasksForGroup(groupTitle: String) -> Observable<Results<TaskItem>>
-  func groups() -> Observable<Results<Group>>
+  func tasksForTag(tagTitle: String) -> Observable<Results<TaskItem>>
+  func tags() -> Observable<Results<Tag>>
   func openTasks() -> Observable<Results<TaskItem>>
 }
 
@@ -63,14 +63,14 @@ class LocalTaskService: LocalTaskServiceType {
         //레퍼지토리 있으면 레퍼지토리 태그 추가
         if let repo = getRepository(repoName: repoName) {
           task.repository = repo
-          let group = defaultGroup(realm: realm, groupTitle: repoName)
+          let group = defaultTag(realm: realm, tagTitle: repoName)
           group.isCreatedInServer = true
           group.tasks.append(task)
         }
         //태그 있으면 추가
         if tags.count > 0 {
           for tag in tags {
-            let group = defaultGroup(realm: realm, groupTitle: tag)
+            let group = defaultTag(realm: realm, tagTitle: tag)
             group.isCreatedInServer = true
             group.tasks.append(task)
           }
@@ -105,7 +105,7 @@ class LocalTaskService: LocalTaskServiceType {
   }
   
   func deleteTaskIndeletedTags(realm: Realm, exTask: TaskItem, newTags: [String]) {
-    let exTags = exTask.group.toArray().map{ $0.title }
+    let exTags = exTask.tag.toArray().map{ $0.title }
     var deletedTags = [String]()
     for exTag in exTags {
       if !newTags.contains(exTag) {
@@ -113,14 +113,14 @@ class LocalTaskService: LocalTaskServiceType {
       }
     }
     for deletedTag in deletedTags {
-      let group = defaultGroup(realm: realm, groupTitle: deletedTag)
+      let group = defaultTag(realm: realm, tagTitle: deletedTag)
       let i = findIndex(tasks: group.tasks.toArray(), exTask: exTask)
       group.tasks.remove(at: i)
     }
   }
   
   func addTaskInCreatedTags(realm: Realm, exTask: TaskItem, newTags: [String]) {
-    let exTags = exTask.group.toArray().map{ $0.title }
+    let exTags = exTask.tag.toArray().map{ $0.title }
     var createdTags = [String]()
     for newTag in newTags {
       if !exTags.contains(newTag) {
@@ -128,7 +128,7 @@ class LocalTaskService: LocalTaskServiceType {
       }
     }
     for createdTag in createdTags {
-      let group = defaultGroup(realm: realm, groupTitle: createdTag)
+      let group = defaultTag(realm: realm, tagTitle: createdTag)
       group.tasks.append(exTask)
     }
   }
@@ -162,7 +162,6 @@ class LocalTaskService: LocalTaskServiceType {
   
   //로컬에 저장된 모든 task 불러오기
   func tasks() -> Observable<Results<TaskItem>> {
-    print("------realmfile-------", Realm.Configuration.defaultConfiguration.fileURL)
     let result = withRealm("getting tasks") { realm -> Observable<Results<TaskItem>> in
       let tasks = realm.objects(TaskItem.self)
       return Observable.collection(from: tasks)
@@ -178,18 +177,19 @@ class LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  func groups() -> Observable<Results<Group>> {
-    let result = withRealm("getting groups") { realm -> Observable<Results<Group>> in
-      let groups = realm.objects(Group.self)
-      return Observable.collection(from: groups)
+  func tags() -> Observable<Results<Tag>> {
+    print("------realmfile-------", Realm.Configuration.defaultConfiguration.fileURL)
+    let result = withRealm("getting groups") { realm -> Observable<Results<Tag>> in
+      let tags = realm.objects(Tag.self)
+      return Observable.collection(from: tags)
     }
     return result ?? .empty()
   }
   
-  func tasksForGroup(groupTitle: String) -> Observable<Results<TaskItem>> {
+  func tasksForTag(tagTitle: String) -> Observable<Results<TaskItem>> {
     let result = withRealm("tasksForTag") { realm -> Observable<Results<TaskItem>> in
-      if let group = realm.object(ofType: Group.self, forPrimaryKey: groupTitle) {
-        let tasks = group.tasks
+      if let tag = realm.object(ofType: Tag.self, forPrimaryKey: tagTitle) {
+        let tasks = tag.tasks
           .sorted(byKeyPath: "added", ascending: false)
         return Observable.collection(from: tasks)
       }
@@ -234,7 +234,7 @@ class LocalTaskService: LocalTaskServiceType {
           if let _ = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
           } else {
             try! realm.write {
-              let group = self.defaultGroup(realm: realm, groupTitle: fetchedTask.repository!.name)
+              let group = self.defaultTag(realm: realm, tagTitle: fetchedTask.repository!.name)
               group.isCreatedInServer = true
               group.tasks.append(fetchedTask)
               print(Thread.current, "write thread \(#function)")
@@ -341,7 +341,7 @@ class LocalTaskService: LocalTaskServiceType {
         .map { (arr, changes) -> [TaskItem] in
           if let changes = changes, let insertedIndex = changes.inserted.first {
             let task = arr[insertedIndex]
-            if !task.isServerGeneratedType && task.group.first!.isCreatedInServer {
+            if !task.isServerGeneratedType && task.tag.first!.isCreatedInServer {
               return [task]
             }
             return []
@@ -390,9 +390,9 @@ class LocalTaskService: LocalTaskServiceType {
     let result = withRealm("add") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
         try! realm.write {
-          let group = self.defaultGroup(realm: realm, groupTitle: newTask.repository!.name)
-          group.isCreatedInServer = true
-          group.tasks.append(newTask)
+          let tag = self.defaultTag(realm: realm, tagTitle: newTask.repository!.name)
+          tag.isCreatedInServer = true
+          tag.tasks.append(newTask)
           print(Thread.current, "write thread \(#function)")
         }
         observer.onNext(newTask)
@@ -407,7 +407,7 @@ class LocalTaskService: LocalTaskServiceType {
 extension LocalTaskService {
   fileprivate func withRealm<T>(_ operation: String, action: (Realm) throws -> T) -> T? {
     do {
-      let realm = try Realm()
+      let realm = try Realm(configuration: RealmConfig.main.configuration)
       return try action(realm)
     } catch let err {
       print("Failed \(operation) realm with error: \(err)")
@@ -415,15 +415,53 @@ extension LocalTaskService {
     }
   }
   
-  func defaultGroup(realm: Realm, groupTitle: String) -> Group {
-    if let group = realm.object(ofType: Group.self, forPrimaryKey: groupTitle) {
-      return group
+  func defaultTag(realm: Realm, tagTitle: String) -> Tag {
+    if let tag = realm.object(ofType: Tag.self, forPrimaryKey: tagTitle) {
+      return tag
     }
-    let newGroup = Group()
-    newGroup.title = groupTitle
-    newGroup.setDateWhenCreated()
-    realm.add(newGroup)
-    return realm.object(ofType: Group.self, forPrimaryKey: groupTitle)!
+    let newTag = Tag()
+    newTag.title = tagTitle
+    newTag.setDateWhenCreated()
+    realm.add(newTag)
+    return realm.object(ofType: Tag.self, forPrimaryKey: tagTitle)!
+  }
+  
+  static func migrate(_ migration: Migration, fileSchemaVersion: UInt64) {
+//    if fileSchemaVersion == 1 {
+//      let dateFormatter = DateFormatter()
+//      dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+//      dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+//      dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+//      let now = dateFormatter.string(from: Date())
+//      migration.enumerateObjects(ofType: "TaskItem", { (oldTask, newTask) in
+//        if let newTask = newTask {
+//          if let date = newTask["updated"] as? String {
+//            if date.compare(now) == .orderedDescending {
+//
+//            } else {
+//
+//            }
+//          }
+//        }
+//      })
+//    }
+  }
+  
+  static func copyInitialData(_ from: URL, to: URL) {
+    let copy = {
+      _ = try? FileManager.default.removeItem(at: to)
+      try! FileManager.default.copyItem(at: from, to: to)
+    }
+    let exists: Bool
+    do {
+      exists = try to.checkPromisedItemIsReachable()
+    } catch {
+      copy()
+      return
+    }
+    if !exists {
+      copy()
+    }
   }
 }
 

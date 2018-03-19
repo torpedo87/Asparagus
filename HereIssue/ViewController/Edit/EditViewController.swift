@@ -9,6 +9,7 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import RxGesture
 
 class EditViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
@@ -65,6 +66,11 @@ class EditViewController: UIViewController, BindableType {
     view.layer.borderWidth = 0.5
     return view
   }()
+  private let tagLabel: UILabel = {
+    let label = UILabel()
+    label.text = "Tags with #: "
+    return label
+  }()
   private let tagTextField: UITextField = {
     let view = UITextField()
     view.placeholder = "add tag with #"
@@ -75,9 +81,10 @@ class EditViewController: UIViewController, BindableType {
   
   private var saveButton: UIButton = {
     let btn = UIButton()
-    btn.backgroundColor = UIColor.red
+    btn.backgroundColor = UIColor(hex: "4054B2")
+    btn.layer.cornerRadius = 10
     btn.setTitle("SAVE", for: .normal)
-    btn.setTitle("enter full", for: .disabled)
+    btn.setTitle("Enter title", for: .disabled)
     return btn
   }()
   
@@ -91,7 +98,7 @@ class EditViewController: UIViewController, BindableType {
     
     titleTextField.text = viewModel.task.title
     bodyTextView.text = viewModel.task.body
-    tagTextField.text = viewModel.task.group.toArray()
+    tagTextField.text = viewModel.task.tag.toArray()
       .map{ $0.title }
       .reduce("", { (tags, tag) -> String in
         return tags + "#\(tag)"
@@ -112,6 +119,13 @@ class EditViewController: UIViewController, BindableType {
         return (title, body, tags)
       }).bind(to: viewModel.onUpdate.inputs)
         .disposed(by: bag)
+    
+    view.rx.tapGesture()
+      .when(UIGestureRecognizerState.recognized)
+      .subscribe(onNext: { [unowned self] _ in
+        self.view.endEditing(true)
+      })
+      .disposed(by: bag)
   }
   
   override func viewDidLoad() {

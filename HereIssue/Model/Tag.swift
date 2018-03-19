@@ -1,5 +1,5 @@
 //
-//  Group.swift
+//  Tag.swift
 //  HereIssue
 //
 //  Created by junwoo on 2018. 3. 14..
@@ -9,7 +9,7 @@
 import Foundation
 import RealmSwift
 
-class Group: Object {
+class Tag: Object {
   @objc dynamic var title = ""
   @objc dynamic var added = ""
   @objc dynamic var isCreatedInServer = false

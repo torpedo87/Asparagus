@@ -42,7 +42,7 @@ class TaskViewController: UIViewController, BindableType {
   lazy var newTaskButton: UIButton = {
     let btn = UIButton()
     btn.backgroundColor = UIColor.white
-    btn.layer.cornerRadius = 35
+    btn.layer.cornerRadius = 25
     btn.setImage(UIImage(named: "add"), for: .normal)
     return btn
   }()
@@ -90,7 +90,6 @@ class TaskViewController: UIViewController, BindableType {
     blurEffectView.contentView.addSubview(searchTableView)
     navigationItem.rightBarButtonItem = searchButton
     navigationItem.leftBarButtonItem = menuButton
-    navigationItem.titleView = self.searchBar
     
     tableView.snp.makeConstraints({ (make) in
       make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
@@ -103,17 +102,19 @@ class TaskViewController: UIViewController, BindableType {
       make.center.equalToSuperview()
     }
     newTaskButton.snp.makeConstraints { (make) in
-      make.width.height.equalTo(70)
+      make.width.height.equalTo(50)
       make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
       make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
     }
     blurEffectView.snp.makeConstraints { (make) in
       make.edges.equalTo(tableView)
     }
-    searchBar.sizeToFit()
+    
     searchTableView.snp.makeConstraints { (make) in
       make.left.top.right.equalTo(blurEffectView.contentView)
     }
+    
+    
   }
   
   func bindViewModel() {
@@ -175,6 +176,7 @@ class TaskViewController: UIViewController, BindableType {
     viewModel.selectedGroupTitle.asObservable()
       .subscribe(onNext: { [unowned self] name in
         self.title = name
+        self.closeSearchBar()
       })
       .disposed(by: bag)
     
@@ -187,9 +189,11 @@ class TaskViewController: UIViewController, BindableType {
     
     searchBar.rx.text.orEmpty
       .map({ [unowned self] query in
-        var section = TaskSection(header: "due tasks", items: [])
-        section.items = self.dataSource.sectionModels[0].items.filter{ $0.title.contains(query) }
-        return [section]
+        var due = TaskSection(header: "due tasks", items: [])
+        due.items = self.dataSource.sectionModels[0].items.filter{ $0.title.contains(query) }
+        var done = TaskSection(header: "done tasks", items: [])
+        done.items = self.dataSource.sectionModels[1].items.filter{ $0.title.contains(query) }
+        return [due, done]
       })
       .bind(to: viewModel.searchSections)
       .disposed(by: bag)
@@ -198,15 +202,24 @@ class TaskViewController: UIViewController, BindableType {
   func toggleSearchBar() {
     if blurEffectView.isHidden {
       blurEffectView.isHidden = false
+      navigationItem.titleView = searchBar
       searchBar.isHidden = false
       searchButton.title = "CANCEL"
       searchBar.becomeFirstResponder()
     } else {
       blurEffectView.isHidden = true
+      navigationItem.titleView = nil
       searchBar.isHidden = true
       searchButton.title = "SEARCH"
       searchBar.resignFirstResponder()
     }
+  }
+  
+  func closeSearchBar() {
+    blurEffectView.isHidden = true
+    searchBar.isHidden = true
+    searchButton.title = "SEARCH"
+    searchBar.resignFirstResponder()
   }
   
   func configureDataSource() {

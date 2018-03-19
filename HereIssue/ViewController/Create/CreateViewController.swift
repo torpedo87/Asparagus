@@ -9,10 +9,12 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import RxGesture
 
 class CreateViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
   var viewModel: CreateViewModel!
+  
   private let stackView: UIStackView = {
     let stack = UIStackView()
     stack.axis = .vertical
@@ -33,6 +35,7 @@ class CreateViewController: UIViewController, BindableType {
     label.text = "Body"
     return label
   }()
+  
   private let repoLabelStackView: UIStackView = {
     let stack = UIStackView()
     stack.axis = .horizontal
@@ -59,7 +62,7 @@ class CreateViewController: UIViewController, BindableType {
     return view
   }()
   
-  private let bodyTextView: UITextView = {
+  private lazy var bodyTextView: UITextView = {
     let view = UITextView()
     view.layer.borderColor = UIColor.black.cgColor
     view.layer.borderWidth = 0.5
@@ -71,6 +74,11 @@ class CreateViewController: UIViewController, BindableType {
     return view
   }()
   
+  private let tagLabel: UILabel = {
+    let label = UILabel()
+    label.text = "Tags with # : "
+    return label
+  }()
   private let tagTextField: UITextField = {
     let view = UITextField()
     view.placeholder = "add tag with #"
@@ -90,16 +98,18 @@ class CreateViewController: UIViewController, BindableType {
   
   private var cancelButton: UIButton = {
     let btn = UIButton()
-    btn.backgroundColor = UIColor.yellow
+    btn.backgroundColor = UIColor(hex: "FD9727")
     btn.setTitle("CANCEL", for: .normal)
+    btn.layer.cornerRadius = 10
     return btn
   }()
   
   private var saveButton: UIButton = {
     let btn = UIButton()
-    btn.backgroundColor = UIColor.red
+    btn.layer.cornerRadius = 10
+    btn.backgroundColor = UIColor(hex: "4054B2")
     btn.setTitle("SAVE", for: .normal)
-    btn.setTitle("enter full", for: .disabled)
+    btn.setTitle("Enter title", for: .disabled)
     return btn
   }()
   
@@ -136,6 +146,13 @@ class CreateViewController: UIViewController, BindableType {
         return "\(item)"
       }
       .disposed(by: bag)
+    
+    view.rx.tapGesture()
+      .when(UIGestureRecognizerState.recognized)
+      .subscribe(onNext: { [unowned self] _ in
+        self.view.endEditing(true)
+      })
+      .disposed(by: bag)
   }
   
   override func viewDidLoad() {
@@ -156,6 +173,7 @@ class CreateViewController: UIViewController, BindableType {
     repoLabelStackView.addArrangedSubview(selectedRepositoryLabel)
     stackView.addArrangedSubview(repoLabelStackView)
     stackView.addArrangedSubview(pickerView)
+    stackView.addArrangedSubview(tagLabel)
     stackView.addArrangedSubview(tagTextField)
     buttonStackView.addArrangedSubview(cancelButton)
     buttonStackView.addArrangedSubview(saveButton)

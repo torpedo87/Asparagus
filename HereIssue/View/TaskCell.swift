@@ -60,7 +60,7 @@ class TaskCell: UITableViewCell {
     
     item.rx.observe(Int.self, "number")
       .subscribe(onNext: { [unowned self] number in
-        self.numberLabel.text = "#\(number!)"
+        self.numberLabel.text = "\(number!)"
       })
       .disposed(by: bag)
     

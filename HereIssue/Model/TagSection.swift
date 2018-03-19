@@ -1,5 +1,5 @@
 //
-//  GroupSection.swift
+//  TagSection.swift
 //  HereIssue
 //
 //  Created by junwoo on 2018. 3. 14..
@@ -9,14 +9,14 @@
 import Foundation
 import RxDataSources
 
-struct GroupSection {
+struct TagSection {
   var header: String
   var items: [Item]
 }
-extension GroupSection: SectionModelType {
-  typealias Item = String
+extension TagSection: SectionModelType {
+  typealias Item = Tag
   
-  init(original: GroupSection, items: [Item]) {
+  init(original: TagSection, items: [Item]) {
     self = original
     self.items = items
   }

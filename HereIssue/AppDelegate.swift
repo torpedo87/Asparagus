@@ -33,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       sceneCoordinator.transition(to: sideBarScene, type: .root)
       
       let navigationBarAppearace = UINavigationBar.appearance()
-      navigationBarAppearace.tintColor = UIColor.lightGray
+      navigationBarAppearace.tintColor = UIColor(hex: "4478E4")
       navigationBarAppearace.barTintColor = UIColor.white
       navigationBarAppearace.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.black]
     }

@@ -26,7 +26,7 @@ class SyncService: SyncServiceRepresentable {
   private let bag = DisposeBag()
   private let issueService: IssueServiceRepresentable
   private let localTaskService: LocalTaskServiceType
-  let running = BehaviorRelay<Bool>(value: true)
+  let running = BehaviorRelay<Bool>(value: false)
   
   init(issueService: IssueServiceRepresentable, localTaskService: LocalTaskServiceType) {
     self.issueService = issueService
@@ -34,6 +34,7 @@ class SyncService: SyncServiceRepresentable {
   }
   
   func syncWhenTaskEdittedInLocal() {
+    print("-------eidt realtime---------")
     localTaskService.observeEditTask()
       .flatMap { taskArr -> Observable<TaskItem> in
         if let task = taskArr.first {
@@ -53,7 +54,7 @@ class SyncService: SyncServiceRepresentable {
   }
 
   func syncWhenTaskCreatedInLocal() {
-    //로컬에서 이슈생성시 observable 발생
+    print("-------create realtime---------")
     localTaskService.observeCreateTask()
       .filter { $0.count > 0 }
       .flatMap({ [unowned self] in
@@ -106,7 +107,6 @@ class SyncService: SyncServiceRepresentable {
       .subscribe(onNext: { _ in
         self.running.accept(true)
       }, onCompleted: {
-        self.running.accept(false)
         print("updateOldServerWithNewLocal complete")
         self.updateOldServerWithRecentLocal(fetchedTasks: fetchedTasks)
       })
@@ -136,7 +136,6 @@ class SyncService: SyncServiceRepresentable {
       .subscribe(onNext: { _ in
         self.running.accept(true)
       }, onCompleted: {
-        self.running.accept(false)
         print("updateOldServerWithRecentLocal complete")
           self.updateOldLocalWithNewServer(fetchedTasks: fetchedTasks)
       })
@@ -156,9 +155,8 @@ class SyncService: SyncServiceRepresentable {
       .subscribe(onNext: { _ in
         self.running.accept(true)
       }, onCompleted: {
-        //self.running.accept(false)
         print("updateOldLocalWithNewServer complete")
-          self.updateOldLocalWithRecentServer(fetchedTasks: fetchedTasks)
+        self.updateOldLocalWithRecentServer(fetchedTasks: fetchedTasks)
       })
       .disposed(by: bag)
   }

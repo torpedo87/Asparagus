@@ -86,7 +86,7 @@ struct TaskViewModel {
         if title == "Inbox" {
           return self.localTaskService.openTasks()
         } else {
-          return self.localTaskService.tasksForGroup(groupTitle: title)
+          return self.localTaskService.tasksForTag(tagTitle: title)
         }
       })
       .map { results in

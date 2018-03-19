@@ -16,6 +16,7 @@ target 'HereIssue' do
   pod 'Action'
   pod 'RxDataSources'
   pod 'Reveal-SDK', :configurations => ['Debug']
+  pod 'RxGesture'
 
   target 'HereIssueTests' do
     inherit! :search_paths

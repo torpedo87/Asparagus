@@ -10,9 +10,12 @@
 		4840921A204D42C9007C6EE5 /* CreateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48409219204D42C9007C6EE5 /* CreateViewModel.swift */; };
 		4840921C204D42D2007C6EE5 /* CreateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4840921B204D42D2007C6EE5 /* CreateViewController.swift */; };
 		4842DB2320592B590093B496 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB2220592B590093B496 /* UIColor.swift */; };
-		4842DB2520592F170093B496 /* RepositoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB2420592F170093B496 /* RepositoryCell.swift */; };
-		4842DB272059348B0093B496 /* GroupSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB262059348B0093B496 /* GroupSection.swift */; };
-		4842DB2920596A610093B496 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB2820596A610093B496 /* Group.swift */; };
+		4842DB2520592F170093B496 /* TagCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB2420592F170093B496 /* TagCell.swift */; };
+		4842DB272059348B0093B496 /* TagSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB262059348B0093B496 /* TagSection.swift */; };
+		4842DB2920596A610093B496 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB2820596A610093B496 /* Tag.swift */; };
+		48480A1C205FA1DB004ED59A /* RealmConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48480A1B205FA1DB004ED59A /* RealmConfig.swift */; };
+		48480A1E205FA511004ED59A /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48480A1D205FA511004ED59A /* URL.swift */; };
+		48480A21205FB8ED004ED59A /* default_v1.0.realm in Resources */ = {isa = PBXBuildFile; fileRef = 48480A20205FAAFF004ED59A /* default_v1.0.realm */; };
 		4848BEBE20566E34009C1B97 /* SidebarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEBD20566E34009C1B97 /* SidebarViewController.swift */; };
 		4848BEC020566E54009C1B97 /* LeftViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEBF20566E54009C1B97 /* LeftViewController.swift */; };
 		4848BEC4205675C1009C1B97 /* LeftViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEC3205675C1009C1B97 /* LeftViewModel.swift */; };
@@ -65,9 +68,12 @@
 		48409219204D42C9007C6EE5 /* CreateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateViewModel.swift; sourceTree = "<group>"; };
 		4840921B204D42D2007C6EE5 /* CreateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateViewController.swift; sourceTree = "<group>"; };
 		4842DB2220592B590093B496 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
-		4842DB2420592F170093B496 /* RepositoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryCell.swift; sourceTree = "<group>"; };
-		4842DB262059348B0093B496 /* GroupSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupSection.swift; sourceTree = "<group>"; };
-		4842DB2820596A610093B496 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
+		4842DB2420592F170093B496 /* TagCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCell.swift; sourceTree = "<group>"; };
+		4842DB262059348B0093B496 /* TagSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagSection.swift; sourceTree = "<group>"; };
+		4842DB2820596A610093B496 /* Tag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tag.swift; sourceTree = "<group>"; };
+		48480A1B205FA1DB004ED59A /* RealmConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmConfig.swift; sourceTree = "<group>"; };
+		48480A1D205FA511004ED59A /* URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URL.swift; sourceTree = "<group>"; };
+		48480A20205FAAFF004ED59A /* default_v1.0.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = default_v1.0.realm; sourceTree = "<group>"; };
 		4848BEBD20566E34009C1B97 /* SidebarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewController.swift; sourceTree = "<group>"; };
 		4848BEBF20566E54009C1B97 /* LeftViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftViewController.swift; sourceTree = "<group>"; };
 		4848BEC3205675C1009C1B97 /* LeftViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftViewModel.swift; sourceTree = "<group>"; };
@@ -139,6 +145,17 @@
 			path = Create;
 			sourceTree = "<group>";
 		};
+		48480A1F205FAABE004ED59A /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				487D91F120453736008CB44E /* Assets.xcassets */,
+				487D91F320453736008CB44E /* LaunchScreen.storyboard */,
+				487D91F620453736008CB44E /* Info.plist */,
+				48480A20205FAAFF004ED59A /* default_v1.0.realm */,
+			);
+			path = Assets;
+			sourceTree = "<group>";
+		};
 		4848BEBC20566DF7009C1B97 /* Slidebar */ = {
 			isa = PBXGroup;
 			children = (
@@ -182,16 +199,14 @@
 		487D91E920453735008CB44E /* HereIssue */ = {
 			isa = PBXGroup;
 			children = (
+				48480A1F205FAABE004ED59A /* Assets */,
 				487D92432046C9AA008CB44E /* View */,
 				487D9231204547C6008CB44E /* Extension */,
-				487D922C204543E8008CB44E /* API */,
+				487D922C204543E8008CB44E /* Service */,
 				487D920E204537AC008CB44E /* Model */,
 				487D920C2045377D008CB44E /* Scene */,
 				487D920A2045375F008CB44E /* ViewController */,
 				487D91EA20453735008CB44E /* AppDelegate.swift */,
-				487D91F120453736008CB44E /* Assets.xcassets */,
-				487D91F320453736008CB44E /* LaunchScreen.storyboard */,
-				487D91F620453736008CB44E /* Info.plist */,
 			);
 			path = HereIssue;
 			sourceTree = "<group>";
@@ -237,13 +252,14 @@
 				4848EC042047F68200B59315 /* TaskSection.swift */,
 				4848EC10204A87E600B59315 /* User.swift */,
 				4848EC14204A8C5200B59315 /* Repository.swift */,
-				4842DB262059348B0093B496 /* GroupSection.swift */,
-				4842DB2820596A610093B496 /* Group.swift */,
+				4842DB262059348B0093B496 /* TagSection.swift */,
+				4842DB2820596A610093B496 /* Tag.swift */,
+				48480A1B205FA1DB004ED59A /* RealmConfig.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
 		};
-		487D922C204543E8008CB44E /* API */ = {
+		487D922C204543E8008CB44E /* Service */ = {
 			isa = PBXGroup;
 			children = (
 				487D922D20454421008CB44E /* IssueService.swift */,
@@ -252,7 +268,7 @@
 				4848EC12204A8A2B00B59315 /* SyncService.swift */,
 				487D9228204542A8008CB44E /* LocalTaskService.swift */,
 			);
-			path = API;
+			path = Service;
 			sourceTree = "<group>";
 		};
 		487D9231204547C6008CB44E /* Extension */ = {
@@ -261,6 +277,7 @@
 				487D9232204547DC008CB44E /* UserDefaults.swift */,
 				487D923920458E79008CB44E /* RxReachability.swift */,
 				4842DB2220592B590093B496 /* UIColor.swift */,
+				48480A1D205FA511004ED59A /* URL.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -287,7 +304,7 @@
 			isa = PBXGroup;
 			children = (
 				487D92442046C9B6008CB44E /* TaskCell.swift */,
-				4842DB2420592F170093B496 /* RepositoryCell.swift */,
+				4842DB2420592F170093B496 /* TagCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -401,6 +418,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				48480A21205FB8ED004ED59A /* default_v1.0.realm in Resources */,
 				487D91F520453736008CB44E /* LaunchScreen.storyboard in Resources */,
 				487D91F220453736008CB44E /* Assets.xcassets in Resources */,
 			);
@@ -434,6 +452,7 @@
 				"${PODS_ROOT}/Reveal-SDK/RevealServer-13/iOS/RevealServer.framework",
 				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
 				"${BUILT_PRODUCTS_DIR}/RxDataSources/RxDataSources.framework",
+				"${BUILT_PRODUCTS_DIR}/RxGesture/RxGesture.framework",
 				"${BUILT_PRODUCTS_DIR}/RxRealm/RxRealm.framework",
 				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/SnapKit/SnapKit.framework",
@@ -451,6 +470,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RevealServer.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxDataSources.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxGesture.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxRealm.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SnapKit.framework",
@@ -561,11 +581,12 @@
 				487D921B20453F5D008CB44E /* AuthViewController.swift in Sources */,
 				487D921D20453F75008CB44E /* TaskViewController.swift in Sources */,
 				4842DB2320592B590093B496 /* UIColor.swift in Sources */,
-				4842DB2520592F170093B496 /* RepositoryCell.swift in Sources */,
+				4842DB2520592F170093B496 /* TagCell.swift in Sources */,
 				4848EC11204A87E600B59315 /* User.swift in Sources */,
 				4848BEC020566E54009C1B97 /* LeftViewController.swift in Sources */,
 				4848EC13204A8A2B00B59315 /* SyncService.swift in Sources */,
 				487D922E20454421008CB44E /* IssueService.swift in Sources */,
+				48480A1C205FA1DB004ED59A /* RealmConfig.swift in Sources */,
 				487D92452046C9B6008CB44E /* TaskCell.swift in Sources */,
 				4848BEC4205675C1009C1B97 /* LeftViewModel.swift in Sources */,
 				4848EC052047F68200B59315 /* TaskSection.swift in Sources */,
@@ -576,14 +597,15 @@
 				487D921920453F15008CB44E /* Scene.swift in Sources */,
 				487D923520454811008CB44E /* Token.swift in Sources */,
 				487D9229204542A8008CB44E /* LocalTaskService.swift in Sources */,
-				4842DB272059348B0093B496 /* GroupSection.swift in Sources */,
+				4842DB272059348B0093B496 /* TagSection.swift in Sources */,
 				4840921A204D42C9007C6EE5 /* CreateViewModel.swift in Sources */,
 				4840921C204D42D2007C6EE5 /* CreateViewController.swift in Sources */,
 				487D923C2046B603008CB44E /* TaskItem.swift in Sources */,
+				48480A1E205FA511004ED59A /* URL.swift in Sources */,
 				487D923A20458E79008CB44E /* RxReachability.swift in Sources */,
 				487D91EB20453735008CB44E /* AppDelegate.swift in Sources */,
 				487D92232045411D008CB44E /* SceneCoordinatorType.swift in Sources */,
-				4842DB2920596A610093B496 /* Group.swift in Sources */,
+				4842DB2920596A610093B496 /* Tag.swift in Sources */,
 				487D922120453F8A008CB44E /* TaskViewModel.swift in Sources */,
 				487D92422046BECD008CB44E /* IssueAPI.swift in Sources */,
 				4848EC082048FE9500B59315 /* EditViewModel.swift in Sources */,
@@ -737,7 +759,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = J6JJA4UC5Z;
-				INFOPLIST_FILE = HereIssue/Info.plist;
+				INFOPLIST_FILE = HereIssue/Assets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.samchon.HereIssue;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -753,7 +775,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = J6JJA4UC5Z;
-				INFOPLIST_FILE = HereIssue/Info.plist;
+				INFOPLIST_FILE = HereIssue/Assets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.samchon.HereIssue;
 				PRODUCT_NAME = "$(TARGET_NAME)";

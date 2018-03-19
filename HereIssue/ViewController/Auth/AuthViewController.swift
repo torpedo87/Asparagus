@@ -9,6 +9,7 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import RxGesture
 
 class AuthViewController: UIViewController, BindableType {
   var viewModel: AuthViewModel!
@@ -141,6 +142,13 @@ class AuthViewController: UIViewController, BindableType {
     
     forgotPasswordButton.rx.action = viewModel.onForgotPassword()
     cancelButton.rx.action = viewModel.onCancel
+    
+    view.rx.tapGesture()
+      .when(UIGestureRecognizerState.recognized)
+      .subscribe(onNext: { [unowned self] _ in
+        self.view.endEditing(true)
+      })
+      .disposed(by: bag)
   }
   
   private func alertErrorMsg(message: String) {

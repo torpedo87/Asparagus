@@ -19,7 +19,7 @@ class TaskItem: Object, Decodable {
   @objc dynamic var owner: User?
   @objc dynamic var repository: Repository?
   @objc dynamic var number = 0
-  let group = LinkingObjects(fromType: Group.self, property: "tasks")
+  let tag = LinkingObjects(fromType: Tag.self, property: "tasks")
   
   // local only properties
   var updatedDate: Date {

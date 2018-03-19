@@ -14,6 +14,17 @@ import Action
 
 class LeftViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
+  private let topView: UIView = {
+    let view = UIView()
+    view.backgroundColor = UIColor(hex: "2E3136")
+    return view
+  }()
+  private let appLabel: UILabel = {
+    let label = UILabel()
+    label.text = "HereIssue"
+    label.textColor = UIColor.white
+    return label
+  }()
   private lazy var authButton: UIButton = {
     let btn = UIButton()
     btn.setTitleColor(UIColor.lightGray, for: .normal)
@@ -23,13 +34,13 @@ class LeftViewController: UIViewController, BindableType {
   private lazy var tableView: UITableView = {
     let view = UITableView()
     view.backgroundColor = UIColor(hex: "2E3136")
-    view.register(RepositoryCell.self,
-                  forCellReuseIdentifier: RepositoryCell.reuseIdentifier)
+    view.register(TagCell.self,
+                  forCellReuseIdentifier: TagCell.reuseIdentifier)
     view.rowHeight = UIScreen.main.bounds.height / 15
     view.separatorStyle = .none
     return view
   }()
-  var dataSource: RxTableViewSectionedReloadDataSource<GroupSection>!
+  var dataSource: RxTableViewSectionedReloadDataSource<TagSection>!
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -39,20 +50,31 @@ class LeftViewController: UIViewController, BindableType {
   
   func setupView() {
     view.backgroundColor = UIColor(hex: "2E3136")
+    topView.addSubview(appLabel)
+    topView.addSubview(authButton)
+    view.addSubview(topView)
     view.addSubview(tableView)
-    view.addSubview(authButton)
     
+    topView.snp.makeConstraints { (make) in
+      make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
+      make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+      make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
+      make.height.equalTo(45)
+      make.bottom.equalTo(tableView.snp.top)
+    }
+    appLabel.snp.makeConstraints { (make) in
+      appLabel.sizeToFit()
+      make.center.equalTo(topView)
+    }
+    authButton.snp.makeConstraints { (make) in
+      authButton.sizeToFit()
+      make.centerY.equalTo(topView)
+      make.right.equalTo(topView).offset(-10)
+    }
     tableView.snp.makeConstraints { (make) in
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(50)
       make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
       make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
       make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-    }
-    
-    authButton.snp.makeConstraints { (make) in
-      authButton.sizeToFit()
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(10)
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
     }
   }
   
@@ -70,19 +92,19 @@ class LeftViewController: UIViewController, BindableType {
     
     tableView.rx.itemSelected
       .map { [unowned self] indexPath in
-        try! self.dataSource.model(at: indexPath) as! String
+        try! self.dataSource.model(at: indexPath) as! Tag
       }
-      .subscribe(onNext: { [unowned self] title in
-        self.viewModel.selectedGroupTitle.accept(title)
+      .subscribe(onNext: { [unowned self] group in
+        self.viewModel.selectedGroupTitle.accept(group.title)
       })
       .disposed(by: bag)
   }
   
   func configureDataSource() {
-    dataSource = RxTableViewSectionedReloadDataSource<GroupSection> (
+    dataSource = RxTableViewSectionedReloadDataSource<TagSection> (
       configureCell: { dataSource, tableView, indexPath, item in
-        let cell = tableView.dequeueReusableCell(withIdentifier: RepositoryCell.reuseIdentifier, for: indexPath) as! RepositoryCell
-        cell.configureCell(repoName: item)
+        let cell = tableView.dequeueReusableCell(withIdentifier: TagCell.reuseIdentifier, for: indexPath) as! TagCell
+        cell.configureCell(tag: item)
         return cell
       },
       titleForHeaderInSection: { dataSource, index in

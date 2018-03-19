@@ -36,20 +36,21 @@ struct LeftViewModel {
     selectedGroupTitle.accept("Inbox")
   }
   
-  var sectionedItems: Observable<[GroupSection]> {
-    return localTaskService.groups()
+  var sectionedItems: Observable<[TagSection]> {
+    return localTaskService.tags()
       .map { results in
-        let inboxItems = ["Inbox"]
-        let groupItems = results
+        let inboxTag = Tag()
+        inboxTag.title = "Inbox"
+        let inboxItems = [inboxTag]
+        let tagItems = results
           .filter("tasks.@count > 0")
+          .filter("title != 'Inbox'")
           .sorted(byKeyPath: "title", ascending: true)
           .toArray()
         
         return [
-          GroupSection(header: "Inbox", items: inboxItems),
-          GroupSection(header: "Tags", items: groupItems
-            .map{ $0.title }
-            .filter{ $0 != "Inbox"})
+          TagSection(header: "Inbox", items: inboxItems),
+          TagSection(header: "Tags", items: tagItems)
         ]
     }
   }
