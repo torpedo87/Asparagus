@@ -78,7 +78,22 @@ class EditViewController: UIViewController, BindableType {
     view.layer.borderWidth = 0.5
     return view
   }()
+  private let buttonStackView: UIStackView = {
+    let stack = UIStackView()
+    stack.axis = .horizontal
+    stack.spacing = 10
+    stack.alignment = .fill
+    stack.distribution = .fillEqually
+    return stack
+  }()
   
+  private var deleteButton: UIButton = {
+    let btn = UIButton()
+    btn.backgroundColor = UIColor(hex: "FD9727")
+    btn.setTitle("DELETE", for: .normal)
+    btn.layer.cornerRadius = 10
+    return btn
+  }()
   private var saveButton: UIButton = {
     let btn = UIButton()
     btn.backgroundColor = UIColor(hex: "4054B2")
@@ -120,12 +135,21 @@ class EditViewController: UIViewController, BindableType {
       }).bind(to: viewModel.onUpdate.inputs)
         .disposed(by: bag)
     
+    deleteButton.rx.tap
+      .throttle(0.5, scheduler: MainScheduler.instance)
+      .map { [unowned self] _ -> TaskItem in
+        return self.viewModel.task
+      }.bind(to: viewModel.onDelete.inputs)
+      .disposed(by: bag)
+    
     view.rx.tapGesture()
       .when(UIGestureRecognizerState.recognized)
       .subscribe(onNext: { [unowned self] _ in
         self.view.endEditing(true)
       })
       .disposed(by: bag)
+    
+    deleteButton.isEnabled = !viewModel.task.isServerGeneratedType
   }
   
   override func viewDidLoad() {
@@ -146,7 +170,9 @@ class EditViewController: UIViewController, BindableType {
     repoLabelStackView.addArrangedSubview(selectedRepositoryLabel)
     stackView.addArrangedSubview(repoLabelStackView)
     stackView.addArrangedSubview(tagTextField)
-    stackView.addArrangedSubview(saveButton)
+    buttonStackView.addArrangedSubview(deleteButton)
+    buttonStackView.addArrangedSubview(saveButton)
+    stackView.addArrangedSubview(buttonStackView)
     
     stackView.snp.makeConstraints { (make) in
       make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)

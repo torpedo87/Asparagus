@@ -109,6 +109,7 @@ struct TaskViewModel {
     return Action { task in
       let editViewModel = EditViewModel(task: task,
                                         coordinator: this.sceneCoordinator,
+                                        deleteAction: this.onDeleteTask(task: task),
                                         updateAction: this.onUpdateTask(task: task),
                                         localTaskService: this.localTaskService)
       return this.sceneCoordinator
@@ -116,6 +117,16 @@ struct TaskViewModel {
         .asObservable()
     }
   }(self)
+  
+  func onDeleteTask(task: TaskItem) -> Action<TaskItem, Void> {
+    return Action { task in
+      return self.localTaskService.convertToTaskWithRef(task: task)
+        .flatMap({ taskWithRef in
+          return self.localTaskService.deleteTask(newTaskWithRef: taskWithRef)
+        })
+        .map { _ in }
+    }
+  }
   
   func onUpdateTask(task: TaskItem) -> Action<(String, String, [String]), Void> {
     return Action { tuple in

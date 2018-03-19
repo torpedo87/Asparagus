@@ -74,6 +74,8 @@ class LocalTaskService: LocalTaskServiceType {
             group.isCreatedInServer = true
             group.tasks.append(task)
           }
+        } else {
+          realm.add(task)
         }
         print(Thread.current, "write thread \(#function)")
       }
@@ -178,7 +180,7 @@ class LocalTaskService: LocalTaskServiceType {
   }
   
   func tags() -> Observable<Results<Tag>> {
-    print("------realmfile-------", Realm.Configuration.defaultConfiguration.fileURL)
+    print("------realmfile-------", RealmConfig.main.configuration.fileURL)
     let result = withRealm("getting groups") { realm -> Observable<Results<Tag>> in
       let tags = realm.objects(Tag.self)
       return Observable.collection(from: tags)
