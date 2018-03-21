@@ -47,7 +47,8 @@
 		487D923C2046B603008CB44E /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D923B2046B603008CB44E /* TaskItem.swift */; };
 		487D92422046BECD008CB44E /* IssueAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D92412046BECD008CB44E /* IssueAPI.swift */; };
 		487D92452046C9B6008CB44E /* TaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D92442046C9B6008CB44E /* TaskCell.swift */; };
-		6BFC5CEBF16A61561A3C9DAA /* Pods_HereIssue.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06C28467874E9FCDA2208317 /* Pods_HereIssue.framework */; };
+		523EF8CFC0B0FF22AF62AC52 /* Pods_AsparagusTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1958245E569BB5F20CB9EADC /* Pods_AsparagusTests.framework */; };
+		5459BD2A6B31540055269472 /* Pods_Asparagus.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89D8923D6187F3074ED7CAF6 /* Pods_Asparagus.framework */; };
 		6C0AC02259B58747B0FF125B /* Pods_HereIssueTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3747EF69FE58F0851163FB2 /* Pods_HereIssueTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -63,6 +64,7 @@
 
 /* Begin PBXFileReference section */
 		06C28467874E9FCDA2208317 /* Pods_HereIssue.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HereIssue.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1958245E569BB5F20CB9EADC /* Pods_AsparagusTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AsparagusTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F5A48A11EEF3E38AA8F75E3 /* Pods-HereIssue.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HereIssue.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HereIssue/Pods-HereIssue.debug.xcconfig"; sourceTree = "<group>"; };
 		48409219204D42C9007C6EE5 /* CreateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateViewModel.swift; sourceTree = "<group>"; };
 		4840921B204D42D2007C6EE5 /* CreateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateViewController.swift; sourceTree = "<group>"; };
@@ -109,9 +111,14 @@
 		487D92412046BECD008CB44E /* IssueAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueAPI.swift; sourceTree = "<group>"; };
 		487D92442046C9B6008CB44E /* TaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCell.swift; sourceTree = "<group>"; };
 		5192D82576729B691B804C17 /* Pods-HereIssueTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HereIssueTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-HereIssueTests/Pods-HereIssueTests.release.xcconfig"; sourceTree = "<group>"; };
+		55500856096F4F18E140674D /* Pods-AsparagusTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AsparagusTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AsparagusTests/Pods-AsparagusTests.debug.xcconfig"; sourceTree = "<group>"; };
+		59D5D244A929E24EA7E1F6B2 /* Pods-Asparagus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Asparagus.release.xcconfig"; path = "Pods/Target Support Files/Pods-Asparagus/Pods-Asparagus.release.xcconfig"; sourceTree = "<group>"; };
+		89D8923D6187F3074ED7CAF6 /* Pods_Asparagus.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Asparagus.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8CCFC33614FB8FAAFAD4861F /* Pods-HereIssueTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HereIssueTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HereIssueTests/Pods-HereIssueTests.debug.xcconfig"; sourceTree = "<group>"; };
 		93598022D5921A8F6AB82776 /* Pods-HereIssue.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HereIssue.release.xcconfig"; path = "Pods/Target Support Files/Pods-HereIssue/Pods-HereIssue.release.xcconfig"; sourceTree = "<group>"; };
 		B3747EF69FE58F0851163FB2 /* Pods_HereIssueTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HereIssueTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB77B9EC75F133E035909F2F /* Pods-Asparagus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Asparagus.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Asparagus/Pods-Asparagus.debug.xcconfig"; sourceTree = "<group>"; };
+		E54EC93D805BAAE31F0AEB68 /* Pods-AsparagusTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AsparagusTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AsparagusTests/Pods-AsparagusTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,7 +126,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6BFC5CEBF16A61561A3C9DAA /* Pods_HereIssue.framework in Frameworks */,
+				5459BD2A6B31540055269472 /* Pods_Asparagus.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,6 +135,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6C0AC02259B58747B0FF125B /* Pods_HereIssueTests.framework in Frameworks */,
+				523EF8CFC0B0FF22AF62AC52 /* Pods_AsparagusTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,6 +321,10 @@
 				93598022D5921A8F6AB82776 /* Pods-HereIssue.release.xcconfig */,
 				8CCFC33614FB8FAAFAD4861F /* Pods-HereIssueTests.debug.xcconfig */,
 				5192D82576729B691B804C17 /* Pods-HereIssueTests.release.xcconfig */,
+				BB77B9EC75F133E035909F2F /* Pods-Asparagus.debug.xcconfig */,
+				59D5D244A929E24EA7E1F6B2 /* Pods-Asparagus.release.xcconfig */,
+				55500856096F4F18E140674D /* Pods-AsparagusTests.debug.xcconfig */,
+				E54EC93D805BAAE31F0AEB68 /* Pods-AsparagusTests.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -322,6 +334,8 @@
 			children = (
 				06C28467874E9FCDA2208317 /* Pods_HereIssue.framework */,
 				B3747EF69FE58F0851163FB2 /* Pods_HereIssueTests.framework */,
+				89D8923D6187F3074ED7CAF6 /* Pods_Asparagus.framework */,
+				1958245E569BB5F20CB9EADC /* Pods_AsparagusTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -437,7 +451,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-HereIssue/Pods-HereIssue-frameworks.sh",
+				"${SRCROOT}/Pods/Target Support Files/Pods-Asparagus/Pods-Asparagus-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Action/Action.framework",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/Differentiator/Differentiator.framework",
@@ -474,7 +488,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HereIssue/Pods-HereIssue-frameworks.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Asparagus/Pods-Asparagus-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		66868324D9CF4C7DF79F2C98 /* [CP] Copy Pods Resources */ = {
@@ -489,7 +503,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HereIssue/Pods-HereIssue-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Asparagus/Pods-Asparagus-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		785DB9BDA483E294A380C07F /* [CP] Copy Pods Resources */ = {
@@ -504,7 +518,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HereIssueTests/Pods-HereIssueTests-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AsparagusTests/Pods-AsparagusTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		792B2964BBA157227899E975 /* [CP] Check Pods Manifest.lock */ = {
@@ -518,7 +532,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HereIssue-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Asparagus-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -536,7 +550,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HereIssueTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-AsparagusTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -549,7 +563,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-HereIssueTests/Pods-HereIssueTests-frameworks.sh",
+				"${SRCROOT}/Pods/Target Support Files/Pods-AsparagusTests/Pods-AsparagusTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/RxBlocking/RxBlocking.framework",
 				"${BUILT_PRODUCTS_DIR}/RxTest/RxTest.framework",
@@ -562,7 +576,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HereIssueTests/Pods-HereIssueTests-frameworks.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AsparagusTests/Pods-AsparagusTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -750,7 +764,7 @@
 		};
 		487D920520453736008CB44E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2F5A48A11EEF3E38AA8F75E3 /* Pods-HereIssue.debug.xcconfig */;
+			baseConfigurationReference = BB77B9EC75F133E035909F2F /* Pods-Asparagus.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -766,7 +780,7 @@
 		};
 		487D920620453736008CB44E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 93598022D5921A8F6AB82776 /* Pods-HereIssue.release.xcconfig */;
+			baseConfigurationReference = 59D5D244A929E24EA7E1F6B2 /* Pods-Asparagus.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -782,7 +796,7 @@
 		};
 		487D920820453736008CB44E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8CCFC33614FB8FAAFAD4861F /* Pods-HereIssueTests.debug.xcconfig */;
+			baseConfigurationReference = 55500856096F4F18E140674D /* Pods-AsparagusTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -794,13 +808,13 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Asparagus.app/Asparagus";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Asparagus.temp_caseinsensitive_rename.app/Asparagus.temp_caseinsensitive_rename";
 			};
 			name = Debug;
 		};
 		487D920920453736008CB44E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5192D82576729B691B804C17 /* Pods-HereIssueTests.release.xcconfig */;
+			baseConfigurationReference = E54EC93D805BAAE31F0AEB68 /* Pods-AsparagusTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -812,7 +826,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Asparagus.app/Asparagus";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Asparagus.temp_caseinsensitive_rename.app/Asparagus.temp_caseinsensitive_rename";
 			};
 			name = Release;
 		};

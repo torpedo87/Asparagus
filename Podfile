@@ -1,11 +1,11 @@
 # Uncomment the next line to define a global platform for your project
 # platform :ios, '9.0'
 
-target 'HereIssue' do
+target 'Asparagus' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
   use_frameworks!
 
-  # Pods for HereIssue
+  # Pods for Asparagus
   pod 'SnapKit', '~> 4.0.0'
   pod 'RxSwift'
   pod 'RxCocoa'
@@ -19,7 +19,7 @@ target 'HereIssue' do
   pod 'RxGesture'
   pod 'Kingfisher'
 
-  target 'HereIssueTests' do
+  target 'AsparagusTests' do
     inherit! :search_paths
     # Pods for testing
     pod 'RxSwift'
