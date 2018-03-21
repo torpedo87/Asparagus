@@ -68,7 +68,7 @@ class EditViewController: UIViewController, BindableType {
   }()
   private let tagLabel: UILabel = {
     let label = UILabel()
-    label.text = "Tags with #: "
+    label.text = "Tags with # : "
     return label
   }()
   private let tagTextField: UITextField = {
@@ -91,6 +91,7 @@ class EditViewController: UIViewController, BindableType {
     let btn = UIButton()
     btn.backgroundColor = UIColor(hex: "FD9727")
     btn.setTitle("DELETE", for: .normal)
+    btn.setTitle("CAN'T DELETE", for: .disabled)
     btn.layer.cornerRadius = 10
     return btn
   }()
@@ -169,6 +170,7 @@ class EditViewController: UIViewController, BindableType {
     repoLabelStackView.addArrangedSubview(repositoryLabel)
     repoLabelStackView.addArrangedSubview(selectedRepositoryLabel)
     stackView.addArrangedSubview(repoLabelStackView)
+    stackView.addArrangedSubview(tagLabel)
     stackView.addArrangedSubview(tagTextField)
     buttonStackView.addArrangedSubview(deleteButton)
     buttonStackView.addArrangedSubview(saveButton)

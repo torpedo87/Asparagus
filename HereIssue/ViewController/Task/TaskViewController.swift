@@ -39,6 +39,7 @@ class TaskViewController: UIViewController, BindableType {
                       action: nil)
     return item
   }()
+  
   lazy var newTaskButton: UIButton = {
     let btn = UIButton()
     btn.backgroundColor = UIColor.white
@@ -197,22 +198,29 @@ class TaskViewController: UIViewController, BindableType {
       })
       .bind(to: viewModel.searchSections)
       .disposed(by: bag)
+    
   }
   
   func toggleSearchBar() {
     if blurEffectView.isHidden {
-      blurEffectView.isHidden = false
+      fadeView(view: blurEffectView, hidden: false)
+      fadeView(view: searchBar, hidden: false)
       navigationItem.titleView = searchBar
-      searchBar.isHidden = false
       searchButton.title = "CANCEL"
       searchBar.becomeFirstResponder()
     } else {
-      blurEffectView.isHidden = true
+      fadeView(view: blurEffectView, hidden: true)
+      fadeView(view: searchBar, hidden: true)
       navigationItem.titleView = nil
-      searchBar.isHidden = true
       searchButton.title = "SEARCH"
       searchBar.resignFirstResponder()
     }
+  }
+  
+  func fadeView(view: UIView, hidden: Bool) {
+    UIView.transition(with: view, duration: 0.5, options: .transitionCrossDissolve, animations: {
+      view.isHidden = hidden
+    })
   }
   
   func closeSearchBar() {

@@ -37,7 +37,6 @@ struct SidebarViewModel {
     taskViewModel.menuTap
       .bind(to: menuTap)
       .disposed(by: bag)
-    
   }
   
 }

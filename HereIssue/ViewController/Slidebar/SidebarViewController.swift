@@ -55,6 +55,7 @@ class SidebarViewController: UIViewController, BindableType {
         self.toggleLeftMenuAnimated(true)
       })
       .disposed(by: bag)
+    
   }
   
   func setupView() {
