@@ -21,3 +21,16 @@ extension TaskSection: SectionModelType {
     self.items = items
   }
 }
+
+struct SubTaskSection {
+  var header: String
+  var items: [Item]
+}
+extension SubTaskSection: SectionModelType {
+  typealias Item = SubTask
+  
+  init(original: SubTaskSection, items: [Item]) {
+    self = original
+    self.items = items
+  }
+}

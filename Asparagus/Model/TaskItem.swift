@@ -20,6 +20,7 @@ class TaskItem: Object, Decodable {
   @objc dynamic var repository: Repository?
   @objc dynamic var number = 0
   let tag = LinkingObjects(fromType: Tag.self, property: "tasks")
+  let subTasks = List<SubTask>()
   
   // local only properties
   var updatedDate: Date {
@@ -28,6 +29,13 @@ class TaskItem: Object, Decodable {
     dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     return dateFormatter.date(from: self.updated)!
+  }
+  var achievementRate: Float {
+    let total = subTasks.count
+    let checkedCount = subTasks.filter("checked = 'closed'").count
+    if total == 0 { return 0 } else {
+      return Float(checkedCount) / Float(total)
+    }
   }
   
   var isServerGeneratedType: Bool {

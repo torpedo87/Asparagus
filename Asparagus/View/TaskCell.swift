@@ -66,6 +66,22 @@ class TaskCell: UITableViewCell {
     
     item.rx.observe(String.self, "title")
       .subscribe(onNext: { [unowned self] title in
+        self.titleLabel.text = title! + "---\(item.achievementRate)"
+      })
+      .disposed(by: bag)
+    
+    item.rx.observe(String.self, "checked")
+      .subscribe(onNext: { [unowned self] state in
+        let image = UIImage(named: state == "open" ? "ItemNotChecked" : "ItemChecked")
+        self.checkButton.setImage(image, for: .normal)
+      })
+      .disposed(by: bag)
+  }
+  
+  func configureCell(item: SubTask, action: CocoaAction) {
+    checkButton.rx.action = action
+    item.rx.observe(String.self, "title")
+      .subscribe(onNext: { [unowned self] title in
         self.titleLabel.text = title
       })
       .disposed(by: bag)

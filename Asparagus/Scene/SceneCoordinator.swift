@@ -11,7 +11,6 @@ import RxSwift
 import RxCocoa
 
 class SceneCoordinator: SceneCoordinatorType {
-  
   let window: UIWindow = {
     let window = UIWindow(frame: UIScreen.main.bounds)
     window.backgroundColor = .white
@@ -40,14 +39,13 @@ class SceneCoordinator: SceneCoordinatorType {
       subject.onCompleted()
       
     case .push:
-      print("-----push current-------- \(currentViewController)")
       var navigationController: UINavigationController
       if let _ = currentViewController as? SidebarViewController {
         navigationController = currentViewController.childViewControllers.last as! UINavigationController
       } else {
         navigationController = currentViewController.navigationController!
       }
-      // one-off subscription to be notified when push complete
+      
       _ = navigationController.rx.delegate
         .sentMessage(#selector(UINavigationControllerDelegate.navigationController(_:didShow:animated:)))
         .map { _ in }
@@ -68,7 +66,6 @@ class SceneCoordinator: SceneCoordinatorType {
   
   @discardableResult
   func pop(animated: Bool) -> Completable {
-    print("-----pop current-------- \(currentViewController)")
     let subject = PublishSubject<Void>()
     if let _ = currentViewController as? SidebarViewController {
       if let nav = currentViewController.childViewControllers.last as? UINavigationController {
@@ -77,14 +74,11 @@ class SceneCoordinator: SceneCoordinatorType {
       }
     }
     else if let presenter = currentViewController.presentingViewController {
-      // dismiss a modal controller
       currentViewController.dismiss(animated: animated) {
         self.currentViewController = SceneCoordinator.actualViewController(for: presenter)
         subject.onCompleted()
       }
     } else if let navigationController = currentViewController.navigationController {
-      // navigate up the stack
-      // one-off subscription to be notified when pop complete
       _ = navigationController.rx.delegate
         .sentMessage(#selector(UINavigationControllerDelegate.navigationController(_:didShow:animated:)))
         .map { _ in }
@@ -101,5 +95,4 @@ class SceneCoordinator: SceneCoordinatorType {
       .ignoreElements()
   }
 }
-
 

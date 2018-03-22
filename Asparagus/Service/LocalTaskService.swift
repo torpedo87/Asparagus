@@ -17,9 +17,12 @@ protocol LocalTaskServiceType {
   @discardableResult
   func createTask(title: String, body: String, repoName: String, tags: [String]) -> Observable<TaskItem>
   @discardableResult
+  func createSubTask(title: String, superTask: TaskItem) -> Observable<SubTask>
+  @discardableResult
   func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String, newTags: [String]) -> Observable<TaskItem>
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem>
+  func toggle(task: SubTask) -> Observable<SubTask>
   func tasks() -> Observable<Results<TaskItem>>
   func repositories() -> Observable<Results<Repository>>
   func getRecentLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
@@ -34,6 +37,7 @@ protocol LocalTaskServiceType {
   func tasksForTag(tagTitle: String) -> Observable<Results<TaskItem>>
   func tags() -> Observable<Results<Tag>>
   func openTasks() -> Observable<Results<TaskItem>>
+  func subTasksForTask(task: TaskItem) -> Observable<Results<SubTask>>
 }
 
 class LocalTaskService: LocalTaskServiceType {
@@ -85,6 +89,28 @@ class LocalTaskService: LocalTaskServiceType {
       return .empty()
     }
     return result ?? .error(TaskServiceError.creationFailed)
+  }
+  
+  @discardableResult
+  func createSubTask(title: String, superTask: TaskItem) -> Observable<SubTask> {
+    let result = withRealm("creating") { realm -> Observable<SubTask> in
+      let subTask = SubTask()
+      subTask.uid = UUID().uuidString
+      subTask.title = title
+      subTask.checked = "open"
+      subTask.setDateWhenCreated()
+      try realm.write {
+        if let superTask = realm.object(ofType: TaskItem.self, forPrimaryKey: superTask.uid) {
+          superTask.subTasks.append(subTask)
+        }
+        print(Thread.current, "write thread \(#function)")
+      }
+      if let managedTask = realm.object(ofType: SubTask.self, forPrimaryKey: subTask.uid) {
+        return .just(managedTask)
+      }
+      return .empty()
+    }
+    return result ?? .empty()
   }
   
   //title, body 수정
@@ -162,6 +188,22 @@ class LocalTaskService: LocalTaskServiceType {
     return result ?? .error(TaskServiceError.toggleFailed(task))
   }
   
+  @discardableResult
+  func toggle(task: SubTask) -> Observable<SubTask> {
+    let result = withRealm("toggling") { realm -> Observable<SubTask> in
+      realm.writeAsync(obj: task, block: { (realm, task) in
+        if task?.checked == "open" {
+          task?.checked = "closed"
+        } else {
+          task?.checked = "open"
+        }
+        print(Thread.current, "write thread \(#function)")
+      })
+      return .just(task)
+    }
+    return result ?? .empty()
+  }
+  
   //로컬에 저장된 모든 task 불러오기
   func tasks() -> Observable<Results<TaskItem>> {
     let result = withRealm("getting tasks") { realm -> Observable<Results<TaskItem>> in
@@ -194,6 +236,18 @@ class LocalTaskService: LocalTaskServiceType {
         let tasks = tag.tasks
           .sorted(byKeyPath: "added", ascending: false)
         return Observable.collection(from: tasks)
+      }
+      return Observable.empty()
+    }
+    return result ?? .empty()
+  }
+  
+  func subTasksForTask(task: TaskItem) -> Observable<Results<SubTask>> {
+    let result = withRealm("subTasksForTask") { realm -> Observable<Results<SubTask>> in
+      if let taskItem = realm.object(ofType: TaskItem.self, forPrimaryKey: task.uid) {
+        let subTasks = taskItem.subTasks
+          .sorted(byKeyPath: "added", ascending: false)
+        return Observable.collection(from: subTasks)
       }
       return Observable.empty()
     }
@@ -429,24 +483,7 @@ extension LocalTaskService {
   }
   
   static func migrate(_ migration: Migration, fileSchemaVersion: UInt64) {
-//    if fileSchemaVersion == 1 {
-//      let dateFormatter = DateFormatter()
-//      dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-//      dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-//      dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-//      let now = dateFormatter.string(from: Date())
-//      migration.enumerateObjects(ofType: "TaskItem", { (oldTask, newTask) in
-//        if let newTask = newTask {
-//          if let date = newTask["updated"] as? String {
-//            if date.compare(now) == .orderedDescending {
-//
-//            } else {
-//
-//            }
-//          }
-//        }
-//      })
-//    }
+
   }
   
   static func copyInitialData(_ from: URL, to: URL) {

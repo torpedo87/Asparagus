@@ -40,11 +40,8 @@ class TaskViewController: UIViewController, BindableType {
     return item
   }()
   
-  lazy var newTaskButton: UIButton = {
-    let btn = UIButton()
-    btn.backgroundColor = UIColor.white
-    btn.layer.cornerRadius = 25
-    btn.setImage(UIImage(named: "add"), for: .normal)
+  lazy var newTaskButton: PlusButton = {
+    let btn = PlusButton()
     return btn
   }()
   private let activityIndicator: UIActivityIndicatorView = {
@@ -218,7 +215,7 @@ class TaskViewController: UIViewController, BindableType {
   }
   
   func fadeView(view: UIView, hidden: Bool) {
-    UIView.transition(with: view, duration: 0.5, options: .transitionCrossDissolve, animations: {
+    UIView.transition(with: view, duration: 0.5, options: [.transitionCrossDissolve], animations: {
       view.isHidden = hidden
     })
   }

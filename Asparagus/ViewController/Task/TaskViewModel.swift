@@ -21,6 +21,7 @@ struct TaskViewModel {
   private let syncService: SyncServiceRepresentable
   let selectedGroupTitle = BehaviorRelay<String>(value: "Inbox")
   let searchSections = BehaviorRelay<[TaskSection]>(value: [])
+  let recentQuerySubject = ReplaySubject<String>.create(bufferSize: 5)
   
   //output
   let running = BehaviorRelay<Bool>(value: true)

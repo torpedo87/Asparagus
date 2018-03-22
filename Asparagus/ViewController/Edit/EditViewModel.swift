@@ -49,4 +49,31 @@ struct EditViewModel {
     return tagsArr
   }
   
+  var sectionedItems: Observable<[SubTaskSection]> {
+    return self.localTaskService.subTasksForTask(task: task)
+      .map { results in
+        let dueTasks = results
+          .filter("checked = 'open'")
+          .sorted(byKeyPath: "added", ascending: false)
+        
+        let doneTasks = results
+          .filter("checked = 'closed'")
+          .sorted(byKeyPath: "added", ascending: false)
+        
+        return [
+          SubTaskSection(header: "Due Tasks", items: dueTasks.toArray()),
+          SubTaskSection(header: "Done Tasks", items: doneTasks.toArray())
+        ]
+    }
+  }
+  
+  func onToggle(task: SubTask) -> CocoaAction {
+    return CocoaAction {
+      return self.localTaskService.toggle(task: task).map { _ in }
+    }
+  }
+  
+  func addSubTask() {
+    localTaskService.createSubTask(title: "aaa", superTask: task)
+  }
 }

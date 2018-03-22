@@ -10,6 +10,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 import RxGesture
+import RxDataSources
 
 class EditViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
@@ -78,6 +79,18 @@ class EditViewController: UIViewController, BindableType {
     view.layer.borderWidth = 0.5
     return view
   }()
+  private let subTasksLabel: UILabel = {
+    let label = UILabel()
+    label.text = "SubTasks"
+    return label
+  }()
+  private lazy var tableView: UITableView = {
+    let view = UITableView()
+    view.register(TaskCell.self,
+                  forCellReuseIdentifier: TaskCell.reuseIdentifier)
+    view.rowHeight = UIScreen.main.bounds.height / 15
+    return view
+  }()
   private let buttonStackView: UIStackView = {
     let stack = UIStackView()
     stack.axis = .horizontal
@@ -103,6 +116,13 @@ class EditViewController: UIViewController, BindableType {
     btn.setTitle("Enter title", for: .disabled)
     return btn
   }()
+  private lazy var addSubTaskButton: UIBarButtonItem = {
+    let item = UIBarButtonItem(barButtonSystemItem: .add,
+                               target: self,
+                               action: nil)
+    return item
+  }()
+  var dataSource: RxTableViewSectionedReloadDataSource<SubTaskSection>!
   
   func bindViewModel() {
     
@@ -151,17 +171,30 @@ class EditViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     deleteButton.isEnabled = !viewModel.task.isServerGeneratedType
+    
+    viewModel.sectionedItems
+      .bind(to: tableView.rx.items(dataSource: dataSource))
+      .disposed(by: bag)
+    
+    addSubTaskButton.rx.tap
+      .throttle(0.5, scheduler: MainScheduler.instance)
+      .subscribe(onNext: { [unowned self] _ in
+        self.viewModel.addSubTask()
+      })
+      .disposed(by: bag)
   }
   
   override func viewDidLoad() {
     super.viewDidLoad()
     setupView()
+    configureDataSource()
     titleTextField.becomeFirstResponder()
   }
   
   func setupView() {
     title = "Edit"
     view.backgroundColor = UIColor.white
+    navigationItem.rightBarButtonItem = addSubTaskButton
     view.addSubview(stackView)
     stackView.addArrangedSubview(titleLabel)
     stackView.addArrangedSubview(titleTextField)
@@ -172,6 +205,8 @@ class EditViewController: UIViewController, BindableType {
     stackView.addArrangedSubview(repoLabelStackView)
     stackView.addArrangedSubview(tagLabel)
     stackView.addArrangedSubview(tagTextField)
+    stackView.addArrangedSubview(subTasksLabel)
+    stackView.addArrangedSubview(tableView)
     buttonStackView.addArrangedSubview(deleteButton)
     buttonStackView.addArrangedSubview(saveButton)
     stackView.addArrangedSubview(buttonStackView)
@@ -182,5 +217,19 @@ class EditViewController: UIViewController, BindableType {
       make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
       make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
     }
+  }
+  
+  func configureDataSource() {
+    dataSource = RxTableViewSectionedReloadDataSource<SubTaskSection> (
+      configureCell: {
+        [unowned self] dataSource, tableView, indexPath, item in
+        let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier, for: indexPath) as! TaskCell
+        cell.configureCell(item: item, action: self.viewModel.onToggle(task: item))
+        return cell
+      },
+      titleForHeaderInSection: { dataSource, index in
+        dataSource.sectionModels[index].header
+    }
+    )
   }
 }
