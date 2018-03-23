@@ -30,11 +30,11 @@ class TaskItem: Object, Decodable {
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     return dateFormatter.date(from: self.updated)!
   }
-  var achievementRate: Float {
+  var achievementRate: CGFloat {
     let total = subTasks.count
     let checkedCount = subTasks.filter("checked = 'closed'").count
     if total == 0 { return 0 } else {
-      return Float(checkedCount) / Float(total)
+      return CGFloat(checkedCount) / CGFloat(total)
     }
   }
   

@@ -10,6 +10,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 import Action
+import RxDataSources
 
 struct EditViewModel {
   
@@ -49,9 +50,9 @@ struct EditViewModel {
     return tagsArr
   }
   
-  var sectionedItems: Observable<[SubTaskSection]> {
-    return self.localTaskService.subTasksForTask(task: task)
-      .map { results in
+  var sectionedItems: Observable<[TotalSection]> {
+    return localTaskService.subTasksForTask(task: task)
+      .map({ results in
         let dueTasks = results
           .filter("checked = 'open'")
           .sorted(byKeyPath: "added", ascending: false)
@@ -61,10 +62,14 @@ struct EditViewModel {
           .sorted(byKeyPath: "added", ascending: false)
         
         return [
-          SubTaskSection(header: "Due Tasks", items: dueTasks.toArray()),
-          SubTaskSection(header: "Done Tasks", items: doneTasks.toArray())
+          TotalSection(header: "Title", items: [.text("")]),
+          TotalSection(header: "Body", items: [.text("")]),
+          TotalSection(header: "Repository", items: [.text("")]),
+          TotalSection(header: "Tags with #", items: [.text("")]),
+          TotalSection(header: "Due SubTasks", items: dueTasks.toArray().map{ .subTask($0)}),
+          TotalSection(header: "Done SubTasks", items: doneTasks.toArray().map{ .subTask($0)})
         ]
-    }
+      })
   }
   
   func onToggle(task: SubTask) -> CocoaAction {

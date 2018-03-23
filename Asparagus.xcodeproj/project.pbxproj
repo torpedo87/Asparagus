@@ -29,6 +29,7 @@
 		487A8F9A20636BF5001E5BD4 /* SubTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9920636BF5001E5BD4 /* SubTask.swift */; };
 		487A8F9C206389E9001E5BD4 /* CircleProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */; };
 		487A8F9E20638C79001E5BD4 /* PlusButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9D20638C79001E5BD4 /* PlusButton.swift */; };
+		487A8FA22064EF50001E5BD4 /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8FA12064EF50001E5BD4 /* CustomCell.swift */; };
 		487D91EB20453735008CB44E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D91EA20453735008CB44E /* AppDelegate.swift */; };
 		487D91F220453736008CB44E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 487D91F120453736008CB44E /* Assets.xcassets */; };
 		487D91F520453736008CB44E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 487D91F320453736008CB44E /* LaunchScreen.storyboard */; };
@@ -86,6 +87,7 @@
 		487A8F9920636BF5001E5BD4 /* SubTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTask.swift; sourceTree = "<group>"; };
 		487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleProgressView.swift; sourceTree = "<group>"; };
 		487A8F9D20638C79001E5BD4 /* PlusButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusButton.swift; sourceTree = "<group>"; };
+		487A8FA12064EF50001E5BD4 /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
 		487D91E720453735008CB44E /* Asparagus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Asparagus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		487D91EA20453735008CB44E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		487D91F120453736008CB44E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -309,6 +311,7 @@
 				4842DB2420592F170093B496 /* TagCell.swift */,
 				487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */,
 				487A8F9D20638C79001E5BD4 /* PlusButton.swift */,
+				487A8FA12064EF50001E5BD4 /* CustomCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -606,6 +609,7 @@
 				4842DB272059348B0093B496 /* TagSection.swift in Sources */,
 				4840921A204D42C9007C6EE5 /* CreateViewModel.swift in Sources */,
 				4840921C204D42D2007C6EE5 /* CreateViewController.swift in Sources */,
+				487A8FA22064EF50001E5BD4 /* CustomCell.swift in Sources */,
 				487D923C2046B603008CB44E /* TaskItem.swift in Sources */,
 				48480A1E205FA511004ED59A /* URL.swift in Sources */,
 				487D923A20458E79008CB44E /* RxReachability.swift in Sources */,

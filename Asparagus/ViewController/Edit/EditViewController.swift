@@ -15,44 +15,20 @@ import RxDataSources
 class EditViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
   var viewModel: EditViewModel!
-  private let stackView: UIStackView = {
-    let stack = UIStackView()
-    stack.axis = .vertical
-    stack.spacing = 10
-    stack.alignment = .fill
-    stack.distribution = .fillEqually
-    return stack
-  }()
   
-  private let titleLabel: UILabel = {
-    let label = UILabel()
-    label.text = "Title"
-    return label
-  }()
-  
-  private let bodyLabel: UILabel = {
-    let label = UILabel()
-    label.text = "Body"
-    return label
-  }()
-  private let repoLabelStackView: UIStackView = {
-    let stack = UIStackView()
-    stack.axis = .horizontal
-    stack.spacing = 10
-    stack.alignment = .fill
-    stack.distribution = .fillEqually
-    return stack
-  }()
-  private let repositoryLabel: UILabel = {
-    let label = UILabel()
-    label.text = "Repository : "
-    return label
+  private let tableView: UITableView = {
+    let view = UITableView(frame: CGRect.zero, style: .grouped)
+    view.rowHeight = UIScreen.main.bounds.height / 15
+    view.register(UITableViewCell.self, forCellReuseIdentifier: "TableViewCell")
+    view.register(TaskCell.self, forCellReuseIdentifier: TaskCell.reuseIdentifier)
+    view.register(CustomCell.self, forCellReuseIdentifier: CustomCell.reuseIdentifier)
+    view.sectionHeaderHeight = UIScreen.main.bounds.height / 30
+    return view
   }()
   private let selectedRepositoryLabel: UILabel = {
     let label = UILabel()
     return label
   }()
-  
   private let titleTextField: UITextField = {
     let view = UITextField()
     view.placeholder = "Please enter task title"
@@ -67,11 +43,7 @@ class EditViewController: UIViewController, BindableType {
     view.layer.borderWidth = 0.5
     return view
   }()
-  private let tagLabel: UILabel = {
-    let label = UILabel()
-    label.text = "Tags with # : "
-    return label
-  }()
+  
   private let tagTextField: UITextField = {
     let view = UITextField()
     view.placeholder = "add tag with #"
@@ -79,18 +51,7 @@ class EditViewController: UIViewController, BindableType {
     view.layer.borderWidth = 0.5
     return view
   }()
-  private let subTasksLabel: UILabel = {
-    let label = UILabel()
-    label.text = "SubTasks"
-    return label
-  }()
-  private lazy var tableView: UITableView = {
-    let view = UITableView()
-    view.register(TaskCell.self,
-                  forCellReuseIdentifier: TaskCell.reuseIdentifier)
-    view.rowHeight = UIScreen.main.bounds.height / 15
-    return view
-  }()
+  
   private let buttonStackView: UIStackView = {
     let stack = UIStackView()
     stack.axis = .horizontal
@@ -122,7 +83,8 @@ class EditViewController: UIViewController, BindableType {
                                action: nil)
     return item
   }()
-  var dataSource: RxTableViewSectionedReloadDataSource<SubTaskSection>!
+  
+  var dataSource: RxTableViewSectionedReloadDataSource<TotalSection>!
   
   func bindViewModel() {
     
@@ -195,40 +157,51 @@ class EditViewController: UIViewController, BindableType {
     title = "Edit"
     view.backgroundColor = UIColor.white
     navigationItem.rightBarButtonItem = addSubTaskButton
-    view.addSubview(stackView)
-    stackView.addArrangedSubview(titleLabel)
-    stackView.addArrangedSubview(titleTextField)
-    stackView.addArrangedSubview(bodyLabel)
-    stackView.addArrangedSubview(bodyTextView)
-    repoLabelStackView.addArrangedSubview(repositoryLabel)
-    repoLabelStackView.addArrangedSubview(selectedRepositoryLabel)
-    stackView.addArrangedSubview(repoLabelStackView)
-    stackView.addArrangedSubview(tagLabel)
-    stackView.addArrangedSubview(tagTextField)
-    stackView.addArrangedSubview(subTasksLabel)
-    stackView.addArrangedSubview(tableView)
-    buttonStackView.addArrangedSubview(deleteButton)
-    buttonStackView.addArrangedSubview(saveButton)
-    stackView.addArrangedSubview(buttonStackView)
-    
-    stackView.snp.makeConstraints { (make) in
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(10)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
-      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
+    view.addSubview(tableView)
+
+    tableView.snp.makeConstraints { (make) in
+      make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+      make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
+      make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
+      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
     }
   }
   
   func configureDataSource() {
-    dataSource = RxTableViewSectionedReloadDataSource<SubTaskSection> (
-      configureCell: {
-        [unowned self] dataSource, tableView, indexPath, item in
-        let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier, for: indexPath) as! TaskCell
-        cell.configureCell(item: item, action: self.viewModel.onToggle(task: item))
-        return cell
-      },
-      titleForHeaderInSection: { dataSource, index in
-        dataSource.sectionModels[index].header
+    dataSource = RxTableViewSectionedReloadDataSource<TotalSection>(
+      configureCell: { [unowned self] (dataSource, tableView, indexPath, item) in
+        switch item {
+        case .text(_):
+          switch (indexPath.section) {
+          case 0:
+            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
+            cell.configureCell(customView: self.titleTextField)
+            return cell
+          case 1:
+            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
+            cell.configureCell(customView: self.bodyTextView)
+            return cell
+          case 2:
+            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
+            cell.configureCell(customView: self.selectedRepositoryLabel)
+            return cell
+          case 3:
+            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
+            cell.configureCell(customView: self.tagTextField)
+            return cell
+          default:
+            return UITableViewCell()
+          }
+        case .subTask(let task):
+          guard let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier)
+            as? TaskCell else { return TaskCell() }
+          cell.configureCell(item: task, action: self.viewModel.onToggle(task: task))
+          return cell
+        }
+        
+    },
+      titleForHeaderInSection: { dataSource, sectionIndex in
+        return dataSource[sectionIndex].header
     }
     )
   }

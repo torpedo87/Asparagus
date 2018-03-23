@@ -9,6 +9,11 @@
 import Foundation
 import RxDataSources
 
+enum MyModel {
+  case text(String)
+  case subTask(SubTask)
+}
+
 struct TaskSection {
   var header: String
   var items: [Item]
@@ -22,14 +27,14 @@ extension TaskSection: SectionModelType {
   }
 }
 
-struct SubTaskSection {
+struct TotalSection {
   var header: String
   var items: [Item]
 }
-extension SubTaskSection: SectionModelType {
-  typealias Item = SubTask
+extension TotalSection: SectionModelType {
+  typealias Item = MyModel
   
-  init(original: SubTaskSection, items: [Item]) {
+  init(original: TotalSection, items: [Item]) {
     self = original
     self.items = items
   }

@@ -111,8 +111,6 @@ class TaskViewController: UIViewController, BindableType {
     searchTableView.snp.makeConstraints { (make) in
       make.left.top.right.equalTo(blurEffectView.contentView)
     }
-    
-    
   }
   
   func bindViewModel() {
