@@ -1,8 +1,8 @@
 //
-//  CreateViewController.swift
+//  DetailViewController.swift
 //  Asparagus
 //
-//  Created by junwoo on 2018. 3. 5..
+//  Created by junwoo on 2018. 3. 24..
 //  Copyright © 2018년 samchon. All rights reserved.
 //
 
@@ -10,10 +10,12 @@ import UIKit
 import RxSwift
 import RxCocoa
 import RxGesture
+import RxDataSources
 
-class CreateViewController: UIViewController, BindableType {
+class DetailViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
-  var viewModel: CreateViewModel!
+  var viewModel: DetailViewModel!
+  
   private lazy var container: UIView = {
     let view = UIView()
     view.backgroundColor = UIColor.white
@@ -58,18 +60,18 @@ class CreateViewController: UIViewController, BindableType {
     return view
   }()
   
-  private var cancelButton: UIButton = {
-    let btn = UIButton()
-    btn.setTitle("CLOSE", for: .normal)
-    btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
-    return btn
-  }()
-  
   private var saveButton: UIButton = {
     let btn = UIButton()
     btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
     btn.setTitleColor(UIColor.lightGray, for: .disabled)
     btn.setTitle("SAVE", for: .normal)
+    return btn
+  }()
+  private var deleteButton: UIButton = {
+    let btn = UIButton()
+    btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
+    btn.setTitleColor(UIColor.lightGray, for: .disabled)
+    btn.setTitle("DELETE", for: .normal)
     return btn
   }()
   private lazy var repositoryButton: UIButton = {
@@ -102,9 +104,8 @@ class CreateViewController: UIViewController, BindableType {
   }
   
   func setupView() {
-    title = "Edit"
+    title = "Detail"
     view.addSubview(container)
-    container.addSubview(cancelButton)
     container.addSubview(saveButton)
     container.addSubview(titleTextField)
     container.addSubview(bodyTextView)
@@ -117,11 +118,7 @@ class CreateViewController: UIViewController, BindableType {
       make.width.equalTo(UIScreen.main.bounds.width * 3 / 4)
       make.height.equalTo(UIScreen.main.bounds.height / 3)
     }
-    cancelButton.snp.makeConstraints { (make) in
-      cancelButton.sizeToFit()
-      make.left.equalTo(container.snp.left).offset(10)
-      make.top.equalTo(container.snp.top).offset(10)
-    }
+    
     saveButton.snp.makeConstraints { (make) in
       saveButton.sizeToFit()
       make.top.equalTo(container.snp.top).offset(10)
@@ -129,7 +126,7 @@ class CreateViewController: UIViewController, BindableType {
     }
     titleTextField.snp.makeConstraints { (make) in
       make.left.equalTo(container.snp.left).offset(10)
-      make.top.equalTo(cancelButton.snp.bottom).offset(10)
+      make.top.equalTo(saveButton.snp.bottom).offset(10)
       make.right.equalTo(container.snp.right).offset(-10)
       make.height.equalTo(50)
     }
@@ -152,39 +149,35 @@ class CreateViewController: UIViewController, BindableType {
       }.bind(to: saveButton.rx.isEnabled)
       .disposed(by: bag)
     
-    bodyTextView.rx.didBeginEditing
-      .subscribe(onNext: { [unowned self] _ in
-        if self.bodyTextView.textColor == .lightGray {
-          self.bodyTextView.text = nil
-          self.bodyTextView.textColor = UIColor.black
-        }
+    titleTextField.text = viewModel.task.title
+    bodyTextView.text = viewModel.task.body
+    tagTextField.text = viewModel.task.tag.toArray()
+      .map{ $0.title }
+      .reduce("", { (tags, tag) -> String in
+        return tags + "#\(tag)"
       })
-      .disposed(by: bag)
-    
-    pickerView.rx.modelSelected(String.self)
-      .map { models -> String in
-        return models.first!
-      }.bind(to: selectedRepositoryLabel.rx.text)
-      .disposed(by: bag)
-    
-    cancelButton.rx.action = viewModel.onCancel
+    if let repo = viewModel.task.repository {
+      selectedRepositoryLabel.text = repo.name
+    } else {
+      selectedRepositoryLabel.text = ""
+    }
     
     saveButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
-      .map({ [unowned self] _ -> (String, String, String, [String]) in
+      .map({ [unowned self] _ -> (String, String, [String]) in
         let title = self.titleTextField.text ?? ""
         let body = self.bodyTextView.text ?? ""
-        let repoName = self.selectedRepositoryLabel.text ?? ""
         let tagText = self.tagTextField.text ?? ""
         let tags = self.viewModel.findAllTagsFromText(tagText: tagText)
-        return (title, body, repoName, tags)
-      }).bind(to: viewModel.onCreate.inputs)
+        return (title, body, tags)
+      }).bind(to: viewModel.onUpdate.inputs)
       .disposed(by: bag)
     
-    viewModel.repoTitles
-      .bind(to: pickerView.rx.itemTitles) { _, item in
-        return "\(item)"
-      }
+    deleteButton.rx.tap
+      .throttle(0.5, scheduler: MainScheduler.instance)
+      .map { [unowned self] _ -> TaskItem in
+        return self.viewModel.task
+      }.bind(to: viewModel.onDelete.inputs)
       .disposed(by: bag)
     
     view.rx.tapGesture()
@@ -193,5 +186,10 @@ class CreateViewController: UIViewController, BindableType {
         self.view.endEditing(true)
       })
       .disposed(by: bag)
+    
+    deleteButton.isEnabled = !viewModel.task.isServerGeneratedType
+    
   }
+  
+  
 }

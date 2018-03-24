@@ -11,7 +11,7 @@ import UIKit
 enum Scene {
   case sidebar(LeftViewModel, TaskViewModel)
   case auth(AuthViewModel)
-  case edit(EditViewModel)
+  case detail(DetailViewModel)
   case create(CreateViewModel)
 }
 
@@ -23,13 +23,14 @@ extension Scene {
       var vc = AuthViewController()
       vc.bindViewModel(to: viewModel)
       return vc
-    case .edit(let viewModel):
-      var vc = EditViewController()
+    case .detail(let viewModel):
+      var vc = DetailViewController()
       vc.bindViewModel(to: viewModel)
       return vc
     case .create(let viewModel):
       var vc = CreateViewController()
       vc.bindViewModel(to: viewModel)
+      vc.modalPresentationStyle = .overCurrentContext
       return vc
     case .sidebar(let leftViewModel, let taskViewModel):
       var leftVC = LeftViewController()

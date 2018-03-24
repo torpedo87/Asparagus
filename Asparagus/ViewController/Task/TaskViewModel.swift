@@ -108,13 +108,13 @@ struct TaskViewModel {
   
   lazy var editAction: Action<TaskItem, Swift.Never> = { this in
     return Action { task in
-      let editViewModel = EditViewModel(task: task,
+      let detailViewModel = DetailViewModel(task: task,
                                         coordinator: this.sceneCoordinator,
                                         deleteAction: this.onDeleteTask(task: task),
                                         updateAction: this.onUpdateTask(task: task),
                                         localTaskService: this.localTaskService)
       return this.sceneCoordinator
-        .transition(to: Scene.edit(editViewModel), type: .push)
+        .transition(to: Scene.detail(detailViewModel), type: .push)
         .asObservable()
     }
   }(self)
@@ -141,7 +141,11 @@ struct TaskViewModel {
     }
   }
   
-  
+  func createViewModel() -> CreateViewModel {
+    return CreateViewModel(coordinator: self.sceneCoordinator,
+                           createAction: self.onCreateTask(),
+                           localTaskService: self.localTaskService)
+  }
   
   func goToCreate() -> CocoaAction {
     return CocoaAction { _ in

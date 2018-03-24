@@ -42,6 +42,7 @@ class SceneCoordinator: SceneCoordinatorType {
       var navigationController: UINavigationController
       if let _ = currentViewController as? SidebarViewController {
         navigationController = currentViewController.childViewControllers.last as! UINavigationController
+        navigationController.delegate = navigationController.viewControllers.first! as! UINavigationControllerDelegate
       } else {
         navigationController = currentViewController.navigationController!
       }

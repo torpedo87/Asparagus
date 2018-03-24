@@ -13,6 +13,8 @@ import RxDataSources
 import Action
 
 class TaskViewController: UIViewController, BindableType {
+  let transition = PopAnimator()
+  private weak var selectedCell: TaskCell?
   private let bag = DisposeBag()
   var viewModel: TaskViewModel!
   
@@ -77,6 +79,10 @@ class TaskViewController: UIViewController, BindableType {
     super.viewDidLoad()
     setupView()
     configureDataSource()
+    
+    transition.dismissCompletion = {
+      self.newTaskButton.isHidden = false
+    }
   }
   
   func setupView() {
@@ -127,6 +133,7 @@ class TaskViewController: UIViewController, BindableType {
     tableView.rx.itemSelected
       .do(onNext: { [unowned self] indexPath in
         self.tableView.deselectRow(at: indexPath, animated: false)
+        self.selectedCell = self.tableView.cellForRow(at: indexPath) as! TaskCell
       })
       .map { [unowned self] indexPath in
         try! self.dataSource.model(at: indexPath) as! TaskItem
@@ -193,7 +200,6 @@ class TaskViewController: UIViewController, BindableType {
       })
       .bind(to: viewModel.searchSections)
       .disposed(by: bag)
-    
   }
   
   func toggleSearchBar() {
@@ -250,5 +256,25 @@ class TaskViewController: UIViewController, BindableType {
     }
     )
   }
-  
 }
+
+extension TaskViewController: UINavigationControllerDelegate {
+  func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationControllerOperation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+
+    //push
+    if fromVC is TaskViewController, toVC is DetailViewController {
+      guard let selectedCell = selectedCell else { fatalError() }
+      transition.originFrame = selectedCell.convert(selectedCell.bounds, to: nil)
+      transition.presenting = true
+      return transition
+    }
+      //pop
+    else if fromVC is DetailViewController, toVC is TaskViewController {
+      transition.presenting = false
+      return transition
+    }
+    return nil
+  }
+
+}
+

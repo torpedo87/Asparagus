@@ -19,7 +19,6 @@ class EditViewController: UIViewController, BindableType {
   private let tableView: UITableView = {
     let view = UITableView(frame: CGRect.zero, style: .grouped)
     view.rowHeight = UIScreen.main.bounds.height / 15
-    view.register(UITableViewCell.self, forCellReuseIdentifier: "TableViewCell")
     view.register(TaskCell.self, forCellReuseIdentifier: TaskCell.reuseIdentifier)
     view.register(CustomCell.self, forCellReuseIdentifier: CustomCell.reuseIdentifier)
     view.sectionHeaderHeight = UIScreen.main.bounds.height / 30
@@ -61,27 +60,23 @@ class EditViewController: UIViewController, BindableType {
     return stack
   }()
   
-  private var deleteButton: UIButton = {
-    let btn = UIButton()
-    btn.backgroundColor = UIColor(hex: "FD9727")
-    btn.setTitle("DELETE", for: .normal)
-    btn.setTitle("CAN'T DELETE", for: .disabled)
-    btn.layer.cornerRadius = 10
-    return btn
-  }()
-  private var saveButton: UIButton = {
-    let btn = UIButton()
-    btn.backgroundColor = UIColor(hex: "4054B2")
-    btn.layer.cornerRadius = 10
-    btn.setTitle("SAVE", for: .normal)
-    btn.setTitle("Enter title", for: .disabled)
-    return btn
-  }()
-  private lazy var addSubTaskButton: UIBarButtonItem = {
-    let item = UIBarButtonItem(barButtonSystemItem: .add,
+  private lazy var deleteBarButton: UIBarButtonItem = {
+    let item = UIBarButtonItem(barButtonSystemItem: .trash,
                                target: self,
                                action: nil)
     return item
+  }()
+  private lazy var saveBarButton: UIBarButtonItem = {
+    let item = UIBarButtonItem(barButtonSystemItem: .save,
+                               target: self,
+                               action: nil)
+    return item
+  }()
+  private var addSubTaskButton: UIButton = {
+    let btn = UIButton()
+    btn.setTitle("Add", for: .normal)
+    btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
+    return btn
   }()
   
   var dataSource: RxTableViewSectionedReloadDataSource<TotalSection>!
@@ -91,7 +86,7 @@ class EditViewController: UIViewController, BindableType {
     titleTextField.rx.text.orEmpty
       .map { title -> Bool in
         return !title.isEmpty
-      }.bind(to: saveButton.rx.isEnabled)
+      }.bind(to: saveBarButton.rx.isEnabled)
       .disposed(by: bag)
     
     titleTextField.text = viewModel.task.title
@@ -107,7 +102,7 @@ class EditViewController: UIViewController, BindableType {
       selectedRepositoryLabel.text = ""
     }
     
-    saveButton.rx.tap
+    saveBarButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .map({ [unowned self] _ -> (String, String, [String]) in
         let title = self.titleTextField.text ?? ""
@@ -118,7 +113,7 @@ class EditViewController: UIViewController, BindableType {
       }).bind(to: viewModel.onUpdate.inputs)
         .disposed(by: bag)
     
-    deleteButton.rx.tap
+    deleteBarButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .map { [unowned self] _ -> TaskItem in
         return self.viewModel.task
@@ -132,7 +127,7 @@ class EditViewController: UIViewController, BindableType {
       })
       .disposed(by: bag)
     
-    deleteButton.isEnabled = !viewModel.task.isServerGeneratedType
+    deleteBarButton.isEnabled = !viewModel.task.isServerGeneratedType
     
     viewModel.sectionedItems
       .bind(to: tableView.rx.items(dataSource: dataSource))
@@ -149,6 +144,7 @@ class EditViewController: UIViewController, BindableType {
   override func viewDidLoad() {
     super.viewDidLoad()
     setupView()
+    tableView.delegate = self
     configureDataSource()
     titleTextField.becomeFirstResponder()
   }
@@ -156,7 +152,7 @@ class EditViewController: UIViewController, BindableType {
   func setupView() {
     title = "Edit"
     view.backgroundColor = UIColor.white
-    navigationItem.rightBarButtonItem = addSubTaskButton
+    navigationItem.rightBarButtonItem = deleteBarButton
     view.addSubview(tableView)
 
     tableView.snp.makeConstraints { (make) in
@@ -198,11 +194,24 @@ class EditViewController: UIViewController, BindableType {
           cell.configureCell(item: task, action: self.viewModel.onToggle(task: task))
           return cell
         }
-        
     },
       titleForHeaderInSection: { dataSource, sectionIndex in
         return dataSource[sectionIndex].header
     }
     )
+  }
+}
+
+extension EditViewController: UITableViewDelegate {
+  func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+    let header:UITableViewHeaderFooterView = view as! UITableViewHeaderFooterView
+    if section == 4 {
+      header.addSubview(addSubTaskButton)
+      addSubTaskButton.snp.makeConstraints({ (make) in
+        addSubTaskButton.sizeToFit()
+        make.right.equalTo(header).offset(-10)
+        make.centerY.equalTo(header)
+      })
+    }
   }
 }
