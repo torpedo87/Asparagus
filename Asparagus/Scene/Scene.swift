@@ -13,6 +13,8 @@ enum Scene {
   case auth(AuthViewModel)
   case detail(DetailViewModel)
   case create(CreateViewModel)
+  case repository(DetailViewModel)
+  case tag(DetailViewModel)
 }
 
 extension Scene {
@@ -39,9 +41,18 @@ extension Scene {
       taskVC.bindViewModel(to: taskViewModel)
       let sidebarViewModel = SidebarViewModel(leftViewModel: leftViewModel, taskViewModel: taskViewModel)
       let nav = UINavigationController(rootViewController: taskVC)
+      nav.isNavigationBarHidden = true
       var sidebarVC = SidebarViewController(leftVC: leftVC, mainNav: nav)
       sidebarVC.bindViewModel(to: sidebarViewModel)
       return sidebarVC
+    case .repository(let viewModel):
+      var vc = RepositoryViewController()
+      vc.bindViewModel(to: viewModel)
+      return vc
+    case .tag(let viewModel):
+      var vc = TagViewController()
+      vc.bindViewModel(to: viewModel)
+      return vc
     }
   }
 }

@@ -12,11 +12,11 @@ import RxCocoa
 import RxDataSources
 import Action
 
-class LeftViewController: UIViewController, BindableType {
+class LeftViewController: UIViewController, BindableType, GradientBgRepresentable {
   private let bag = DisposeBag()
   private let topView: UIView = {
     let view = UIView()
-    view.backgroundColor = UIColor(hex: "2E3136")
+    view.backgroundColor = UIColor.clear
     return view
   }()
   private let appLabel: UILabel = {
@@ -27,29 +27,31 @@ class LeftViewController: UIViewController, BindableType {
   }()
   private lazy var authButton: UIButton = {
     let btn = UIButton()
-    btn.setTitleColor(UIColor.lightGray, for: .normal)
+    btn.setTitleColor(UIColor.white, for: .normal)
     return btn
   }()
   var viewModel: LeftViewModel!
   private lazy var tableView: UITableView = {
     let view = UITableView()
-    view.backgroundColor = UIColor(hex: "2E3136")
+    view.backgroundColor = UIColor.clear
     view.register(TagCell.self,
                   forCellReuseIdentifier: TagCell.reuseIdentifier)
     view.rowHeight = UIScreen.main.bounds.height / 15
     view.separatorStyle = .none
+    view.delegate = self
     return view
   }()
   var dataSource: RxTableViewSectionedReloadDataSource<TagSection>!
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    setGradientBgColor()
     setupView()
     configureDataSource()
   }
   
   func setupView() {
-    view.backgroundColor = UIColor(hex: "2E3136")
+    view.backgroundColor = UIColor.white
     topView.addSubview(appLabel)
     topView.addSubview(authButton)
     view.addSubview(topView)
@@ -111,5 +113,13 @@ class LeftViewController: UIViewController, BindableType {
         dataSource.sectionModels[index].header
     }
     )
+  }
+}
+
+extension LeftViewController: UITableViewDelegate {
+  func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+    view.tintColor = UIColor.clear
+    let header = view as! UITableViewHeaderFooterView
+    header.textLabel?.textColor = UIColor.white
   }
 }

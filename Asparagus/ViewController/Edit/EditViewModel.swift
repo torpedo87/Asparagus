@@ -50,27 +50,27 @@ struct EditViewModel {
     return tagsArr
   }
   
-  var sectionedItems: Observable<[TotalSection]> {
-    return localTaskService.subTasksForTask(task: task)
-      .map({ results in
-        let dueTasks = results
-          .filter("checked = 'open'")
-          .sorted(byKeyPath: "added", ascending: false)
-        
-        let doneTasks = results
-          .filter("checked = 'closed'")
-          .sorted(byKeyPath: "added", ascending: false)
-        
-        return [
-          TotalSection(header: "Title", items: [.text("")]),
-          TotalSection(header: "Body", items: [.text("")]),
-          TotalSection(header: "Repository", items: [.text("")]),
-          TotalSection(header: "Tags with #", items: [.text("")]),
-          TotalSection(header: "Due SubTasks", items: dueTasks.toArray().map{ .subTask($0)}),
-          TotalSection(header: "Done SubTasks", items: doneTasks.toArray().map{ .subTask($0)})
-        ]
-      })
-  }
+//  var sectionedItems: Observable<[TotalSection]> {
+//    return localTaskService.subTasksForTask(task: task)
+//      .map({ results in
+//        let dueTasks = results
+//          .filter("checked = 'open'")
+//          .sorted(byKeyPath: "added", ascending: false)
+//
+//        let doneTasks = results
+//          .filter("checked = 'closed'")
+//          .sorted(byKeyPath: "added", ascending: false)
+//
+//        return [
+//          TotalSection(header: "Title", items: [.text("")]),
+//          TotalSection(header: "Body", items: [.text("")]),
+//          TotalSection(header: "Repository", items: [.text("")]),
+//          TotalSection(header: "Tags with #", items: [.text("")]),
+//          TotalSection(header: "Due SubTasks", items: dueTasks.toArray().map{ .subTask($0)}),
+//          TotalSection(header: "Done SubTasks", items: doneTasks.toArray().map{ .subTask($0)})
+//        ]
+//      })
+//  }
   
   func onToggle(task: SubTask) -> CocoaAction {
     return CocoaAction {

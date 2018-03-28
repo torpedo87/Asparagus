@@ -21,6 +21,7 @@ class TaskCell: UITableViewCell {
   }()
   private var achievementView: CircleProgressView = {
     let view = CircleProgressView(achieveRate: 0)
+    view.backgroundColor = UIColor.clear
     return view
   }()
   private let titleLabel: UILabel = {
@@ -35,14 +36,21 @@ class TaskCell: UITableViewCell {
   
   override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
     super.init(style: style, reuseIdentifier: reuseIdentifier)
+    backgroundColor = UIColor.clear
     addSubview(numberLabel)
     addSubview(achievementView)
     addSubview(titleLabel)
     addSubview(checkButton)
     
+    contentView.layer.cornerRadius = 10
+    contentView.backgroundColor = UIColor.white
+    contentView.snp.makeConstraints { (make) in
+      make.edges.equalToSuperview().inset(10)
+    }
+    
     achievementView.snp.makeConstraints { (make) in
-      make.width.height.equalTo(50)
-      make.left.equalTo(safeAreaLayoutGuide.snp.left).offset(10)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 15)
+      make.left.equalTo(contentView.snp.left).offset(10)
       make.centerY.equalTo(contentView)
     }
     numberLabel.snp.makeConstraints { (make) in
@@ -53,14 +61,14 @@ class TaskCell: UITableViewCell {
     
     titleLabel.snp.makeConstraints { (make) in
       make.left.equalTo(numberLabel.snp.right).offset(5)
-      make.top.equalTo(safeAreaLayoutGuide.snp.top)
-      make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom)
+      make.top.equalTo(contentView.snp.top)
+      make.bottom.equalTo(contentView.snp.bottom)
       make.right.equalTo(checkButton.snp.left).offset(-5)
     }
     checkButton.snp.makeConstraints { (make) in
-      make.right.equalTo(safeAreaLayoutGuide.snp.right).offset(-10)
+      make.right.equalTo(contentView.snp.right).offset(-10)
       make.centerY.equalToSuperview()
-      make.width.height.equalTo(50)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 20)
     }
   }
   
@@ -89,22 +97,6 @@ class TaskCell: UITableViewCell {
       .subscribe(onNext: { [unowned self] _ in
         self.achievementView.achieveRate = item.achievementRate
         self.achievementView.setNeedsDisplay()
-      })
-      .disposed(by: bag)
-    
-    item.rx.observe(String.self, "checked")
-      .subscribe(onNext: { [unowned self] state in
-        let image = UIImage(named: state == "open" ? "ItemNotChecked" : "ItemChecked")
-        self.checkButton.setImage(image, for: .normal)
-      })
-      .disposed(by: bag)
-  }
-  
-  func configureCell(item: SubTask, action: CocoaAction) {
-    checkButton.rx.action = action
-    item.rx.observe(String.self, "title")
-      .subscribe(onNext: { [unowned self] title in
-        self.titleLabel.text = title
       })
       .disposed(by: bag)
     

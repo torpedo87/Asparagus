@@ -20,8 +20,8 @@ struct TaskViewModel {
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
   let selectedGroupTitle = BehaviorRelay<String>(value: "Inbox")
+  let selectedIndex = BehaviorRelay<Int>(value: 0)
   let searchSections = BehaviorRelay<[TaskSection]>(value: [])
-  let recentQuerySubject = ReplaySubject<String>.create(bufferSize: 5)
   
   //output
   let running = BehaviorRelay<Bool>(value: true)
@@ -94,11 +94,11 @@ struct TaskViewModel {
         let dueTasks = results
           .filter("checked = 'open'")
           .sorted(byKeyPath: "added", ascending: false)
-        
+
         let doneTasks = results
           .filter("checked = 'closed'")
           .sorted(byKeyPath: "added", ascending: false)
-        
+
         return [
           TaskSection(header: "Due Tasks", items: dueTasks.toArray()),
           TaskSection(header: "Done Tasks", items: doneTasks.toArray())
@@ -111,7 +111,8 @@ struct TaskViewModel {
       let detailViewModel = DetailViewModel(task: task,
                                         coordinator: this.sceneCoordinator,
                                         deleteAction: this.onDeleteTask(task: task),
-                                        updateAction: this.onUpdateTask(task: task),
+                                        updateTitleBodyAction: this.onUpdateTitleBodyTask(task: task),
+                                        updateTagsAction: this.onUpdateTagsTask(task: task),
                                         localTaskService: this.localTaskService)
       return this.sceneCoordinator
         .transition(to: Scene.detail(detailViewModel), type: .push)
@@ -129,9 +130,15 @@ struct TaskViewModel {
     }
   }
   
-  func onUpdateTask(task: TaskItem) -> Action<(String, String, [String]), Void> {
+  func onUpdateTitleBodyTask(task: TaskItem) -> Action<(String, String), Void> {
     return Action { tuple in
-      return self.localTaskService.updateTitleBody(exTask: task, newTitle: tuple.0, newBody: tuple.1, newTags: tuple.2).map { _ in }
+      return self.localTaskService.updateTitleBody(exTask: task, newTitle: tuple.0, newBody: tuple.1).map { _ in }
+    }
+  }
+  
+  func onUpdateTagsTask(task: TaskItem) -> Action<(Tag, LocalTaskService.TagMode), Void> {
+    return Action { tuple in
+      return self.localTaskService.updateTag(exTask: task, tag: tuple.0, mode: tuple.1).map { _ in }
     }
   }
   

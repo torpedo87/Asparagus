@@ -11,7 +11,7 @@ import RxSwift
 import RxCocoa
 import RxGesture
 
-class CreateViewController: UIViewController, BindableType {
+class CreateViewController: UIViewController, BindableType, UIViewControllerTransitioningDelegate {
   private let bag = DisposeBag()
   var viewModel: CreateViewModel!
   private lazy var container: UIView = {

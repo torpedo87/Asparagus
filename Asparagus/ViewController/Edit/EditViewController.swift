@@ -20,7 +20,6 @@ class EditViewController: UIViewController, BindableType {
     let view = UITableView(frame: CGRect.zero, style: .grouped)
     view.rowHeight = UIScreen.main.bounds.height / 15
     view.register(TaskCell.self, forCellReuseIdentifier: TaskCell.reuseIdentifier)
-    view.register(CustomCell.self, forCellReuseIdentifier: CustomCell.reuseIdentifier)
     view.sectionHeaderHeight = UIScreen.main.bounds.height / 30
     return view
   }()
@@ -79,7 +78,7 @@ class EditViewController: UIViewController, BindableType {
     return btn
   }()
   
-  var dataSource: RxTableViewSectionedReloadDataSource<TotalSection>!
+  //var dataSource: RxTableViewSectionedReloadDataSource<TotalSection>!
   
   func bindViewModel() {
     
@@ -129,9 +128,9 @@ class EditViewController: UIViewController, BindableType {
     
     deleteBarButton.isEnabled = !viewModel.task.isServerGeneratedType
     
-    viewModel.sectionedItems
-      .bind(to: tableView.rx.items(dataSource: dataSource))
-      .disposed(by: bag)
+//    viewModel.sectionedItems
+//      .bind(to: tableView.rx.items(dataSource: dataSource))
+//      .disposed(by: bag)
     
     addSubTaskButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
@@ -164,41 +163,41 @@ class EditViewController: UIViewController, BindableType {
   }
   
   func configureDataSource() {
-    dataSource = RxTableViewSectionedReloadDataSource<TotalSection>(
-      configureCell: { [unowned self] (dataSource, tableView, indexPath, item) in
-        switch item {
-        case .text(_):
-          switch (indexPath.section) {
-          case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
-            cell.configureCell(customView: self.titleTextField)
-            return cell
-          case 1:
-            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
-            cell.configureCell(customView: self.bodyTextView)
-            return cell
-          case 2:
-            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
-            cell.configureCell(customView: self.selectedRepositoryLabel)
-            return cell
-          case 3:
-            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
-            cell.configureCell(customView: self.tagTextField)
-            return cell
-          default:
-            return UITableViewCell()
-          }
-        case .subTask(let task):
-          guard let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier)
-            as? TaskCell else { return TaskCell() }
-          cell.configureCell(item: task, action: self.viewModel.onToggle(task: task))
-          return cell
-        }
-    },
-      titleForHeaderInSection: { dataSource, sectionIndex in
-        return dataSource[sectionIndex].header
-    }
-    )
+//    dataSource = RxTableViewSectionedReloadDataSource<TotalSection>(
+//      configureCell: { [unowned self] (dataSource, tableView, indexPath, item) in
+//        switch item {
+//        case .text(_):
+//          switch (indexPath.section) {
+//          case 0:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
+//            cell.configureCell(customView: self.titleTextField)
+//            return cell
+//          case 1:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
+//            cell.configureCell(customView: self.bodyTextView)
+//            return cell
+//          case 2:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
+//            cell.configureCell(customView: self.selectedRepositoryLabel)
+//            return cell
+//          case 3:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: CustomCell.reuseIdentifier) as! CustomCell
+//            cell.configureCell(customView: self.tagTextField)
+//            return cell
+//          default:
+//            return UITableViewCell()
+//          }
+//        case .subTask(let task):
+//          guard let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier)
+//            as? TaskCell else { return TaskCell() }
+//          cell.configureCell(item: task, action: self.viewModel.onToggle(task: task))
+//          return cell
+//        }
+//    },
+//      titleForHeaderInSection: { dataSource, sectionIndex in
+//        return dataSource[sectionIndex].header
+//    }
+//    )
   }
 }
 

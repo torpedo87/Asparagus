@@ -42,7 +42,9 @@ class SceneCoordinator: SceneCoordinatorType {
       var navigationController: UINavigationController
       if let _ = currentViewController as? SidebarViewController {
         navigationController = currentViewController.childViewControllers.last as! UINavigationController
-        navigationController.delegate = navigationController.viewControllers.first! as! UINavigationControllerDelegate
+        if let _ = viewController as? DetailViewController {
+          navigationController.delegate = navigationController.viewControllers.first! as! UINavigationControllerDelegate
+        } 
       } else {
         navigationController = currentViewController.navigationController!
       }
@@ -55,6 +57,11 @@ class SceneCoordinator: SceneCoordinatorType {
       //currentViewController = SceneCoordinator.actualViewController(for: viewController)
       
     case .modal:
+      if let _ = viewController as? CreateViewController {
+        if let nav = currentViewController.childViewControllers.last as? UINavigationController {
+          viewController.transitioningDelegate = nav.viewControllers.first as! UIViewControllerTransitioningDelegate
+        }
+      }
       currentViewController.present(viewController, animated: true) {
         subject.onCompleted()
       }

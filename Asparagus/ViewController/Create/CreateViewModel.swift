@@ -26,7 +26,7 @@ struct CreateViewModel {
     self.localTaskService = localTaskService
     
     onCancel = CocoaAction {
-      return coordinator.pop()
+      return coordinator.pop(animated: false)
         .asObservable().map { _ in }
     }
     

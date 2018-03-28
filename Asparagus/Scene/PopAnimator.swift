@@ -22,18 +22,10 @@ class PopAnimator: NSObject, UIViewControllerAnimatedTransitioning {
   
   func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
     let containerView = transitionContext.containerView
-    containerView.backgroundColor = UIColor.white
     guard let toView = transitionContext.view(forKey: .to) else { return }
     let presentedView = presenting ? toView : transitionContext.view(forKey: .from)!
-    let presentedWidth = UIScreen.main.bounds.width * 3 / 4
-    let presentedHeight = UIScreen.main.bounds.height / 3
-    let presentedFrame =
-      CGRect(origin: CGPoint(x: UIScreen.main.bounds.width / 2 - presentedWidth / 2,
-                             y: UIScreen.main.bounds.height / 2 - presentedHeight / 2),
-            size: CGSize(width: presentedWidth,
-                         height: presentedHeight))
-    let initialFrame = presenting ? originFrame : presentedFrame
-    let finalFrame = presenting ? presentedFrame : originFrame
+    let initialFrame = presenting ? originFrame : presentedView.bounds
+    let finalFrame = presenting ? presentedView.bounds : originFrame
     
     let xScaleFactor = presenting ?
       initialFrame.width / finalFrame.width :
@@ -55,7 +47,6 @@ class PopAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     
     containerView.addSubview(toView)
     containerView.bringSubview(toFront: presentedView)
-    
     
     UIView.animate(withDuration: duration, delay: 0.0,
                    usingSpringWithDamping: 1, initialSpringVelocity: 0.0,
