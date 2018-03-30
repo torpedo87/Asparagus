@@ -12,7 +12,7 @@ import RxCocoa
 import RxDataSources
 import Action
 
-class LeftViewController: UIViewController, BindableType, GradientBgRepresentable {
+class LeftViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
   private let topView: UIView = {
     let view = UIView()
@@ -45,13 +45,12 @@ class LeftViewController: UIViewController, BindableType, GradientBgRepresentabl
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    setGradientBgColor()
     setupView()
     configureDataSource()
   }
   
   func setupView() {
-    view.backgroundColor = UIColor.white
+    view.backgroundColor = UIColor(hex: "50A95A")
     topView.addSubview(appLabel)
     topView.addSubview(authButton)
     view.addSubview(topView)

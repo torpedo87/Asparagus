@@ -8,6 +8,7 @@
 
 import Foundation
 import RealmSwift
+import RxDataSources
 
 class SubTask: Object {
   @objc dynamic var uid = ""
@@ -35,5 +36,11 @@ class SubTask: Object {
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     let now = dateFormatter.string(from: Date())
     self.added = now
+  }
+}
+
+extension SubTask: IdentifiableType {
+  var identity: String {
+    return self.isInvalidated ? "" : uid
   }
 }

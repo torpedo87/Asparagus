@@ -57,11 +57,6 @@ class SceneCoordinator: SceneCoordinatorType {
       //currentViewController = SceneCoordinator.actualViewController(for: viewController)
       
     case .modal:
-      if let _ = viewController as? CreateViewController {
-        if let nav = currentViewController.childViewControllers.last as? UINavigationController {
-          viewController.transitioningDelegate = nav.viewControllers.first as! UIViewControllerTransitioningDelegate
-        }
-      }
       currentViewController.present(viewController, animated: true) {
         subject.onCompleted()
       }

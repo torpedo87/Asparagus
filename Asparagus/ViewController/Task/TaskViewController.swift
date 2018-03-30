@@ -12,7 +12,7 @@ import RxCocoa
 import RxDataSources
 import Action
 
-class TaskViewController: UIViewController, BindableType, GradientBgRepresentable {
+class TaskViewController: UIViewController, BindableType {
   let transition = PopAnimator()
   private weak var selectedCell: TaskCell?
   private let bag = DisposeBag()
@@ -21,6 +21,11 @@ class TaskViewController: UIViewController, BindableType, GradientBgRepresentabl
   private lazy var topView: UIView = {
     let view = UIView()
     view.backgroundColor = UIColor.clear
+    return view
+  }()
+  private lazy var topLabel: UILabel = {
+    let view = UILabel()
+    view.textAlignment = .center
     return view
   }()
   private lazy var tableView: UITableView = {
@@ -51,11 +56,10 @@ class TaskViewController: UIViewController, BindableType, GradientBgRepresentabl
     return spinner
   }()
   
-  var dataSource: RxTableViewSectionedReloadDataSource<TaskSection>!
+  var dataSource: RxTableViewSectionedAnimatedDataSource<TaskSection>!
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    setGradientBgColor()
     setupView()
     configureDataSource()
     
@@ -67,6 +71,7 @@ class TaskViewController: UIViewController, BindableType, GradientBgRepresentabl
   func setupView() {
     title = "Task"
     view.addSubview(topView)
+    topView.addSubview(topLabel)
     topView.addSubview(menuButton)
     view.addSubview(tableView)
     view.addSubview(activityIndicator)
@@ -78,9 +83,12 @@ class TaskViewController: UIViewController, BindableType, GradientBgRepresentabl
       make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
       make.height.equalTo(45)
     }
-    
+    topLabel.snp.makeConstraints { (make) in
+      make.width.equalTo(200)
+      make.center.top.bottom.equalTo(topView)
+    }
     menuButton.snp.makeConstraints { (make) in
-      menuButton.sizeToFit()
+      make.width.height.equalTo(40)
       make.left.equalTo(topView).offset(10)
       make.centerY.equalTo(topView)
     }
@@ -104,7 +112,11 @@ class TaskViewController: UIViewController, BindableType, GradientBgRepresentabl
   }
   
   func bindViewModel() {
-    newTaskButton.rx.action = viewModel.goToCreate()
+    viewModel.selectedGroupTitle
+      .bind(to: topLabel.rx.text)
+      .disposed(by: bag)
+    
+    newTaskButton.rx.action = viewModel.onCreateTask()
     
     viewModel.sectionedItems
       .bind(to: tableView.rx.items(dataSource: dataSource))
@@ -147,7 +159,7 @@ class TaskViewController: UIViewController, BindableType, GradientBgRepresentabl
   }
   
   func configureDataSource() {
-    dataSource = RxTableViewSectionedReloadDataSource<TaskSection> (
+    dataSource = RxTableViewSectionedAnimatedDataSource<TaskSection> (
       configureCell: {
         [unowned self] dataSource, tableView, indexPath, item in
         let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier, for: indexPath) as! TaskCell
@@ -158,23 +170,6 @@ class TaskViewController: UIViewController, BindableType, GradientBgRepresentabl
         dataSource.sectionModels[index].header
       }
     )
-  }
-}
-
-extension TaskViewController: UIViewControllerTransitioningDelegate {
-  
-  //custom present
-  func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-    transition.originFrame = newTaskButton.convert(newTaskButton.bounds, to: nil)
-    transition.presenting = true
-    //newTaskButton.isHidden = true
-    return transition
-  }
-  
-  //custom dismiss
-  func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-    transition.presenting = false
-    return transition
   }
 }
 
@@ -202,6 +197,6 @@ extension TaskViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
     view.tintColor = UIColor.clear
     let header = view as! UITableViewHeaderFooterView
-    header.textLabel?.textColor = UIColor.white
+    header.textLabel?.textColor = UIColor(hex: "4478E4")
   }
 }

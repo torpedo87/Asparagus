@@ -8,6 +8,7 @@
 
 import Foundation
 import RealmSwift
+import RxDataSources
 
 class TaskItem: Object, Decodable {
   @objc dynamic var uid = ""
@@ -19,8 +20,8 @@ class TaskItem: Object, Decodable {
   @objc dynamic var owner: User?
   @objc dynamic var repository: Repository?
   @objc dynamic var number = 0
-  let tag = LinkingObjects(fromType: Tag.self, property: "tasks")
-  let subTasks = List<SubTask>()
+  var tag = LinkingObjects(fromType: Tag.self, property: "tasks")
+  var subTasks = List<SubTask>()
   
   // local only properties
   var updatedDate: Date {
@@ -127,5 +128,11 @@ extension TaskItem {
     dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     return dateFormatter.date(from: self.updated)
+  }
+}
+
+extension TaskItem: IdentifiableType {
+  var identity: String {
+    return self.isInvalidated ? "" : uid
   }
 }

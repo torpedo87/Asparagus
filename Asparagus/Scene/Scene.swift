@@ -12,9 +12,6 @@ enum Scene {
   case sidebar(LeftViewModel, TaskViewModel)
   case auth(AuthViewModel)
   case detail(DetailViewModel)
-  case create(CreateViewModel)
-  case repository(DetailViewModel)
-  case tag(DetailViewModel)
 }
 
 extension Scene {
@@ -29,11 +26,6 @@ extension Scene {
       var vc = DetailViewController()
       vc.bindViewModel(to: viewModel)
       return vc
-    case .create(let viewModel):
-      var vc = CreateViewController()
-      vc.bindViewModel(to: viewModel)
-      vc.modalPresentationStyle = .overCurrentContext
-      return vc
     case .sidebar(let leftViewModel, let taskViewModel):
       var leftVC = LeftViewController()
       leftVC.bindViewModel(to: leftViewModel)
@@ -45,14 +37,6 @@ extension Scene {
       var sidebarVC = SidebarViewController(leftVC: leftVC, mainNav: nav)
       sidebarVC.bindViewModel(to: sidebarViewModel)
       return sidebarVC
-    case .repository(let viewModel):
-      var vc = RepositoryViewController()
-      vc.bindViewModel(to: viewModel)
-      return vc
-    case .tag(let viewModel):
-      var vc = TagViewController()
-      vc.bindViewModel(to: viewModel)
-      return vc
     }
   }
 }

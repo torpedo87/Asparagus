@@ -12,15 +12,13 @@ import RxCocoa
 import RxGesture
 import RxDataSources
 
-class DetailViewController: UIViewController, BindableType, GradientBgRepresentable {
-  let transition = PopAnimator()
+class DetailViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
   var viewModel: DetailViewModel!
-  var initialTouchPoint: CGPoint = CGPoint(x: 0,y: 0)
   
   private lazy var container: FoldableView = {
     let view = FoldableView()
-    view.backgroundColor = UIColor.white
+    view.backgroundColor = UIColor(hex: "F8F897")
     view.layer.cornerRadius = 10
     view.layer.shadowColor = UIColor.darkGray.cgColor
     view.layer.shadowRadius = 15
@@ -28,17 +26,30 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
     return view
   }()
   private lazy var segmentedControl: UISegmentedControl = {
-    let view = UISegmentedControl(items: ["Tags", "CheckList"])
+    let view = UISegmentedControl(items: ["Repository", "Tags", "CheckList"])
     view.selectedSegmentIndex = 0
     view.backgroundColor = UIColor.white
-    view.tintColor = UIColor.blue
+    view.tintColor = UIColor(hex: "2875A3")
     return view
+  }()
+  private let pickerView: UIPickerView = {
+    let view = UIPickerView()
+    return view
+  }()
+  private lazy var repoView: UIView = {
+    let view = UIView()
+    return view
+  }()
+  private let selectedRepositoryLabel: UILabel = {
+    let label = UILabel()
+    label.textAlignment = .center
+    label.backgroundColor = UIColor.white
+    return label
   }()
   private lazy var tagTableView: UITableView = {
     let view = UITableView()
-    view.backgroundColor = UIColor(hex: "4478E4")
     view.rowHeight = UIScreen.main.bounds.height / 15
-    view.register(TagCell.self, forCellReuseIdentifier: TagCell.reuseIdentifier)
+    view.register(SubTagCell.self, forCellReuseIdentifier: SubTagCell.reuseIdentifier)
     view.register(NewTaskCell.self, forCellReuseIdentifier: NewTaskCell.reuseIdentifier)
     return view
   }()
@@ -51,21 +62,31 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
   }()
   private let titleTextField: UITextField = {
     let view = UITextField()
+    view.backgroundColor = UIColor.white
     view.placeholder = "Please enter task title"
-    view.layer.borderColor = UIColor.black.cgColor
-    view.layer.borderWidth = 0.5
+    view.layer.cornerRadius = 10
     return view
   }()
   
   private lazy var bodyTextView: UITextView = {
     let view = UITextView()
-    view.layer.borderColor = UIColor.black.cgColor
-    view.layer.borderWidth = 0.5
+    view.layer.cornerRadius = 10
     view.text = "Please enter task body"
     view.textColor = UIColor.lightGray
     return view
   }()
-  
+  private var backButton: UIButton = {
+    let btn = UIButton()
+    btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
+    btn.setTitle("BACK", for: .normal)
+    return btn
+  }()
+  private var cancelButton: UIButton = {
+    let btn = UIButton()
+    btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
+    btn.setTitle("CANCEL", for: .normal)
+    return btn
+  }()
   private var saveButton: UIButton = {
     let btn = UIButton()
     btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
@@ -80,37 +101,20 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
     btn.setTitle("DELETE", for: .normal)
     return btn
   }()
-  private lazy var repositoryButton: UIButton = {
+  
+  private lazy var expandButton: UIButton = {
     let btn = UIButton()
-    btn.setImage(UIImage(named: "repository"), for: .normal)
+    btn.setImage(UIImage(named: "expand"), for: .normal)
     return btn
-  }()
-  private lazy var tagButton: UIButton = {
-    let btn = UIButton()
-    btn.setImage(UIImage(named: "tag"), for: .normal)
-    return btn
-  }()
-  private lazy var subTaskButton: UIButton = {
-    let btn = UIButton()
-    btn.setImage(UIImage(named: "list"), for: .normal)
-    return btn
-  }()
-  private lazy var buttonStackView: UIStackView = {
-    let view = UIStackView()
-    view.axis = .horizontal
-    view.spacing = 5
-    view.distribution = .fillEqually
-    return view
   }()
   private lazy var tempView: UIView = {
     let view = UIView()
     view.isHidden = true
     return view
   }()
-  var dataSource: RxTableViewSectionedReloadDataSource<SubTaskSection>!
+  var dataSource: RxTableViewSectionedAnimatedDataSource<SubTaskSection>!
   override func viewDidLoad() {
     super.viewDidLoad()
-    setGradientBgColor()
     setupView()
     configureDataSource()
     titleTextField.becomeFirstResponder()
@@ -118,50 +122,79 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
   
   func setupView() {
     title = "Detail"
+    view.backgroundColor = UIColor(hex: "F8F897")
+    view.addSubview(backButton)
+    view.addSubview(cancelButton)
     view.addSubview(container)
     container.addSubview(saveButton)
+    container.addSubview(deleteButton)
     container.addSubview(titleTextField)
     container.addSubview(bodyTextView)
     container.addSubview(tempView)
     tempView.addSubview(segmentedControl)
+    tempView.addSubview(repoView)
+    repoView.addSubview(selectedRepositoryLabel)
+    repoView.addSubview(pickerView)
     tempView.addSubview(tagTableView)
     tempView.addSubview(checkListTableView)
-    buttonStackView.addArrangedSubview(repositoryButton)
-    buttonStackView.addArrangedSubview(tagButton)
-    buttonStackView.addArrangedSubview(subTaskButton)
-    container.addSubview(buttonStackView)
+    container.addSubview(expandButton)
+    
+    backButton.snp.makeConstraints { (make) in
+      backButton.sizeToFit()
+      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(10)
+    }
+    cancelButton.snp.makeConstraints { (make) in
+      backButton.sizeToFit()
+      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(10)
+    }
     container.snp.makeConstraints { (make) in
       make.center.equalToSuperview()
-      make.width.equalTo(UIScreen.main.bounds.width * 3 / 4)
+      make.width.equalTo(UIScreen.main.bounds.width * 4 / 5)
       make.height.equalTo(UIScreen.main.bounds.height / 3)
     }
-    
     saveButton.snp.makeConstraints { (make) in
-      saveButton.sizeToFit()
-      make.top.equalTo(container.snp.top).offset(10)
-      make.right.equalTo(container.snp.right).offset(-10)
+      make.width.equalTo(100)
+      make.height.equalTo(40)
+      make.top.equalTo(container).offset(10)
+      make.right.equalTo(container).offset(-10)
+    }
+    deleteButton.snp.makeConstraints { (make) in
+      make.width.equalTo(100)
+      make.height.equalTo(40)
+      make.top.equalTo(container).offset(10)
+      make.left.equalTo(container).offset(10)
     }
     titleTextField.snp.makeConstraints { (make) in
       make.top.equalTo(saveButton.snp.bottom).offset(10)
-      make.centerX.equalToSuperview()
-      make.width.equalTo(UIScreen.main.bounds.width * 3 / 5)
+      make.left.equalTo(container.snp.left).offset(10)
+      make.right.equalTo(container.snp.right).offset(-10)
       make.height.equalTo(50)
     }
     bodyTextView.snp.makeConstraints { (make) in
       make.top.equalTo(titleTextField.snp.bottom).offset(10)
-      make.centerX.equalToSuperview()
-      make.width.equalTo(UIScreen.main.bounds.width * 3 / 5)
+      make.left.right.equalTo(titleTextField)
       make.height.equalTo(UIScreen.main.bounds.height / 7)
     }
-    
     tempView.snp.makeConstraints { (make) in
       make.top.equalTo(bodyTextView.snp.bottom).offset(10)
-      make.centerX.equalToSuperview()
-      make.width.equalTo(UIScreen.main.bounds.width * 3 / 5)
-      make.bottom.equalTo(buttonStackView.snp.top).offset(-10)
+      make.left.right.equalTo(titleTextField)
+      make.bottom.equalTo(expandButton.snp.top).offset(-10)
     }
     segmentedControl.snp.makeConstraints { (make) in
       make.left.top.right.equalTo(tempView)
+    }
+    repoView.snp.makeConstraints { (make) in
+      make.top.equalTo(segmentedControl.snp.bottom).offset(5)
+      make.left.bottom.right.equalTo(tempView)
+    }
+    selectedRepositoryLabel.snp.makeConstraints { (make) in
+      make.left.top.right.equalTo(repoView)
+    }
+    pickerView.snp.makeConstraints { (make) in
+      make.top.equalTo(selectedRepositoryLabel.snp.bottom)
+      make.left.bottom.right.equalTo(repoView)
     }
     tagTableView.snp.makeConstraints { (make) in
       make.top.equalTo(segmentedControl.snp.bottom).offset(5)
@@ -171,9 +204,10 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
       make.top.equalTo(segmentedControl.snp.bottom).offset(5)
       make.left.bottom.right.equalTo(tempView)
     }
-    buttonStackView.snp.makeConstraints { (make) in
-      make.right.equalTo(container.snp.right).offset(-10)
-      make.bottom.equalTo(container.snp.bottom).offset(-10)
+    expandButton.snp.makeConstraints { (make) in
+      make.width.height.equalTo(30)
+      make.right.equalTo(container).offset(-20)
+      make.bottom.equalTo(container).offset(-20)
     }
   }
   
@@ -186,12 +220,23 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
   }
   
   func toggleTableViews(index: Int) {
-    if index == 0 {
+    switch index {
+    case 0: do {
+      fadeView(view: pickerView, hidden: false)
+      fadeView(view: tagTableView, hidden: true)
+      fadeView(view: checkListTableView, hidden: true)
+      }
+    case 1: do {
+      fadeView(view: pickerView, hidden: true)
       fadeView(view: tagTableView, hidden: false)
       fadeView(view: checkListTableView, hidden: true)
-    } else {
+      }
+    case 2: do {
+      fadeView(view: pickerView, hidden: true)
       fadeView(view: tagTableView, hidden: true)
       fadeView(view: checkListTableView, hidden: false)
+      }
+    default: do {}
     }
   }
   
@@ -202,6 +247,13 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
   }
   
   func bindViewModel() {
+    if viewModel.task.title == "" {
+      self.backButton.isHidden = true
+      self.deleteButton.isHidden = true
+    } else {
+      self.cancelButton.isHidden = true
+    }
+    
     viewModel.tags()
       .bind(to: tagTableView.rx.items) { [unowned self]
         (tableView: UITableView, index: Int, item: Tag) in
@@ -210,8 +262,8 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
           cell.configureNewTagCell(vm: self.viewModel)
           return cell
         } else {
-          let cell = TagCell(style: .default, reuseIdentifier: TagCell.reuseIdentifier)
-          cell.configureCell(tag: item)
+          let cell = SubTagCell(style: .default, reuseIdentifier: SubTagCell.reuseIdentifier)
+          cell.configureCell(item: item, vm: self.viewModel)
           return cell
         }
       }
@@ -223,7 +275,7 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
       })
       .disposed(by: bag)
     
-    repositoryButton.rx.tap
+    expandButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .asDriver(onErrorJustReturn: ())
       .drive(onNext: { [unowned self] _ in
@@ -247,10 +299,17 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
         let title = self.titleTextField.text ?? ""
         let body = self.bodyTextView.text ?? ""
         return (title, body)
-      }).bind(to: viewModel.onUpdateBodyTitle.inputs)
+      }).bind(to: viewModel.onUpdateTitleBody.inputs)
       .disposed(by: bag)
     
     deleteButton.rx.tap
+      .throttle(0.5, scheduler: MainScheduler.instance)
+      .map { [unowned self] _ -> TaskItem in
+        return self.viewModel.task
+      }.bind(to: viewModel.onDelete.inputs)
+      .disposed(by: bag)
+    
+    cancelButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .map { [unowned self] _ -> TaskItem in
         return self.viewModel.task
@@ -266,35 +325,41 @@ class DetailViewController: UIViewController, BindableType, GradientBgRepresenta
     
     deleteButton.isEnabled = !viewModel.task.isServerGeneratedType
     
-    view.rx.panGesture().asObservable()
-      .subscribe(onNext: { [unowned self] recognizer in
-        let touchPoint = recognizer.location(in: self.view.window)
-        if recognizer.state == UIGestureRecognizerState.began {
-          self.initialTouchPoint = touchPoint
-        } else if recognizer.state == UIGestureRecognizerState.changed {
-          if touchPoint.y - self.initialTouchPoint.y > 0 {
-
-            self.view.frame = CGRect(x: 0, y: touchPoint.y - self.initialTouchPoint.y, width: self.view.frame.size.width, height: self.view.frame.size.height)
-          }
-        } else if recognizer.state == UIGestureRecognizerState.ended || recognizer.state == UIGestureRecognizerState.cancelled {
-          if touchPoint.y - self.initialTouchPoint.y > 100 {
-            self.viewModel.pop()
-          } else {
-            UIView.animate(withDuration: 0.3, animations: {
-              self.view.frame = CGRect(x: 0, y: 0, width: self.view.frame.size.width, height: self.view.frame.size.height)
-            })
-          }
-        }
+    backButton.rx.tap
+      .throttle(0.5, scheduler: MainScheduler.instance)
+      .asDriver(onErrorJustReturn: ())
+      .drive(onNext: { [unowned self] _ in
+        self.viewModel.pop()
       })
       .disposed(by: bag)
     
     viewModel.sectionedItems
       .bind(to: checkListTableView.rx.items(dataSource: dataSource))
       .disposed(by: bag)
+    
+    viewModel.repoTitles
+      .bind(to: pickerView.rx.itemTitles) { _, item in
+        return "\(item)"
+      }
+      .disposed(by: bag)
+    
+    pickerView.isUserInteractionEnabled = !viewModel.task.isServerGeneratedType
+    
+    pickerView.rx.modelSelected(String.self)
+      .map { models -> String in
+        return models.first!
+      }.bind(to: selectedRepositoryLabel.rx.text)
+      .disposed(by: bag)
+    
+    if let repo = viewModel.task.repository {
+      selectedRepositoryLabel.text = repo.name
+    } else {
+      selectedRepositoryLabel.text = ""
+    }
   }
   
   func configureDataSource() {
-    dataSource = RxTableViewSectionedReloadDataSource<SubTaskSection>(
+    dataSource = RxTableViewSectionedAnimatedDataSource<SubTaskSection>(
       configureCell: { [unowned self] (dataSource, tableView, indexPath, item) in
         switch indexPath.section {
         case 0: do {

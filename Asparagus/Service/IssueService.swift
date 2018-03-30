@@ -87,6 +87,8 @@ class IssueService: IssueServiceRepresentable {
           let statusCode = moyaResponse.statusCode
           if 200 ..< 300 ~= statusCode {
             let newTask = try! JSONDecoder().decode(TaskItem.self, from: data)
+            newTask.subTasks = exTask.subTasks
+            newTask.tag = exTask.tag
             observer.onNext(newTask)
           } else {
             observer.onError(Errors.editServerTaskFailed)
@@ -135,6 +137,8 @@ class IssueService: IssueServiceRepresentable {
         if 200 ..< 300 ~= statusCode {
           let newIssue = try! JSONDecoder().decode(TaskItem.self, from: data)
           newIssue.repository = localTaskWithRef.0.repository
+          newIssue.tag = localTaskWithRef.0.tag
+          newIssue.subTasks = localTaskWithRef.0.subTasks
           let tuple = (newIssue, localTaskWithRef.1)
           observer.onNext(tuple)
         } else {

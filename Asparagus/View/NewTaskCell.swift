@@ -29,7 +29,7 @@ class NewTaskCell: UITableViewCell {
   private var addButton: UIButton = {
     let btn = UIButton()
     btn.setTitle("ADD", for: .normal)
-    btn.setTitleColor(UIColor.blue, for: .normal)
+    btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
     return btn
   }()
   override init(style: UITableViewCellStyle, reuseIdentifier: String?) {

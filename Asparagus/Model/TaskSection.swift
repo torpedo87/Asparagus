@@ -13,16 +13,20 @@ struct TaskSection {
   var header: String
   var items: [Item]
 }
-extension TaskSection: SectionModelType {
+
+extension TaskSection: AnimatableSectionModelType {
   typealias Item = TaskItem
   
   init(original: TaskSection, items: [Item]) {
     self = original
     self.items = items
   }
+  var identity: String {
+    return header
+  }
 }
 
-struct SubTaskSection {
+struct SubTaskSection: AnimatableSectionModelType {
   var header: String
   var items: [Item]
 }
@@ -32,5 +36,8 @@ extension SubTaskSection: SectionModelType {
   init(original: SubTaskSection, items: [Item]) {
     self = original
     self.items = items
+  }
+  var identity: String {
+    return header
   }
 }

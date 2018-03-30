@@ -16,8 +16,9 @@ struct DetailViewModel {
   
   let task: TaskItem
   let onDelete: Action<TaskItem, Void>
-  let onUpdateBodyTitle: Action<(String, String), Void>
+  let onUpdateTitleBody: Action<(String, String), Void>
   let onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>
+  let onUpdateRepo: Action<Repository, Void>
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
   let sceneCoordinator: SceneCoordinatorType
@@ -28,15 +29,17 @@ struct DetailViewModel {
        deleteAction: Action<TaskItem, Void>,
        updateTitleBodyAction: Action<(String, String), Void>,
        updateTagsAction: Action<(Tag, LocalTaskService.TagMode), Void>,
+       updateRepo: Action<Repository, Void>,
        localTaskService: LocalTaskServiceType) {
     self.task = task
     self.onDelete = deleteAction
-    self.onUpdateBodyTitle = updateTitleBodyAction
+    self.onUpdateTitleBody = updateTitleBodyAction
     self.onUpdateTags = updateTagsAction
+    self.onUpdateRepo = updateRepo
     self.localTaskService = localTaskService
     self.sceneCoordinator = coordinator
     
-    onUpdateBodyTitle.executionObservables
+    onUpdateTitleBody.executionObservables
       .take(1)
       .subscribe(onNext: { _ in
         coordinator.pop()
@@ -87,14 +90,6 @@ struct DetailViewModel {
   
   func addSubTask(title: String) {
     localTaskService.createSubTask(title: title, superTask: task)
-  }
-  
-  func repositoryButtonTapped() -> CocoaAction {
-    return CocoaAction { _ in
-      return self.sceneCoordinator
-        .transition(to: Scene.repository(self), type: .push)
-        .asObservable().map { _ in }
-    }
   }
   
   func tags() -> Observable<[Tag]> {

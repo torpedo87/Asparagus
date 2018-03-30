@@ -43,7 +43,7 @@ class TaskCell: UITableViewCell {
     addSubview(checkButton)
     
     contentView.layer.cornerRadius = 10
-    contentView.backgroundColor = UIColor.white
+    contentView.backgroundColor = UIColor(hex: "F8F897")
     contentView.snp.makeConstraints { (make) in
       make.edges.equalToSuperview().inset(10)
     }

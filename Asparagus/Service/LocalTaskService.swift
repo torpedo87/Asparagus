@@ -15,12 +15,14 @@ import RxRealm
 protocol LocalTaskServiceType {
   
   @discardableResult
+  func createBlankTask(title: String) -> Observable<TaskItem>
   func createTask(title: String, body: String, repoName: String, tags: [String]) -> Observable<TaskItem>
   @discardableResult
   func createSubTask(title: String, superTask: TaskItem) -> Observable<SubTask>
   @discardableResult
   func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem>
-  func updateTag(exTask: TaskItem, tag: Tag, mode: LocalTaskService.TagMode) -> Observable<TaskItem>
+  func updateRepo(taskWithRef: LocalTaskService.TaskItemWithReference, repo: Repository) -> Observable<TaskItem>
+  func updateTag(taskWithRef: LocalTaskService.TaskItemWithReference, tag: Tag, mode: LocalTaskService.TagMode) -> Observable<TaskItem>
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem>
   func toggle(task: SubTask) -> Observable<SubTask>
@@ -41,6 +43,7 @@ protocol LocalTaskServiceType {
   func subTasksForTask(task: TaskItem) -> Observable<Results<SubTask>>
   func singleTask(taskItem: TaskItem) -> Observable<TaskItem>
   func tagsForTask(task: TaskItem) -> Observable<Results<Tag>>
+  func getRepository(repoName: String) -> Repository?
 }
 
 class LocalTaskService: LocalTaskServiceType {
@@ -55,6 +58,25 @@ class LocalTaskService: LocalTaskServiceType {
     case toggleFailed(TaskItem)
   }
   
+  func createBlankTask(title: String) -> Observable<TaskItem> {
+    let result = withRealm("creating") { realm -> Observable<TaskItem> in
+      let task = TaskItem()
+      task.uid = UUID().uuidString
+      task.owner = UserDefaults.loadUser() ?? nil
+      task.title = title
+      task.checked = "open"
+      task.setDateWhenCreated()
+      try realm.write {
+        realm.add(task)
+        print(Thread.current, "write thread \(#function)")
+      }
+      if let managedTask = realm.object(ofType: TaskItem.self, forPrimaryKey: task.uid) {
+        return .just(managedTask)
+      }
+      return .empty()
+    }
+    return result ?? .error(TaskServiceError.creationFailed)
+  }
   //로컬에서 새로운 이슈 생성
   @discardableResult
   func createTask(title: String, body: String, repoName: String, tags: [String]) -> Observable<TaskItem> {
@@ -146,32 +168,56 @@ class LocalTaskService: LocalTaskServiceType {
     return result ?? .error(TaskServiceError.updateFailed(exTask))
   }
   
+  @discardableResult
+  func updateRepo(taskWithRef: TaskItemWithReference, repo: Repository) -> Observable<TaskItem> {
+    let result = withRealm("updateRepo") { realm -> Observable<TaskItem> in
+      //파라미터의 tag는 Ref 없어서 thread 이동 불가
+      let repoName = repo.name
+      if let exTask = realm.resolve(taskWithRef.1) {
+        realm.writeAsync(obj: exTask, block: { (realm, exTask) in
+          if let exTask = exTask {
+            exTask.setDateWhenUpdated()
+            exTask.repository = self.getRepository(repoName: repoName)
+          }
+          print(Thread.current, "write thread \(#function) 3333333333")
+        })
+        return .just(exTask)
+      }
+      return .empty()
+    }
+    return result ?? .empty()
+  }
+  
   enum TagMode {
     case add
     case delete
   }
   
-  func updateTag(exTask: TaskItem, tag: Tag, mode: TagMode) -> Observable<TaskItem> {
+  func updateTag(taskWithRef: TaskItemWithReference, tag: Tag, mode: TagMode) -> Observable<TaskItem> {
     let result = withRealm("updating title") { realm -> Observable<TaskItem> in
-      realm.writeAsync(obj: exTask, block: { (realm, exTask) in
-        if let exTask = exTask {
-          exTask.setDateWhenUpdated()
-          let group = self.defaultTag(realm: realm, tagTitle: tag.title)
-          switch mode {
-          case .add: do {
-            group.tasks.append(exTask)
-            }
-          case .delete: do {
-            let i = self.findIndex(tasks: group.tasks.toArray(), exTask: exTask)
-            group.tasks.remove(at: i)
+      //파라미터의 tag는 Ref 없어서 thread 이동 불가
+      let tagTitle = tag.title
+      if let exTask = realm.resolve(taskWithRef.1) {
+        realm.writeAsync(obj: exTask, block: { (realm, exTask) in
+          if let exTask = exTask {
+            let group = self.defaultTag(realm: realm, tagTitle: tagTitle)
+            switch mode {
+            case .add: do {
+              group.tasks.append(exTask)
+              }
+            case .delete: do {
+              let i = self.findIndex(tasks: group.tasks.toArray(), exTask: exTask)
+              group.tasks.remove(at: i)
+              }
             }
           }
-        }
-        print(Thread.current, "write thread \(#function)")
-      })
-      return .just(exTask)
+          print(Thread.current, "write thread \(#function) 3333333333")
+        })
+        return .just(exTask)
+      }
+      return .empty()
     }
-    return result ?? .error(TaskServiceError.updateFailed(exTask))
+    return result ?? .empty()
   }
   
   func findIndex(tasks: [TaskItem], exTask: TaskItem) -> Int {
@@ -421,7 +467,7 @@ class LocalTaskService: LocalTaskServiceType {
         .map { (arr, changes) -> [TaskItem] in
           if let changes = changes, let insertedIndex = changes.inserted.first {
             let task = arr[insertedIndex]
-            if !task.isServerGeneratedType && task.tag.first!.isCreatedInServer {
+            if !task.isServerGeneratedType && task.title != "" {
               return [task]
             }
             return []
@@ -494,7 +540,6 @@ extension LocalTaskService {
       return nil
     }
   }
-  
   func defaultTag(realm: Realm, tagTitle: String) -> Tag {
     if let tag = realm.object(ofType: Tag.self, forPrimaryKey: tagTitle) {
       return tag

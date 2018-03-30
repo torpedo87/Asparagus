@@ -92,10 +92,12 @@ struct TaskViewModel {
       })
       .map { results in
         let dueTasks = results
+          .filter("title != ''")
           .filter("checked = 'open'")
           .sorted(byKeyPath: "added", ascending: false)
 
         let doneTasks = results
+          .filter("title != ''")
           .filter("checked = 'closed'")
           .sorted(byKeyPath: "added", ascending: false)
 
@@ -113,6 +115,7 @@ struct TaskViewModel {
                                         deleteAction: this.onDeleteTask(task: task),
                                         updateTitleBodyAction: this.onUpdateTitleBodyTask(task: task),
                                         updateTagsAction: this.onUpdateTagsTask(task: task),
+                                        updateRepo: this.onUpdateRepo(task: task),
                                         localTaskService: this.localTaskService)
       return this.sceneCoordinator
         .transition(to: Scene.detail(detailViewModel), type: .push)
@@ -138,32 +141,34 @@ struct TaskViewModel {
   
   func onUpdateTagsTask(task: TaskItem) -> Action<(Tag, LocalTaskService.TagMode), Void> {
     return Action { tuple in
-      return self.localTaskService.updateTag(exTask: task, tag: tuple.0, mode: tuple.1).map { _ in }
+      return self.localTaskService.convertToTaskWithRef(task: task)
+        .flatMap { self.localTaskService.updateTag(taskWithRef: $0, tag: tuple.0, mode: tuple.1).map { _ in }}
     }
   }
   
-  func onCreateTask() -> Action<(String, String, String, [String]), Void> {
-    return Action { tuple in
-      return self.localTaskService.createTask(title: tuple.0, body: tuple.1, repoName: tuple.2, tags: tuple.3).map { _ in }
+  func onUpdateRepo(task: TaskItem) -> Action<Repository, Void> {
+    return Action { repo in
+      return self.localTaskService.convertToTaskWithRef(task: task)
+        .flatMap { self.localTaskService.updateRepo(taskWithRef: $0, repo: repo).map { _ in }}
     }
   }
   
-  func createViewModel() -> CreateViewModel {
-    return CreateViewModel(coordinator: self.sceneCoordinator,
-                           createAction: self.onCreateTask(),
-                           localTaskService: self.localTaskService)
-  }
-  
-  func goToCreate() -> CocoaAction {
+  func onCreateTask() -> CocoaAction {
     return CocoaAction { _ in
-      let createViewModel = CreateViewModel(coordinator: self.sceneCoordinator,
-                                            createAction: self.onCreateTask(),
-                                            localTaskService: self.localTaskService)
-      return self.sceneCoordinator
-        .transition(to: Scene.create(createViewModel), type: .modal)
-        .asObservable().map { _ in }
+      return self.localTaskService.createBlankTask(title: "")
+        .flatMap { task -> Observable<Void> in
+          let viewModel = DetailViewModel(task: task,
+                                              coordinator: self.sceneCoordinator,
+                                              deleteAction: self.onDeleteTask(task: task),
+                                              updateTitleBodyAction: self.onUpdateTitleBodyTask(task: task),
+                                              updateTagsAction: self.onUpdateTagsTask(task: task),
+                                              updateRepo: self.onUpdateRepo(task: task),
+                                              localTaskService: self.localTaskService)
+          return self.sceneCoordinator
+            .transition(to: Scene.detail(viewModel), type: .modal)
+            .asObservable().map { _ in }
+      }
     }
   }
-  
   
 }
