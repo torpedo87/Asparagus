@@ -19,9 +19,10 @@ struct EditViewModel {
   let onUpdateTitleBody: Action<(String, String), Void>
   let onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>
   let onAddSubTask: Action<String, Void>
-  let onUpdateRepo: Action<Repository, Void>
+  let onUpdateRepo: Action<Repository?, Void>
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
+  private let coordinator: SceneCoordinatorType
   let repoTitles = BehaviorRelay<[String]>(value: [])
   
   init(task: TaskItem,
@@ -29,7 +30,7 @@ struct EditViewModel {
        cancelAction: CocoaAction? = nil,
        updateTitleBodyAction: Action<(String, String), Void>,
        updateTagsAction: Action<(Tag, LocalTaskService.TagMode), Void>,
-       updateRepo: Action<Repository, Void>,
+       updateRepo: Action<Repository?, Void>,
        addSubTask: Action<String, Void>,
        localTaskService: LocalTaskServiceType) {
     self.task = task
@@ -38,8 +39,9 @@ struct EditViewModel {
     self.onUpdateRepo = updateRepo
     self.onAddSubTask = addSubTask
     self.localTaskService = localTaskService
+    self.coordinator = coordinator
     
-    onUpdateTitleBody.executionObservables
+    onUpdateRepo.executionObservables
       .take(1)
       .subscribe(onNext: { _ in
         coordinator.pop()
@@ -82,6 +84,10 @@ struct EditViewModel {
           SubTaskSection(header: "Done SubTasks", items: doneTasks.toArray())
         ]
       })
+  }
+  
+  func pop() {
+    coordinator.pop()
   }
   
   func onToggle(task: SubTask) -> CocoaAction {

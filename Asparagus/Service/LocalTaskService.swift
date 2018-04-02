@@ -16,17 +16,15 @@ protocol LocalTaskServiceType {
   
   @discardableResult
   func createBlankTask(title: String) -> Observable<TaskItem>
-  func createTask(title: String, body: String, repoName: String, tags: [String]) -> Observable<TaskItem>
   @discardableResult
   func createSubTask(title: String, superTask: TaskItem) -> Observable<SubTask>
   @discardableResult
   func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem>
-  func updateRepo(taskWithRef: LocalTaskService.TaskItemWithReference, repo: Repository) -> Observable<TaskItem>
+  func updateRepo(taskWithRef: LocalTaskService.TaskItemWithReference, repo: Repository?) -> Observable<TaskItem>
   func updateTag(taskWithRef: LocalTaskService.TaskItemWithReference, tag: Tag, mode: LocalTaskService.TagMode) -> Observable<TaskItem>
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem>
   func toggle(task: SubTask) -> Observable<SubTask>
-  func tasks() -> Observable<Results<TaskItem>>
   func repositories() -> Observable<Results<Repository>>
   func getRecentLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
   func updateOldLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
@@ -41,7 +39,6 @@ protocol LocalTaskServiceType {
   func tags() -> Observable<Results<Tag>>
   func openTasks() -> Observable<Results<TaskItem>>
   func subTasksForTask(task: TaskItem) -> Observable<Results<SubTask>>
-  func singleTask(taskItem: TaskItem) -> Observable<TaskItem>
   func tagsForTask(task: TaskItem) -> Observable<Results<Tag>>
   func getRepository(repoName: String) -> Repository?
 }
@@ -76,57 +73,6 @@ class LocalTaskService: LocalTaskServiceType {
       return .empty()
     }
     return result ?? .error(TaskServiceError.creationFailed)
-  }
-  //로컬에서 새로운 이슈 생성
-  @discardableResult
-  func createTask(title: String, body: String, repoName: String, tags: [String]) -> Observable<TaskItem> {
-    let result = withRealm("creating") { realm -> Observable<TaskItem> in
-      let task = TaskItem()
-      task.uid = UUID().uuidString
-      task.owner = UserDefaults.loadUser() ?? nil
-      task.title = title
-      task.body = body
-      task.checked = "open"
-      task.setDateWhenCreated()
-      try realm.write {
-        //레퍼지토리 있으면 레퍼지토리 태그 추가
-        if let repo = getRepository(repoName: repoName) {
-          task.repository = repo
-          let group = defaultTag(realm: realm, tagTitle: repoName)
-          group.isCreatedInServer = true
-          group.tasks.append(task)
-        }
-        //태그 있으면 추가
-        if tags.count > 0 {
-          for tag in tags {
-            let group = defaultTag(realm: realm, tagTitle: tag)
-            group.isCreatedInServer = true
-            group.tasks.append(task)
-          }
-        } else {
-          realm.add(task)
-        }
-        print(Thread.current, "write thread \(#function)")
-      }
-      if let managedTask = realm.object(ofType: TaskItem.self, forPrimaryKey: task.uid) {
-        return .just(managedTask)
-      }
-      return .empty()
-    }
-    return result ?? .error(TaskServiceError.creationFailed)
-  }
-  
-  func singleTask(taskItem: TaskItem) -> Observable<TaskItem> {
-    let result = withRealm("singleTask") { realm -> Observable<TaskItem> in
-      return Observable<TaskItem>.create({ (observer) -> Disposable in
-        if let task = realm.object(ofType: TaskItem.self, forPrimaryKey: taskItem.uid) {
-          observer.onNext(task)
-        }
-        observer.onCompleted()
-        return Disposables.create()
-      })
-    }
-    return result ?? .empty()
   }
   
   @discardableResult
@@ -169,10 +115,12 @@ class LocalTaskService: LocalTaskServiceType {
   }
   
   @discardableResult
-  func updateRepo(taskWithRef: TaskItemWithReference, repo: Repository) -> Observable<TaskItem> {
+  func updateRepo(taskWithRef: TaskItemWithReference, repo: Repository? = nil) -> Observable<TaskItem> {
     let result = withRealm("updateRepo") { realm -> Observable<TaskItem> in
-      //파라미터의 tag는 Ref 없어서 thread 이동 불가
-      let repoName = repo.name
+      var repoName = ""
+      if let repo = repo {
+        repoName = repo.name
+      }
       if let exTask = realm.resolve(taskWithRef.1) {
         realm.writeAsync(obj: exTask, block: { (realm, exTask) in
           if let exTask = exTask {
@@ -259,15 +207,6 @@ class LocalTaskService: LocalTaskServiceType {
         print(Thread.current, "write thread \(#function)")
       })
       return .just(task)
-    }
-    return result ?? .empty()
-  }
-  
-  //로컬에 저장된 모든 task 불러오기
-  func tasks() -> Observable<Results<TaskItem>> {
-    let result = withRealm("getting tasks") { realm -> Observable<Results<TaskItem>> in
-      let tasks = realm.objects(TaskItem.self)
-      return Observable.collection(from: tasks)
     }
     return result ?? .empty()
   }
@@ -465,9 +404,9 @@ class LocalTaskService: LocalTaskServiceType {
       let tasks = realm.objects(TaskItem.self)
       return Observable.arrayWithChangeset(from: tasks)
         .map { (arr, changes) -> [TaskItem] in
-          if let changes = changes, let insertedIndex = changes.inserted.first {
+          if let changes = changes, let insertedIndex = changes.updated.first {
             let task = arr[insertedIndex]
-            if !task.isServerGeneratedType && task.title != "" {
+            if !task.isServerGeneratedType && task.repository != nil {
               return [task]
             }
             return []

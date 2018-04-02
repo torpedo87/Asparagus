@@ -253,13 +253,18 @@ class EditViewController: UIViewController, BindableType {
     titleTextField.text = viewModel.task.title
     bodyTextView.text = viewModel.task.body
     
+    Observable.combineLatest(titleTextField.rx.text.orEmpty,
+                             bodyTextView.rx.text.orEmpty)
+      .debounce(2.0, scheduler: MainScheduler.instance)
+      .bind(to: viewModel.onUpdateTitleBody.inputs)
+      .disposed(by: bag)
+    
     saveButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
-      .map({ [unowned self] _ -> (String, String) in
-        let title = self.titleTextField.text ?? ""
-        let body = self.bodyTextView.text ?? ""
-        return (title, body)
-      }).bind(to: viewModel.onUpdateTitleBody.inputs)
+      .map { [unowned self] _ -> Repository? in
+        return self.viewModel.getRepo(repoName: self.selectedRepositoryLabel.text!)
+      }
+      .bind(to: viewModel.onUpdateRepo.inputs)
       .disposed(by: bag)
     
     view.rx.tapGesture()
@@ -280,15 +285,7 @@ class EditViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     pickerView.isHidden = viewModel.task.isServerGeneratedType
-    
-    pickerView.rx.modelSelected(String.self)
-      .map { [unowned self] models -> Repository in
-        let repoName = models.first!
-        return self.viewModel.getRepo(repoName: repoName)!
-      }
-      .bind(to: viewModel.onUpdateRepo.inputs)
-      .disposed(by: bag)
-    
+
     pickerView.rx.modelSelected(String.self)
       .map { models -> String in
         return models.first!

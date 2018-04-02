@@ -151,7 +151,7 @@ struct TaskViewModel {
     }
   }
   
-  func onUpdateRepo(task: TaskItem) -> Action<Repository, Void> {
+  func onUpdateRepo(task: TaskItem) -> Action<Repository?, Void> {
     return Action { repo in
       return self.localTaskService.convertToTaskWithRef(task: task)
         .flatMap { self.localTaskService.updateRepo(taskWithRef: $0,
