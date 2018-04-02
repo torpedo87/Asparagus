@@ -11,6 +11,7 @@ import RxSwift
 import RxCocoa
 
 class SceneCoordinator: SceneCoordinatorType {
+  
   let window: UIWindow = {
     let window = UIWindow(frame: UIScreen.main.bounds)
     window.backgroundColor = .white
@@ -42,13 +43,9 @@ class SceneCoordinator: SceneCoordinatorType {
       var navigationController: UINavigationController
       if let _ = currentViewController as? SidebarViewController {
         navigationController = currentViewController.childViewControllers.last as! UINavigationController
-        if let _ = viewController as? DetailViewController {
-          navigationController.delegate = navigationController.viewControllers.first! as! UINavigationControllerDelegate
-        } 
       } else {
         navigationController = currentViewController.navigationController!
       }
-      
       _ = navigationController.rx.delegate
         .sentMessage(#selector(UINavigationControllerDelegate.navigationController(_:didShow:animated:)))
         .map { _ in }

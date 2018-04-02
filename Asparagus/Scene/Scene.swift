@@ -11,7 +11,7 @@ import UIKit
 enum Scene {
   case sidebar(LeftViewModel, TaskViewModel)
   case auth(AuthViewModel)
-  case detail(DetailViewModel)
+  case edit(EditViewModel)
 }
 
 extension Scene {
@@ -22,9 +22,10 @@ extension Scene {
       var vc = AuthViewController()
       vc.bindViewModel(to: viewModel)
       return vc
-    case .detail(let viewModel):
-      var vc = DetailViewController()
+    case .edit(let viewModel):
+      var vc = EditViewController()
       vc.bindViewModel(to: viewModel)
+      vc.modalPresentationStyle = .overCurrentContext
       return vc
     case .sidebar(let leftViewModel, let taskViewModel):
       var leftVC = LeftViewController()
@@ -33,7 +34,10 @@ extension Scene {
       taskVC.bindViewModel(to: taskViewModel)
       let sidebarViewModel = SidebarViewModel(leftViewModel: leftViewModel, taskViewModel: taskViewModel)
       let nav = UINavigationController(rootViewController: taskVC)
-      nav.isNavigationBarHidden = true
+      nav.navigationBar.frame = CGRect(x: 0,
+                                       y: 0,
+                                       width: nav.navigationBar.bounds.width,
+                                       height: UIScreen.main.bounds.height / 20)
       var sidebarVC = SidebarViewController(leftVC: leftVC, mainNav: nav)
       sidebarVC.bindViewModel(to: sidebarViewModel)
       return sidebarVC

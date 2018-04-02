@@ -22,8 +22,7 @@ class SubTagCell: UITableViewCell {
   }()
   private var deleteButton: UIButton = {
     let btn = UIButton()
-    btn.setTitle("DELETE", for: .normal)
-    btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
+    btn.setImage(UIImage(named: "trash"), for: UIControlState.normal)
     return btn
   }()
   
@@ -39,10 +38,9 @@ class SubTagCell: UITableViewCell {
       make.right.equalTo(deleteButton.snp.left).offset(-5)
     }
     deleteButton.snp.makeConstraints { (make) in
-      make.width.equalTo(70)
-      make.height.equalTo(30)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
       make.centerY.equalToSuperview()
-      make.right.equalTo(contentView).offset(-5)
+      make.right.equalTo(contentView).offset(-10)
     }
   }
   
@@ -50,7 +48,7 @@ class SubTagCell: UITableViewCell {
     fatalError("init(coder:) has not been implemented")
   }
   
-  func configureCell(item: Tag, vm: DetailViewModel) {
+  func configureCell(item: Tag, onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>) {
     
     item.rx.observe(String.self, "title")
       .subscribe(onNext: { [unowned self] title in
@@ -63,7 +61,7 @@ class SubTagCell: UITableViewCell {
       .map { _ -> (Tag, LocalTaskService.TagMode) in
         return (item, LocalTaskService.TagMode.delete)
       }
-      .bind(to: vm.onUpdateTags.inputs)
+      .bind(to: onUpdateTags.inputs)
       .disposed(by: bag)
   }
   

@@ -14,10 +14,10 @@ class SidebarViewController: UIViewController, BindableType {
   
   var viewModel: SidebarViewModel!
   private let bag = DisposeBag()
-  var leftViewController: LeftViewController!
-  var mainNav: UINavigationController!
-  var overlap: CGFloat = 70
-  var scrollView: UIScrollView = {
+  private var leftViewController: LeftViewController!
+  private var mainNav: UINavigationController!
+  private var overlap: CGFloat = 70
+  private lazy var scrollView: UIScrollView = {
     let view = UIScrollView()
     view.backgroundColor = UIColor.white
     view.isPagingEnabled = true
@@ -25,7 +25,7 @@ class SidebarViewController: UIViewController, BindableType {
     return view
   }()
   
-  var contentView: UIView = {
+  private lazy var contentView: UIView = {
     let view = UIView()
     return view
   }()
@@ -44,18 +44,17 @@ class SidebarViewController: UIViewController, BindableType {
   }
   
   func bindViewModel() {
-    viewModel.menuTap.asDriver()
-      .drive(onNext: { [unowned self] in
+    viewModel.menuTap
+      .subscribe(onNext: { [unowned self] in
         self.toggleLeftMenuAnimated(true)
       })
       .disposed(by: bag)
     
-    viewModel.repoTap.asDriver()
-      .drive(onNext: { [unowned self] in
+    viewModel.repoTap
+      .subscribe(onNext: { [unowned self] in
         self.toggleLeftMenuAnimated(true)
       })
       .disposed(by: bag)
-    
   }
   
   func setupView() {
@@ -71,7 +70,8 @@ class SidebarViewController: UIViewController, BindableType {
     
     contentView.snp.makeConstraints { (make) in
       make.centerX.equalTo(view.frame.width - overlap / 2)
-      make.top.bottom.equalTo(view)
+      make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
     }
   }
   
@@ -82,17 +82,17 @@ class SidebarViewController: UIViewController, BindableType {
     leftViewController.view.snp.makeConstraints { (make) in
       make.left.top.equalTo(contentView)
       make.width.equalTo(view.frame.width - overlap)
-      make.height.equalTo(view)
+      make.height.equalTo(view.frame.height)
       make.right.equalTo(mainNav.view.snp.left)
     }
     
     mainNav.view.snp.makeConstraints { (make) in
       make.right.top.equalTo(contentView)
       make.width.equalTo(view.frame.width)
-      make.height.equalTo(view)
+      make.height.equalTo(contentView)
     }
-    let w = 2 * UIScreen.main.bounds.width - overlap
-    let h = UIScreen.main.bounds.height
+    let w = 2 * (UIScreen.main.bounds.width - view.safeAreaInsets.left - view.safeAreaInsets.right) - overlap
+    let h = UIScreen.main.bounds.height - view.safeAreaInsets.top - view.safeAreaInsets.bottom
     
     scrollView.contentSize = CGSize(width: w, height: h)
   }
@@ -112,7 +112,8 @@ class SidebarViewController: UIViewController, BindableType {
   }
   
   func closeLeftMenuAnimated(_ animated: Bool) {
-    scrollView.setContentOffset(CGPoint(x: leftViewController.view.frame.width, y: 0), animated: animated)
+    scrollView.setContentOffset(CGPoint(x: leftViewController.view.frame.width, y: 0),
+                                animated: animated)
   }
   
   func toggleLeftMenuAnimated(_ animated: Bool) {

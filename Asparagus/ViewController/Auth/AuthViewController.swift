@@ -15,18 +15,18 @@ import Kingfisher
 class AuthViewController: UIViewController, BindableType {
   var viewModel: AuthViewModel!
   private let bag = DisposeBag()
-  private var cancelButton: UIButton = {
+  private lazy var cancelButton: UIButton = {
     let btn = UIButton()
     btn.setTitle("CANCEL", for: .normal)
     btn.setTitleColor(UIColor.blue, for: .normal)
     return btn
   }()
-  private let imgView: UIImageView = {
+  private lazy var imgView: UIImageView = {
     let view = UIImageView()
     view.contentMode = .scaleAspectFill
     return view
   }()
-  private let stackView: UIStackView = {
+  private lazy var stackView: UIStackView = {
     let stack = UIStackView()
     stack.axis = .vertical
     stack.spacing = 10
@@ -34,31 +34,31 @@ class AuthViewController: UIViewController, BindableType {
     stack.distribution = .fillEqually
     return stack
   }()
-  private let idTextField: UITextField = {
+  private lazy var idTextField: UITextField = {
     let txtField = UITextField()
     txtField.placeholder = "Please enter your GitHub ID"
-    txtField.layer.borderColor = UIColor.blue.cgColor
+    txtField.layer.borderColor = UIColor(hex: "2E3136").cgColor
     txtField.layer.borderWidth = 0.5
     return txtField
   }()
-  private let passWordTextField: UITextField = {
+  private lazy var passWordTextField: UITextField = {
     let txtField = UITextField()
-    txtField.placeholder = "Please enter your password"
-    txtField.layer.borderColor = UIColor.blue.cgColor
+    txtField.placeholder = " Please enter your password"
+    txtField.layer.borderColor = UIColor(hex: "2E3136").cgColor
     txtField.isSecureTextEntry = true
     txtField.layer.borderWidth = 0.5
     return txtField
   }()
-  private var authButton: UIButton = {
+  private lazy var authButton: UIButton = {
     let btn = UIButton()
     btn.isEnabled = false
     btn.setTitleColor(UIColor.blue, for: .normal)
     btn.setTitleColor(UIColor.gray, for: .disabled)
     return btn
   }()
-  private var forgotPasswordButton: UIButton = {
+  private lazy var forgotPasswordButton: UIButton = {
     let btn = UIButton()
-    btn.setTitle("Forget your password?", for: .normal)
+    btn.setTitle(" Forget your password?", for: .normal)
     btn.setTitleColor(UIColor.blue, for: .normal)
     return btn
   }()
@@ -109,12 +109,12 @@ class AuthViewController: UIViewController, BindableType {
       }.bind(to: authButton.rx.isEnabled)
       .disposed(by: bag)
     
-    Observable.combineLatest(viewModel.checkReachability().asObservable(),
-                             viewModel.loggedIn.asObservable())
+    Observable.combineLatest(Reachability.rx.isOnline,
+                             viewModel.isLoggedIn.asObservable())
       .map { (tuple) -> String in
         if !tuple.0 { return "no internet connection" }
-        else if tuple.1 { return "Logout" }
-        else { return "Login" }
+        else if tuple.1 { return "Disconnect" }
+        else { return "Connect" }
       }
       .asDriver(onErrorJustReturn: "failed")
       .drive(authButton.rx.title())
@@ -151,7 +151,7 @@ class AuthViewController: UIViewController, BindableType {
       })
       .disposed(by: bag)
     
-    viewModel.authService.isLoggedIn.asObservable()
+    viewModel.isLoggedIn.asObservable()
       .subscribe(onNext: { [unowned self] bool in
         if bool {
           if let me = UserDefaults.loadUser(), let imgUrl = me.imgUrl {
@@ -165,7 +165,7 @@ class AuthViewController: UIViewController, BindableType {
   }
   
   private func alertErrorMsg(message: String) {
-    let alert = UIAlertController(title: "Login Failed",
+    let alert = UIAlertController(title: "Connect Failed",
                                   message: message,
                                   preferredStyle: .alert)
     alert.addAction(UIAlertAction(title: "OK",

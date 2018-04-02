@@ -19,13 +19,12 @@ struct TaskViewModel {
   private let authService: AuthServiceRepresentable
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
-  let selectedGroupTitle = BehaviorRelay<String>(value: "Inbox")
-  let selectedIndex = BehaviorRelay<Int>(value: 0)
-  let searchSections = BehaviorRelay<[TaskSection]>(value: [])
+  let selectedGroupTitle = BehaviorSubject<String>(value: "Inbox")
+  let searchSections = BehaviorSubject<[TaskSection]>(value: [])
   
   //output
-  let running = BehaviorRelay<Bool>(value: true)
-  let menuTap = BehaviorRelay<Void>(value: ())
+  let running = BehaviorSubject<Bool>(value: false)
+  let menuTap = PublishSubject<Void>()
   
   init(issueService: IssueServiceRepresentable = IssueService(),
        coordinator: SceneCoordinatorType = SceneCoordinator(),
@@ -38,9 +37,9 @@ struct TaskViewModel {
     self.issueService = issueService
     self.syncService = syncService
     
-    //로그인상태시 이슈 가져오기
+    //온라인 및 로그인상태시 이슈 가져오기
     let globalScheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue.global())
-    Observable.combineLatest(checkReachability().asObservable(),
+    Observable.combineLatest(Reachability.rx.isOnline,
                              authService.isLoggedIn.asObservable())
       .filter { $0.0 && $0.1 }
       .subscribeOn(globalScheduler)
@@ -49,8 +48,8 @@ struct TaskViewModel {
       })
       .disposed(by: bag)
     
-    //로그인 상태시 내 정보 가져오기
-    Observable.combineLatest(checkReachability().asObservable(),
+    //내 정보 가져오기
+    Observable.combineLatest(Reachability.rx.isOnline,
                              authService.isLoggedIn.asObservable())
       .filter { $0.0 && $0.1 }
       .flatMap { _ -> Observable<User> in
@@ -66,13 +65,8 @@ struct TaskViewModel {
   func bindOutput() {
    
     syncService.running
-      .asDriver()
-      .drive(running)
+      .bind(to: running)
       .disposed(by: bag)
-  }
-  func checkReachability() -> Observable<Bool> {
-    return Reachability.rx.status
-      .map { $0 == .online }
   }
   
   func onToggle(task: TaskItem) -> CocoaAction {
@@ -110,21 +104,21 @@ struct TaskViewModel {
   
   lazy var editAction: Action<TaskItem, Swift.Never> = { this in
     return Action { task in
-      let detailViewModel = DetailViewModel(task: task,
+      let editViewModel = EditViewModel(task: task,
                                         coordinator: this.sceneCoordinator,
-                                        deleteAction: this.onDeleteTask(task: task),
                                         updateTitleBodyAction: this.onUpdateTitleBodyTask(task: task),
                                         updateTagsAction: this.onUpdateTagsTask(task: task),
                                         updateRepo: this.onUpdateRepo(task: task),
+                                        addSubTask: this.onAddSubTask(task: task),
                                         localTaskService: this.localTaskService)
       return this.sceneCoordinator
-        .transition(to: Scene.detail(detailViewModel), type: .push)
+        .transition(to: Scene.edit(editViewModel), type: .push)
         .asObservable()
     }
   }(self)
   
-  func onDeleteTask(task: TaskItem) -> Action<TaskItem, Void> {
-    return Action { task in
+  func onDelete(task: TaskItem) -> CocoaAction {
+    return CocoaAction {
       return self.localTaskService.convertToTaskWithRef(task: task)
         .flatMap({ taskWithRef in
           return self.localTaskService.deleteTask(newTaskWithRef: taskWithRef)
@@ -135,21 +129,33 @@ struct TaskViewModel {
   
   func onUpdateTitleBodyTask(task: TaskItem) -> Action<(String, String), Void> {
     return Action { tuple in
-      return self.localTaskService.updateTitleBody(exTask: task, newTitle: tuple.0, newBody: tuple.1).map { _ in }
+      return self.localTaskService.updateTitleBody(exTask: task,
+                                                   newTitle: tuple.0,
+                                                   newBody: tuple.1).map { _ in }
+    }
+  }
+  
+  func onAddSubTask(task: TaskItem) -> Action<String, Void> {
+    return Action { title in
+      return self.localTaskService.createSubTask(title: title,
+                                                 superTask: task).map{ _ in }
     }
   }
   
   func onUpdateTagsTask(task: TaskItem) -> Action<(Tag, LocalTaskService.TagMode), Void> {
     return Action { tuple in
       return self.localTaskService.convertToTaskWithRef(task: task)
-        .flatMap { self.localTaskService.updateTag(taskWithRef: $0, tag: tuple.0, mode: tuple.1).map { _ in }}
+        .flatMap { self.localTaskService.updateTag(taskWithRef: $0,
+                                                   tag: tuple.0,
+                                                   mode: tuple.1).map { _ in }}
     }
   }
   
   func onUpdateRepo(task: TaskItem) -> Action<Repository, Void> {
     return Action { repo in
       return self.localTaskService.convertToTaskWithRef(task: task)
-        .flatMap { self.localTaskService.updateRepo(taskWithRef: $0, repo: repo).map { _ in }}
+        .flatMap { self.localTaskService.updateRepo(taskWithRef: $0,
+                                                    repo: repo).map { _ in }}
     }
   }
   
@@ -157,15 +163,16 @@ struct TaskViewModel {
     return CocoaAction { _ in
       return self.localTaskService.createBlankTask(title: "")
         .flatMap { task -> Observable<Void> in
-          let viewModel = DetailViewModel(task: task,
+          let viewModel = EditViewModel(task: task,
                                               coordinator: self.sceneCoordinator,
-                                              deleteAction: self.onDeleteTask(task: task),
+                                              cancelAction: self.onDelete(task: task),
                                               updateTitleBodyAction: self.onUpdateTitleBodyTask(task: task),
                                               updateTagsAction: self.onUpdateTagsTask(task: task),
                                               updateRepo: self.onUpdateRepo(task: task),
+                                              addSubTask: self.onAddSubTask(task: task),
                                               localTaskService: self.localTaskService)
           return self.sceneCoordinator
-            .transition(to: Scene.detail(viewModel), type: .modal)
+            .transition(to: Scene.edit(viewModel), type: .modal)
             .asObservable().map { _ in }
       }
     }

@@ -12,10 +12,10 @@ import RxCocoa
 
 struct SidebarViewModel {
   private let bag = DisposeBag()
-  var leftViewModel: LeftViewModel
-  var taskViewModel: TaskViewModel
-  let menuTap = BehaviorRelay<Void>(value: ())
-  let repoTap = BehaviorRelay<Void>(value: ())
+  private var leftViewModel: LeftViewModel
+  private var taskViewModel: TaskViewModel
+  let menuTap = PublishSubject<Void>()
+  let repoTap = PublishSubject<Void>()
   
   init(leftViewModel: LeftViewModel, taskViewModel: TaskViewModel) {
     self.leftViewModel = leftViewModel

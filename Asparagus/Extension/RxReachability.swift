@@ -61,4 +61,10 @@ extension Reactive where Base: Reachability {
     return Reachability._status.asObservable()
       .distinctUntilChanged()
   }
+  
+  static var isOnline: Observable<Bool> {
+    return Reachability._status.asObservable()
+      .distinctUntilChanged()
+      .map { $0 == .online }
+  }
 }

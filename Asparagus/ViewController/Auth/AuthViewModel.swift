@@ -14,13 +14,10 @@ import Action
 struct AuthViewModel {
   private let bag = DisposeBag()
   private let sceneCoordinator: SceneCoordinatorType
-  let authService: AuthServiceRepresentable
-  
+  private let authService: AuthServiceRepresentable
   let onAuth: Action<(String, String), AuthService.AccountStatus>
   let onCancel: CocoaAction!
-  
-  //output
-  let loggedIn = BehaviorRelay<Bool>(value: false)
+  let isLoggedIn = BehaviorRelay<Bool>(value: false)
   
   init(authService: AuthServiceRepresentable = AuthService(),
        coordinator: SceneCoordinatorType = SceneCoordinator(),
@@ -39,7 +36,8 @@ struct AuthViewModel {
   
   private func bindOutput() {
     authService.isLoggedIn
-      .drive(loggedIn)
+      .debug("------")
+      .drive(isLoggedIn)
       .disposed(by: bag)
   }
   
@@ -56,11 +54,6 @@ struct AuthViewModel {
                                       localTaskService: localTaskService)
     let sidebarScene = Scene.sidebar(leftViewModel, taskViewModel)
     sceneCoordinator.transition(to: sidebarScene, type: .root)
-  }
-  
-  func checkReachability() -> Observable<Bool> {
-    return Reachability.rx.status
-      .map { $0 == .online }
   }
   
   func onForgotPassword() -> CocoaAction {

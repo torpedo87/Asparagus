@@ -28,8 +28,7 @@ class NewTaskCell: UITableViewCell {
   }()
   private var addButton: UIButton = {
     let btn = UIButton()
-    btn.setTitle("ADD", for: .normal)
-    btn.setTitleColor(UIColor(hex: "4478E4"), for: .normal)
+    btn.setImage(UIImage(named: "add"), for: UIControlState.normal)
     return btn
   }()
   override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
@@ -43,8 +42,8 @@ class NewTaskCell: UITableViewCell {
       make.right.equalTo(addButton.snp.left).offset(-5)
     }
     addButton.snp.makeConstraints { (make) in
-      addButton.sizeToFit()
-      make.right.equalTo(safeAreaLayoutGuide.snp.right).offset(-5)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
+      make.right.equalTo(safeAreaLayoutGuide.snp.right).offset(-10)
       make.centerY.equalTo(contentView)
     }
   }
@@ -53,21 +52,21 @@ class NewTaskCell: UITableViewCell {
     fatalError("init(coder:) has not been implemented")
   }
   
-  func configureCell(vm: DetailViewModel) {
+  func configureCell(onAddTasks: Action<String, Void>) {
     addButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
-      .subscribe(onNext: { [unowned self] _ in
+      .map({ [unowned self] _ -> String in
         if let title = self.titleTextField.text {
-          if !title.isEmpty {
-            vm.addSubTask(title: title)
-            self.titleTextField.text = nil
-          }
+          return title
         }
+        return ""
       })
+      .filter{ $0 != ""}
+      .bind(to: onAddTasks.inputs)
       .disposed(by: bag)
   }
   
-  func configureNewTagCell(vm: DetailViewModel) {
+  func configureNewTagCell(onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>) {
     addButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .filter{return self.titleTextField.text != nil}
@@ -76,7 +75,7 @@ class NewTaskCell: UITableViewCell {
         let newTag = Tag(title: title, added: "", isCreatedInServer: false)
         newTag.setDateWhenCreated()
         return (newTag, LocalTaskService.TagMode.add)
-      }.bind(to: vm.onUpdateTags.inputs)
+      }.bind(to: onUpdateTags.inputs)
       .disposed(by: bag)
   }
   

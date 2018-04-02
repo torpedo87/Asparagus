@@ -6,7 +6,7 @@ target 'Asparagus' do
   use_frameworks!
 
   # Pods for Asparagus
-  pod 'SnapKit', '~> 4.0.0'
+  pod 'SnapKit'
   pod 'RxSwift'
   pod 'RxCocoa'
   pod 'Moya/RxSwift'

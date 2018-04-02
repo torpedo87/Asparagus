@@ -18,7 +18,7 @@ class TagCell: UITableViewCell {
   private let titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
-    label.textColor = UIColor.white
+    label.textColor = UIColor(hex: "F5F5F5")
     return label
   }()
   override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
@@ -27,7 +27,6 @@ class TagCell: UITableViewCell {
     selectedView.backgroundColor = UIColor.darkGray
     selectedBackgroundView = selectedView
     backgroundColor = UIColor.clear
-    
     addSubview(titleLabel)
     
     titleLabel.snp.makeConstraints { (make) in

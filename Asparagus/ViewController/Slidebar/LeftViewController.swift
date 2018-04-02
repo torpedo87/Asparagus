@@ -14,12 +14,13 @@ import Action
 
 class LeftViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
-  private let topView: UIView = {
+  var viewModel: LeftViewModel!
+  private lazy var topView: UIView = {
     let view = UIView()
-    view.backgroundColor = UIColor.clear
+    view.backgroundColor = UIColor(hex: "283A45")
     return view
   }()
-  private let appLabel: UILabel = {
+  private lazy var appLabel: UILabel = {
     let label = UILabel()
     label.text = "Asparagus"
     label.textColor = UIColor.white
@@ -27,10 +28,12 @@ class LeftViewController: UIViewController, BindableType {
   }()
   private lazy var authButton: UIButton = {
     let btn = UIButton()
+    btn.layer.cornerRadius = 10
+    btn.backgroundColor = UIColor(hex: "2676AC")
     btn.setTitleColor(UIColor.white, for: .normal)
     return btn
   }()
-  var viewModel: LeftViewModel!
+  
   private lazy var tableView: UITableView = {
     let view = UITableView()
     view.backgroundColor = UIColor.clear
@@ -41,7 +44,7 @@ class LeftViewController: UIViewController, BindableType {
     view.delegate = self
     return view
   }()
-  var dataSource: RxTableViewSectionedReloadDataSource<TagSection>!
+  private var dataSource: RxTableViewSectionedReloadDataSource<TagSection>!
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -50,25 +53,26 @@ class LeftViewController: UIViewController, BindableType {
   }
   
   func setupView() {
-    view.backgroundColor = UIColor(hex: "50A95A")
+    view.backgroundColor = UIColor(hex: "283A45")
     topView.addSubview(appLabel)
     topView.addSubview(authButton)
     view.addSubview(topView)
     view.addSubview(tableView)
-    
     topView.snp.makeConstraints { (make) in
       make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
       make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
       make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
-      make.height.equalTo(45)
+      make.height.equalTo(50)
       make.bottom.equalTo(tableView.snp.top)
     }
     appLabel.snp.makeConstraints { (make) in
       appLabel.sizeToFit()
-      make.center.equalTo(topView)
+      make.centerY.equalTo(topView)
+      make.left.equalTo(topView).offset(10)
     }
     authButton.snp.makeConstraints { (make) in
-      authButton.sizeToFit()
+      make.height.equalTo(30)
+      make.width.equalTo(100)
       make.centerY.equalTo(topView)
       make.right.equalTo(topView).offset(-10)
     }
@@ -83,7 +87,7 @@ class LeftViewController: UIViewController, BindableType {
     authButton.rx.action = viewModel.goToAuth()
     
     viewModel.isLoggedIn.asDriver(onErrorJustReturn: false)
-      .map { $0 ? "Logout" : "Login" }
+      .map { $0 ? "Disconnect" : "Connect" }
       .drive(authButton.rx.title())
       .disposed(by: bag)
     
@@ -91,20 +95,20 @@ class LeftViewController: UIViewController, BindableType {
       .bind(to: tableView.rx.items(dataSource: dataSource))
       .disposed(by: bag)
     
-    tableView.rx.itemSelected
-      .map { [unowned self] indexPath in
-        try! self.dataSource.model(at: indexPath) as! Tag
-      }
-      .subscribe(onNext: { [unowned self] group in
-        self.viewModel.selectedGroupTitle.accept(group.title)
+    tableView.rx
+      .modelSelected(Tag.self)
+      .map({ (tag) -> String in
+        return tag.title
       })
+      .bind(to: viewModel.selectedGroupTitle)
       .disposed(by: bag)
   }
   
   func configureDataSource() {
     dataSource = RxTableViewSectionedReloadDataSource<TagSection> (
       configureCell: { dataSource, tableView, indexPath, item in
-        let cell = tableView.dequeueReusableCell(withIdentifier: TagCell.reuseIdentifier, for: indexPath) as! TagCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: TagCell.reuseIdentifier,
+                                                 for: indexPath) as! TagCell
         cell.configureCell(tag: item)
         return cell
       },
@@ -116,8 +120,10 @@ class LeftViewController: UIViewController, BindableType {
 }
 
 extension LeftViewController: UITableViewDelegate {
-  func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-    view.tintColor = UIColor.clear
+  func tableView(_ tableView: UITableView,
+                 willDisplayHeaderView view: UIView,
+                 forSection section: Int) {
+    view.tintColor = UIColor(hex: "283A45")
     let header = view as! UITableViewHeaderFooterView
     header.textLabel?.textColor = UIColor.white
   }

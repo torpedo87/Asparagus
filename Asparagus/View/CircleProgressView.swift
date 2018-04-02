@@ -23,7 +23,7 @@ class CircleProgressView: UIView {
   
   override func draw(_ rect: CGRect) {
     let circlePath = UIBezierPath(ovalIn: rect)
-    UIColor(hex: "C9DF8B").setFill()
+    UIColor(hex: "F5F5F5").setFill()
     circlePath.fill()
     
     let center = CGPoint(x: bounds.width / 2,
@@ -37,7 +37,7 @@ class CircleProgressView: UIView {
                             endAngle: (achieveRate * 360).toRadians(),
                             clockwise: true)
     arcPath.lineWidth = arcWidth
-    UIColor(hex: "50A95A").setStroke()
+    UIColor(hex: "7DC062").setStroke()
     arcPath.stroke()
   }
 }

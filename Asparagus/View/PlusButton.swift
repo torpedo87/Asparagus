@@ -22,7 +22,7 @@ class PlusButton: UIButton {
     let plusWidth: CGFloat = min(bounds.width, bounds.height) * plusScale
     
     let path = UIBezierPath(ovalIn: rect)
-    UIColor(hex: "50A95A").setFill()
+    UIColor(hex: "2676AC").setFill()
     path.fill()
     
     let plusPath = UIBezierPath()

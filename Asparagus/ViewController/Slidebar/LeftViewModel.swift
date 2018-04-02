@@ -17,7 +17,7 @@ struct LeftViewModel {
   private let sceneCoordinator: SceneCoordinatorType
   private let localTaskService: LocalTaskServiceType
   let isLoggedIn = BehaviorRelay<Bool>(value: false)
-  let selectedGroupTitle = BehaviorRelay<String>(value: "")
+  let selectedGroupTitle = PublishSubject<String>()
   
   init(authService: AuthServiceRepresentable = AuthService(),
        coordinator: SceneCoordinatorType = SceneCoordinator(),
@@ -32,8 +32,6 @@ struct LeftViewModel {
     authService.isLoggedIn
       .drive(isLoggedIn)
       .disposed(by: bag)
-    
-    selectedGroupTitle.accept("Inbox")
   }
   
   var sectionedItems: Observable<[TagSection]> {

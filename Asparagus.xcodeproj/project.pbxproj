@@ -25,9 +25,8 @@
 		487A8F9A20636BF5001E5BD4 /* SubTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9920636BF5001E5BD4 /* SubTask.swift */; };
 		487A8F9C206389E9001E5BD4 /* CircleProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */; };
 		487A8F9E20638C79001E5BD4 /* PlusButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9D20638C79001E5BD4 /* PlusButton.swift */; };
-		487A8FA420651FD4001E5BD4 /* PopAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8FA320651FD4001E5BD4 /* PopAnimator.swift */; };
-		487A8FA7206614AD001E5BD4 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8FA6206614AD001E5BD4 /* DetailViewController.swift */; };
-		487A8FA9206614EC001E5BD4 /* DetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8FA8206614EC001E5BD4 /* DetailViewModel.swift */; };
+		487A8FA7206614AD001E5BD4 /* EditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8FA6206614AD001E5BD4 /* EditViewController.swift */; };
+		487A8FA9206614EC001E5BD4 /* EditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8FA8206614EC001E5BD4 /* EditViewModel.swift */; };
 		487D91EB20453735008CB44E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D91EA20453735008CB44E /* AppDelegate.swift */; };
 		487D91F220453736008CB44E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 487D91F120453736008CB44E /* Assets.xcassets */; };
 		487D91F520453736008CB44E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 487D91F320453736008CB44E /* LaunchScreen.storyboard */; };
@@ -49,11 +48,11 @@
 		487D923C2046B603008CB44E /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D923B2046B603008CB44E /* TaskItem.swift */; };
 		487D92422046BECD008CB44E /* IssueAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D92412046BECD008CB44E /* IssueAPI.swift */; };
 		487D92452046C9B6008CB44E /* TaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D92442046C9B6008CB44E /* TaskCell.swift */; };
-		48912A7A206A444D00599CB6 /* FoldableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48912A79206A444D00599CB6 /* FoldableView.swift */; };
 		48912A7C206B693100599CB6 /* SubTaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48912A7B206B693100599CB6 /* SubTaskCell.swift */; };
 		48912A7E206B9DFE00599CB6 /* NewTaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48912A7D206B9DFE00599CB6 /* NewTaskCell.swift */; };
 		48ECD235206CC2D100D3EDFF /* SubTagCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48ECD234206CC2D100D3EDFF /* SubTagCell.swift */; };
 		5459BD2A6B31540055269472 /* Pods_Asparagus.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89D8923D6187F3074ED7CAF6 /* Pods_Asparagus.framework */; };
+		C16A11E4450F3841B9AD2DD0 /* Pods_AsparagusTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6957BCB8DA9581D93B207EB8 /* Pods_AsparagusTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,9 +84,8 @@
 		487A8F9920636BF5001E5BD4 /* SubTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTask.swift; sourceTree = "<group>"; };
 		487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleProgressView.swift; sourceTree = "<group>"; };
 		487A8F9D20638C79001E5BD4 /* PlusButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusButton.swift; sourceTree = "<group>"; };
-		487A8FA320651FD4001E5BD4 /* PopAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopAnimator.swift; sourceTree = "<group>"; };
-		487A8FA6206614AD001E5BD4 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
-		487A8FA8206614EC001E5BD4 /* DetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewModel.swift; sourceTree = "<group>"; };
+		487A8FA6206614AD001E5BD4 /* EditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditViewController.swift; sourceTree = "<group>"; };
+		487A8FA8206614EC001E5BD4 /* EditViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditViewModel.swift; sourceTree = "<group>"; };
 		487D91E720453735008CB44E /* Asparagus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Asparagus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		487D91EA20453735008CB44E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		487D91F120453736008CB44E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -113,12 +111,12 @@
 		487D923B2046B603008CB44E /* TaskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
 		487D92412046BECD008CB44E /* IssueAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueAPI.swift; sourceTree = "<group>"; };
 		487D92442046C9B6008CB44E /* TaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCell.swift; sourceTree = "<group>"; };
-		48912A79206A444D00599CB6 /* FoldableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldableView.swift; sourceTree = "<group>"; };
 		48912A7B206B693100599CB6 /* SubTaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTaskCell.swift; sourceTree = "<group>"; };
 		48912A7D206B9DFE00599CB6 /* NewTaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTaskCell.swift; sourceTree = "<group>"; };
 		48ECD234206CC2D100D3EDFF /* SubTagCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTagCell.swift; sourceTree = "<group>"; };
 		55500856096F4F18E140674D /* Pods-AsparagusTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AsparagusTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AsparagusTests/Pods-AsparagusTests.debug.xcconfig"; sourceTree = "<group>"; };
 		59D5D244A929E24EA7E1F6B2 /* Pods-Asparagus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Asparagus.release.xcconfig"; path = "Pods/Target Support Files/Pods-Asparagus/Pods-Asparagus.release.xcconfig"; sourceTree = "<group>"; };
+		6957BCB8DA9581D93B207EB8 /* Pods_AsparagusTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AsparagusTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		89D8923D6187F3074ED7CAF6 /* Pods_Asparagus.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Asparagus.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB77B9EC75F133E035909F2F /* Pods-Asparagus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Asparagus.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Asparagus/Pods-Asparagus.debug.xcconfig"; sourceTree = "<group>"; };
 		E54EC93D805BAAE31F0AEB68 /* Pods-AsparagusTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AsparagusTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AsparagusTests/Pods-AsparagusTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -137,6 +135,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C16A11E4450F3841B9AD2DD0 /* Pods_AsparagusTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,8 +167,8 @@
 		487A8FA52066149A001E5BD4 /* Detail */ = {
 			isa = PBXGroup;
 			children = (
-				487A8FA6206614AD001E5BD4 /* DetailViewController.swift */,
-				487A8FA8206614EC001E5BD4 /* DetailViewModel.swift */,
+				487A8FA6206614AD001E5BD4 /* EditViewController.swift */,
+				487A8FA8206614EC001E5BD4 /* EditViewModel.swift */,
 			);
 			path = Detail;
 			sourceTree = "<group>";
@@ -236,7 +235,6 @@
 				487D92222045411D008CB44E /* SceneCoordinatorType.swift */,
 				487D922420454135008CB44E /* SceneCoordinator.swift */,
 				487D922620454142008CB44E /* SceneTransitionType.swift */,
-				487A8FA320651FD4001E5BD4 /* PopAnimator.swift */,
 			);
 			path = Scene;
 			sourceTree = "<group>";
@@ -254,7 +252,6 @@
 				4842DB2820596A610093B496 /* Tag.swift */,
 				48480A1B205FA1DB004ED59A /* RealmConfig.swift */,
 				487A8F9920636BF5001E5BD4 /* SubTask.swift */,
-				48912A79206A444D00599CB6 /* FoldableView.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -329,6 +326,7 @@
 			isa = PBXGroup;
 			children = (
 				89D8923D6187F3074ED7CAF6 /* Pods_Asparagus.framework */,
+				6957BCB8DA9581D93B207EB8 /* Pods_AsparagusTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -597,7 +595,6 @@
 				4848BEC4205675C1009C1B97 /* LeftViewModel.swift in Sources */,
 				4848EC052047F68200B59315 /* TaskSection.swift in Sources */,
 				487A8F9A20636BF5001E5BD4 /* SubTask.swift in Sources */,
-				48912A7A206A444D00599CB6 /* FoldableView.swift in Sources */,
 				487D923020454473008CB44E /* AuthService.swift in Sources */,
 				487A8F9C206389E9001E5BD4 /* CircleProgressView.swift in Sources */,
 				487D921520453808008CB44E /* BindableType.swift in Sources */,
@@ -606,10 +603,9 @@
 				487D921920453F15008CB44E /* Scene.swift in Sources */,
 				487D923520454811008CB44E /* Token.swift in Sources */,
 				487D9229204542A8008CB44E /* LocalTaskService.swift in Sources */,
-				487A8FA7206614AD001E5BD4 /* DetailViewController.swift in Sources */,
+				487A8FA7206614AD001E5BD4 /* EditViewController.swift in Sources */,
 				4842DB272059348B0093B496 /* TagSection.swift in Sources */,
-				487A8FA420651FD4001E5BD4 /* PopAnimator.swift in Sources */,
-				487A8FA9206614EC001E5BD4 /* DetailViewModel.swift in Sources */,
+				487A8FA9206614EC001E5BD4 /* EditViewModel.swift in Sources */,
 				487D923C2046B603008CB44E /* TaskItem.swift in Sources */,
 				48480A1E205FA511004ED59A /* URL.swift in Sources */,
 				487D923A20458E79008CB44E /* RxReachability.swift in Sources */,
@@ -773,7 +769,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = Asparagus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -789,7 +785,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = Asparagus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

@@ -1,5 +1,5 @@
 //
-//  DetailViewModel.swift
+//  EditViewModel.swift
 //  Asparagus
 //
 //  Created by junwoo on 2018. 3. 24..
@@ -12,32 +12,32 @@ import RxCocoa
 import Action
 import RxDataSources
 
-struct DetailViewModel {
+struct EditViewModel {
   
   let task: TaskItem
-  let onDelete: Action<TaskItem, Void>
+  let onCancel: CocoaAction!
   let onUpdateTitleBody: Action<(String, String), Void>
   let onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>
+  let onAddSubTask: Action<String, Void>
   let onUpdateRepo: Action<Repository, Void>
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
-  let sceneCoordinator: SceneCoordinatorType
   let repoTitles = BehaviorRelay<[String]>(value: [])
   
   init(task: TaskItem,
        coordinator: SceneCoordinatorType,
-       deleteAction: Action<TaskItem, Void>,
+       cancelAction: CocoaAction? = nil,
        updateTitleBodyAction: Action<(String, String), Void>,
        updateTagsAction: Action<(Tag, LocalTaskService.TagMode), Void>,
        updateRepo: Action<Repository, Void>,
+       addSubTask: Action<String, Void>,
        localTaskService: LocalTaskServiceType) {
     self.task = task
-    self.onDelete = deleteAction
     self.onUpdateTitleBody = updateTitleBodyAction
     self.onUpdateTags = updateTagsAction
     self.onUpdateRepo = updateRepo
+    self.onAddSubTask = addSubTask
     self.localTaskService = localTaskService
-    self.sceneCoordinator = coordinator
     
     onUpdateTitleBody.executionObservables
       .take(1)
@@ -46,12 +46,14 @@ struct DetailViewModel {
       })
       .disposed(by: bag)
     
-    onDelete.executionObservables
-      .take(1)
-      .subscribe(onNext: { _ in
-        coordinator.pop()
-      })
-      .disposed(by: bag)
+    onCancel = CocoaAction {
+      if let cancelAction = cancelAction {
+        cancelAction.execute(())
+      }
+      return coordinator.pop()
+        .asObservable()
+        .map{ _ in }
+    }
     
     localTaskService.repositories()
       .map { results -> [String] in
@@ -88,8 +90,8 @@ struct DetailViewModel {
     }
   }
   
-  func addSubTask(title: String) {
-    localTaskService.createSubTask(title: title, superTask: task)
+  func getRepo(repoName: String) -> Repository? {
+    return localTaskService.getRepository(repoName: repoName)
   }
   
   func tags() -> Observable<[Tag]> {
@@ -103,9 +105,5 @@ struct DetailViewModel {
         })
         return temp
       })
-  }
-  
-  func pop() {
-    sceneCoordinator.pop()
   }
 }

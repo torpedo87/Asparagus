@@ -18,7 +18,7 @@ protocol SyncServiceRepresentable {
   func updateOldServerWithRecentLocal(fetchedTasks: Observable<[TaskItem]>)
   func updateOldLocalWithNewServer(fetchedTasks: Observable<[TaskItem]>)
   func updateOldLocalWithRecentServer(fetchedTasks: Observable<[TaskItem]>)
-  var running: BehaviorRelay<Bool> { get }
+  var running: PublishSubject<Bool> { get }
 }
 
 class SyncService: SyncServiceRepresentable {
@@ -26,7 +26,7 @@ class SyncService: SyncServiceRepresentable {
   private let bag = DisposeBag()
   private let issueService: IssueServiceRepresentable
   private let localTaskService: LocalTaskServiceType
-  let running = BehaviorRelay<Bool>(value: false)
+  let running = PublishSubject<Bool>()
   
   init(issueService: IssueServiceRepresentable, localTaskService: LocalTaskServiceType) {
     self.issueService = issueService
@@ -46,9 +46,9 @@ class SyncService: SyncServiceRepresentable {
         }
         return Observable<TaskItem>.empty()
       }.subscribe(onNext: { [unowned self] _ in
-        self.running.accept(false)
+        self.running.onNext(false)
       }, onCompleted: {
-        self.running.accept(false)
+        self.running.onNext(false)
       })
       .disposed(by: bag)
   }
@@ -72,9 +72,9 @@ class SyncService: SyncServiceRepresentable {
       .flatMap { [unowned self] in
         self.localTaskService.add(newTask: $0)
       }.subscribe(onNext: { [unowned self] _ in
-        self.running.accept(false)
+        self.running.onNext(false)
         }, onCompleted: {
-          self.running.accept(false)
+          self.running.onNext(false)
       })
       .disposed(by: bag)
   }
@@ -105,7 +105,7 @@ class SyncService: SyncServiceRepresentable {
         return arr + [task]
       })
       .subscribe(onNext: { _ in
-        self.running.accept(true)
+        self.running.onNext(true)
       }, onCompleted: {
         print("updateOldServerWithNewLocal complete")
         self.updateOldServerWithRecentLocal(fetchedTasks: fetchedTasks)
@@ -134,7 +134,7 @@ class SyncService: SyncServiceRepresentable {
         return arr + [task]
       }
       .subscribe(onNext: { _ in
-        self.running.accept(true)
+        self.running.onNext(true)
       }, onCompleted: {
         print("updateOldServerWithRecentLocal complete")
           self.updateOldLocalWithNewServer(fetchedTasks: fetchedTasks)
@@ -153,7 +153,7 @@ class SyncService: SyncServiceRepresentable {
         return arr + [task]
       }
       .subscribe(onNext: { _ in
-        self.running.accept(true)
+        self.running.onNext(true)
       }, onCompleted: {
         print("updateOldLocalWithNewServer complete")
         self.updateOldLocalWithRecentServer(fetchedTasks: fetchedTasks)
@@ -173,10 +173,10 @@ class SyncService: SyncServiceRepresentable {
         return arr + [task]
       }
       .subscribe(onNext: { _ in
-        self.running.accept(true)
+        self.running.onNext(true)
       }, onCompleted: {
         print("updateOldLocalWithRecentServer complete")
-        self.running.accept(false)
+        self.running.onNext(false)
         self.syncWhenTaskEdittedInLocal()
         self.syncWhenTaskCreatedInLocal()
       })
