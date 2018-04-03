@@ -147,7 +147,7 @@ class TaskViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     searchBar.rx.text.orEmpty
-      .debounce(2.0, scheduler: MainScheduler.instance)
+      .debounce(1.0, scheduler: MainScheduler.instance)
       .map({ [unowned self] query in
         var dueSection = TaskSection(header: "Due Tasks", items: [])
         dueSection.items = self.dataSource.sectionModels[0].items.filter{ $0.title.contains(query) }

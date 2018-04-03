@@ -1,9 +1,16 @@
 # Asparagus
-- Issue Tracker
-- manage issues of your Github account
-- manage custom ToDoList as well as issues using Realm
-- sync local issues with Github issue using Github API
+- To-Do-List + Issue Tracker
+- Manage your custom issue in Local or connect with your Github issues
+- Sync with your Github project
+- Seperate a issue into sub-tasks
+- Attach custom tags to issues
 
 ## spec
 - Realm
 - RxSwift
+
+## app architecture
+- SyncService <-> LocalService <-> ViewModel <-> ViewController
+- AuthView : Connect with your Github Issues
+- TaskView : Issue List by Tags
+- EditView : Create new issue or edit existing issue
