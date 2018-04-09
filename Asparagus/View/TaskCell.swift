@@ -45,7 +45,7 @@ class TaskCell: UITableViewCell {
   
   override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
     super.init(style: style, reuseIdentifier: reuseIdentifier)
-    backgroundColor = UIColor.clear
+    backgroundColor = UIColor.white
     addSubview(baseView)
     baseView.addSubview(numberLabel)
     baseView.addSubview(imgView)

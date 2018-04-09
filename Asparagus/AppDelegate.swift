@@ -8,6 +8,9 @@
 
 import UIKit
 import SnapKit
+import UserNotifications
+import RxSwift
+import RxCocoa
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,7 +19,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   let testing = NSClassFromString("XCTest") != nil
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-    
     if !testing {
       Reachability.shared.startMonitor("github.com")
       let sceneCoordinator = SceneCoordinator()
@@ -36,9 +38,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       navigationBarAppearace.tintColor = UIColor(hex: "2E3136")
       navigationBarAppearace.barTintColor = UIColor.white
       navigationBarAppearace.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor(hex: "283A45")]
+      
+      UNUserNotificationCenter.current().requestAuthorization(options: .badge) { (granted, error) in
+        if error != nil {
+          print("reject noti")
+        } else {
+          print("accep noti")
+        }
+      }
     }
     return true
   }
-
 }
 

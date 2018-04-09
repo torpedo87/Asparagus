@@ -91,10 +91,14 @@ class TaskViewController: UIViewController, BindableType {
     navigationItem.rightBarButtonItem = searchButton
     navigationItem.titleView = self.searchBar
     tableView.snp.makeConstraints({ (make) in
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
-      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+      if #available(iOS 11.0, *) {
+        make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
+        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+      } else {
+        make.edges.equalTo(view)
+      }
     })
     activityIndicator.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 10)
@@ -102,8 +106,12 @@ class TaskViewController: UIViewController, BindableType {
     }
     newTaskButton.snp.makeConstraints { (make) in
       make.width.height.equalTo(50)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
-      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
+      if #available(iOS 11.0, *) {
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
+        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
+      } else {
+        make.right.bottom.equalTo(view).offset(-10)
+      }
     }
     blurEffectView.snp.makeConstraints { (make) in
       make.edges.equalTo(tableView)
@@ -147,7 +155,7 @@ class TaskViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     searchBar.rx.text.orEmpty
-      .debounce(1.0, scheduler: MainScheduler.instance)
+      .debounce(0.5, scheduler: MainScheduler.instance)
       .map({ [unowned self] query in
         var dueSection = TaskSection(header: "Due Tasks", items: [])
         dueSection.items = self.dataSource.sectionModels[0].items.filter{ $0.title.contains(query) }

@@ -22,6 +22,8 @@ class SidebarViewController: UIViewController, BindableType {
     view.backgroundColor = UIColor.white
     view.isPagingEnabled = true
     view.bounces = false
+    view.showsVerticalScrollIndicator = false
+    view.showsHorizontalScrollIndicator = false
     return view
   }()
   
@@ -60,18 +62,24 @@ class SidebarViewController: UIViewController, BindableType {
   func setupView() {
     view.addSubview(scrollView)
     scrollView.addSubview(contentView)
-    
     scrollView.snp.makeConstraints { (make) in
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
+      if #available(iOS 11.0, *) {
+        make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
+      } else {
+        make.edges.equalTo(view)
+      }
     }
-    
     contentView.snp.makeConstraints { (make) in
       make.centerX.equalTo(view.frame.width - overlap / 2)
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+      if #available(iOS 11.0, *) {
+        make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+      } else {
+        make.top.bottom.equalTo(view)
+      }
     }
   }
   
@@ -91,10 +99,15 @@ class SidebarViewController: UIViewController, BindableType {
       make.width.equalTo(view.frame.width)
       make.height.equalTo(contentView)
     }
-    let w = 2 * (UIScreen.main.bounds.width - view.safeAreaInsets.left - view.safeAreaInsets.right) - overlap
-    let h = UIScreen.main.bounds.height - view.safeAreaInsets.top - view.safeAreaInsets.bottom
-    
-    scrollView.contentSize = CGSize(width: w, height: h)
+    if #available(iOS 11.0, *) {
+      let w = 2 * (UIScreen.main.bounds.width - view.safeAreaInsets.left - view.safeAreaInsets.right) - overlap
+      let h = UIScreen.main.bounds.height - view.safeAreaInsets.top - view.safeAreaInsets.bottom
+      scrollView.contentSize = CGSize(width: w, height: h)
+    } else {
+      let w = 2 * (UIScreen.main.bounds.width) - overlap
+      let h = UIScreen.main.bounds.height
+      scrollView.contentSize = CGSize(width: w, height: h)
+    }
   }
   
   private func addViewController(_ viewController: UIViewController) {

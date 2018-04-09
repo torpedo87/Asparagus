@@ -59,11 +59,15 @@ class LeftViewController: UIViewController, BindableType {
     view.addSubview(topView)
     view.addSubview(tableView)
     topView.snp.makeConstraints { (make) in
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
       make.height.equalTo(50)
       make.bottom.equalTo(tableView.snp.top)
+      if #available(iOS 11.0, *) {
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
+        make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
+      } else {
+        make.left.top.right.equalTo(view)
+      }
     }
     appLabel.snp.makeConstraints { (make) in
       appLabel.sizeToFit()
@@ -77,9 +81,13 @@ class LeftViewController: UIViewController, BindableType {
       make.right.equalTo(topView).offset(-10)
     }
     tableView.snp.makeConstraints { (make) in
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
-      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+      if #available(iOS 11.0, *) {
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
+        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+      } else {
+        make.left.right.bottom.equalTo(view)
+      }
     }
   }
   

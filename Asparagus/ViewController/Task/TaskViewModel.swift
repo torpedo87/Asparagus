@@ -59,6 +59,15 @@ struct TaskViewModel {
       })
       .disposed(by: bag)
     
+    localTaskService.openTasks()
+      .map { results -> Int in
+        return results.count
+      }.asDriver(onErrorJustReturn: 0)
+      .drive(onNext: { counts in
+        UIApplication.shared.applicationIconBadgeNumber = counts
+      })
+      .disposed(by: bag)
+    
     bindOutput()
   }
   

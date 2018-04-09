@@ -80,8 +80,12 @@ class AuthViewController: UIViewController, BindableType {
     
     cancelButton.snp.makeConstraints { (make) in
       cancelButton.sizeToFit()
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(20)
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(20)
+      if #available(iOS 11.0, *) {
+        make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(20)
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(20)
+      } else {
+        make.top.left.equalTo(view).offset(20)
+      }
     }
     
     imgView.snp.makeConstraints { (make) in
@@ -93,9 +97,14 @@ class AuthViewController: UIViewController, BindableType {
     
     stackView.snp.makeConstraints { (make) in
       make.centerX.equalToSuperview()
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(30)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-30)
       make.height.equalTo(UIScreen.main.bounds.height / 4)
+      if #available(iOS 11.0, *) {
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(30)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-30)
+      } else {
+        make.left.equalTo(view).offset(30)
+        make.right.equalTo(view).offset(-30)
+      }
     }
   }
   

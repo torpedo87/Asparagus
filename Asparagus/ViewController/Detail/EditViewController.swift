@@ -129,20 +129,33 @@ class EditViewController: UIViewController, BindableType {
     cancelButton.snp.makeConstraints { (make) in
       make.width.equalTo(100)
       make.height.equalTo(40)
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(10)
+      if #available(iOS 11.0, *) {
+        make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(10)
+      } else {
+        make.top.left.equalTo(view).offset(10)
+      }
     }
     saveButton.snp.makeConstraints { (make) in
       make.width.equalTo(100)
       make.height.equalTo(40)
-      make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
+      if #available(iOS 11.0, *) {
+        make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
+      } else {
+        make.top.equalTo(view).offset(10)
+        make.right.equalTo(view).offset(-10)
+      }
     }
     topView.snp.makeConstraints { (make) in
       make.top.equalTo(saveButton.snp.bottom)
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
       make.height.equalTo(UIScreen.main.bounds.height / 3)
+      if #available(iOS 11.0, *) {
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
+      } else {
+        make.left.right.equalTo(view)
+      }
     }
     
     titleTextField.snp.makeConstraints { (make) in
@@ -158,9 +171,13 @@ class EditViewController: UIViewController, BindableType {
     
     bottomView.snp.makeConstraints { (make) in
       make.top.equalTo(topView.snp.bottom)
-      make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
-      make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
-      make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+      if #available(iOS 11.0, *) {
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
+        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+      } else {
+        make.left.right.bottom.equalTo(view)
+      }
     }
     segmentedControl.snp.makeConstraints { (make) in
       make.top.equalTo(bottomView).offset(20)
@@ -255,7 +272,7 @@ class EditViewController: UIViewController, BindableType {
     
     Observable.combineLatest(titleTextField.rx.text.orEmpty,
                              bodyTextView.rx.text.orEmpty)
-      .debounce(2.0, scheduler: MainScheduler.instance)
+      .debounce(0.5, scheduler: MainScheduler.instance)
       .bind(to: viewModel.onUpdateTitleBody.inputs)
       .disposed(by: bag)
     

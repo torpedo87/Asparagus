@@ -30,10 +30,16 @@ class TagCell: UITableViewCell {
     addSubview(titleLabel)
     
     titleLabel.snp.makeConstraints { (make) in
-      make.left.equalTo(safeAreaLayoutGuide.snp.left).offset(50)
-      make.top.equalTo(safeAreaLayoutGuide.snp.top)
-      make.right.equalTo(safeAreaLayoutGuide.snp.right).offset(-5)
-      make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom)
+      if #available(iOS 11.0, *) {
+        make.left.equalTo(safeAreaLayoutGuide.snp.left).offset(50)
+        make.top.equalTo(safeAreaLayoutGuide.snp.top)
+        make.right.equalTo(safeAreaLayoutGuide.snp.right).offset(-5)
+        make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom)
+      } else {
+        make.left.equalTo(self).offset(50)
+        make.top.bottom.equalTo(self)
+        make.right.equalTo(self).offset(-5)
+      }
     }
   }
   

@@ -43,8 +43,12 @@ class NewTaskCell: UITableViewCell {
     }
     addButton.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
-      make.right.equalTo(safeAreaLayoutGuide.snp.right).offset(-10)
       make.centerY.equalTo(contentView)
+      if #available(iOS 11.0, *) {
+        make.right.equalTo(safeAreaLayoutGuide.snp.right).offset(-10)
+      } else {
+        make.right.equalTo(self).offset(-10)
+      }
     }
   }
   
