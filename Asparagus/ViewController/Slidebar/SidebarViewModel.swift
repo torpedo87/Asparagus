@@ -16,6 +16,7 @@ struct SidebarViewModel {
   private var taskViewModel: TaskViewModel
   let menuTap = PublishSubject<Void>()
   let repoTap = PublishSubject<Void>()
+  let isScroll = BehaviorSubject<Bool>(value: true)
   
   init(leftViewModel: LeftViewModel, taskViewModel: TaskViewModel) {
     self.leftViewModel = leftViewModel

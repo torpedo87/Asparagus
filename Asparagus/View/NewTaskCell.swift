@@ -10,7 +10,6 @@ import UIKit
 import RxSwift
 import RxCocoa
 import Action
-import RealmSwift
 
 class NewTaskCell: UITableViewCell {
   private var bag = DisposeBag()
@@ -86,6 +85,7 @@ class NewTaskCell: UITableViewCell {
   override func prepareForReuse() {
     addButton.rx.action = nil
     bag = DisposeBag()
+    titleTextField.text = ""
     super.prepareForReuse()
   }
 }

@@ -11,6 +11,8 @@ import RxSwift
 import Action
 import RealmSwift
 
+// TODO: 뷰가 램을 알지 못하게 개선하기
+
 class TaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "TaskCell"
@@ -110,6 +112,7 @@ class TaskCell: UITableViewCell {
       .disposed(by: bag)
     
     item.rx.observe(List<SubTask>.self, "subTasks")
+      .subscribeOn(MainScheduler.instance)
       .subscribe(onNext: { [unowned self] _ in
         self.achievementView.achieveRate = item.achievementRate
         self.achievementView.setNeedsDisplay()

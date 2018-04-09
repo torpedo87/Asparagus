@@ -9,7 +9,6 @@
 import UIKit
 import RxSwift
 import RxCocoa
-import RealmSwift
 
 class TagCell: UITableViewCell {
   private let bag = DisposeBag()

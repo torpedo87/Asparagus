@@ -36,7 +36,16 @@ class EditViewController: UIViewController, BindableType {
     view.layer.cornerRadius = 10
     return view
   }()
-  private let selectedRepositoryLabel: UILabel = {
+  private lazy var repoLabel: UILabel = {
+    let label = UILabel()
+    label.textAlignment = .center
+    label.layer.cornerRadius = 10
+    label.backgroundColor = UIColor.white
+    label.text = "Repository :"
+    label.adjustsFontSizeToFitWidth = true
+    return label
+  }()
+  private lazy var selectedRepositoryLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .center
     label.layer.cornerRadius = 10
@@ -63,7 +72,7 @@ class EditViewController: UIViewController, BindableType {
     let view = UITextField()
     view.backgroundColor = UIColor.white
     view.placeholder = "Please enter task title"
-    view.font = view.font?.withSize(20)
+    view.font = .systemFont(ofSize: 20)
     view.layer.cornerRadius = 10
     return view
   }()
@@ -71,7 +80,7 @@ class EditViewController: UIViewController, BindableType {
   private lazy var bodyTextView: UITextView = {
     let view = UITextView()
     view.layer.cornerRadius = 10
-    view.font = view.font?.withSize(20)
+    view.font = .systemFont(ofSize: 20)
     return view
   }()
   
@@ -121,6 +130,7 @@ class EditViewController: UIViewController, BindableType {
     view.addSubview(bottomView)
     bottomView.addSubview(segmentedControl)
     bottomView.addSubview(repoView)
+    repoView.addSubview(repoLabel)
     repoView.addSubview(selectedRepositoryLabel)
     repoView.addSubview(pickerView)
     bottomView.addSubview(tagTableView)
@@ -200,8 +210,14 @@ class EditViewController: UIViewController, BindableType {
       make.left.right.equalTo(segmentedControl)
       make.bottom.equalTo(bottomView)
     }
+    repoLabel.snp.makeConstraints { (make) in
+      make.top.left.equalTo(repoView)
+      make.height.equalTo(UIScreen.main.bounds.height / 20)
+      make.width.equalTo(UIScreen.main.bounds.width / 3)
+    }
     selectedRepositoryLabel.snp.makeConstraints { (make) in
-      make.top.left.right.equalTo(repoView)
+      make.left.equalTo(repoLabel.snp.right)
+      make.top.right.equalTo(repoView)
       make.height.equalTo(UIScreen.main.bounds.height / 20)
     }
     pickerView.snp.makeConstraints { (make) in

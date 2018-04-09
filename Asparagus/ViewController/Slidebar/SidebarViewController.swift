@@ -57,6 +57,10 @@ class SidebarViewController: UIViewController, BindableType {
         self.toggleLeftMenuAnimated(true)
       })
       .disposed(by: bag)
+    
+    viewModel.isScroll
+      .bind(to: scrollView.rx.isScrollEnabled)
+      .disposed(by: bag)
   }
   
   func setupView() {

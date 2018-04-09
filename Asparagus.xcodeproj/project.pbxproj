@@ -13,7 +13,6 @@
 		4842DB2920596A610093B496 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842DB2820596A610093B496 /* Tag.swift */; };
 		48480A1C205FA1DB004ED59A /* RealmConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48480A1B205FA1DB004ED59A /* RealmConfig.swift */; };
 		48480A1E205FA511004ED59A /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48480A1D205FA511004ED59A /* URL.swift */; };
-		48480A21205FB8ED004ED59A /* default_v1.0.realm in Resources */ = {isa = PBXBuildFile; fileRef = 48480A20205FAAFF004ED59A /* default_v1.0.realm */; };
 		4848BEBE20566E34009C1B97 /* SidebarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEBD20566E34009C1B97 /* SidebarViewController.swift */; };
 		4848BEC020566E54009C1B97 /* LeftViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEBF20566E54009C1B97 /* LeftViewController.swift */; };
 		4848BEC4205675C1009C1B97 /* LeftViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848BEC3205675C1009C1B97 /* LeftViewModel.swift */; };
@@ -50,6 +49,7 @@
 		487D92452046C9B6008CB44E /* TaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D92442046C9B6008CB44E /* TaskCell.swift */; };
 		48912A7C206B693100599CB6 /* SubTaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48912A7B206B693100599CB6 /* SubTaskCell.swift */; };
 		48912A7E206B9DFE00599CB6 /* NewTaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48912A7D206B9DFE00599CB6 /* NewTaskCell.swift */; };
+		489E7ADD207B4BEB00697A98 /* default_v1.0.realm in Resources */ = {isa = PBXBuildFile; fileRef = 489E7ADC207B4BD700697A98 /* default_v1.0.realm */; };
 		48ECD235206CC2D100D3EDFF /* SubTagCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48ECD234206CC2D100D3EDFF /* SubTagCell.swift */; };
 		5459BD2A6B31540055269472 /* Pods_Asparagus.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89D8923D6187F3074ED7CAF6 /* Pods_Asparagus.framework */; };
 		C16A11E4450F3841B9AD2DD0 /* Pods_AsparagusTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6957BCB8DA9581D93B207EB8 /* Pods_AsparagusTests.framework */; };
@@ -72,7 +72,6 @@
 		4842DB2820596A610093B496 /* Tag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tag.swift; sourceTree = "<group>"; };
 		48480A1B205FA1DB004ED59A /* RealmConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmConfig.swift; sourceTree = "<group>"; };
 		48480A1D205FA511004ED59A /* URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URL.swift; sourceTree = "<group>"; };
-		48480A20205FAAFF004ED59A /* default_v1.0.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = default_v1.0.realm; sourceTree = "<group>"; };
 		4848BEBD20566E34009C1B97 /* SidebarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewController.swift; sourceTree = "<group>"; };
 		4848BEBF20566E54009C1B97 /* LeftViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftViewController.swift; sourceTree = "<group>"; };
 		4848BEC3205675C1009C1B97 /* LeftViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftViewModel.swift; sourceTree = "<group>"; };
@@ -113,6 +112,7 @@
 		487D92442046C9B6008CB44E /* TaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCell.swift; sourceTree = "<group>"; };
 		48912A7B206B693100599CB6 /* SubTaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTaskCell.swift; sourceTree = "<group>"; };
 		48912A7D206B9DFE00599CB6 /* NewTaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTaskCell.swift; sourceTree = "<group>"; };
+		489E7ADC207B4BD700697A98 /* default_v1.0.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = default_v1.0.realm; sourceTree = "<group>"; };
 		48ECD234206CC2D100D3EDFF /* SubTagCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTagCell.swift; sourceTree = "<group>"; };
 		55500856096F4F18E140674D /* Pods-AsparagusTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AsparagusTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AsparagusTests/Pods-AsparagusTests.debug.xcconfig"; sourceTree = "<group>"; };
 		59D5D244A929E24EA7E1F6B2 /* Pods-Asparagus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Asparagus.release.xcconfig"; path = "Pods/Target Support Files/Pods-Asparagus/Pods-Asparagus.release.xcconfig"; sourceTree = "<group>"; };
@@ -148,7 +148,7 @@
 				487D91F120453736008CB44E /* Assets.xcassets */,
 				487D91F320453736008CB44E /* LaunchScreen.storyboard */,
 				487D91F620453736008CB44E /* Info.plist */,
-				48480A20205FAAFF004ED59A /* default_v1.0.realm */,
+				489E7ADC207B4BD700697A98 /* default_v1.0.realm */,
 			);
 			path = Assets;
 			sourceTree = "<group>";
@@ -420,7 +420,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				48480A21205FB8ED004ED59A /* default_v1.0.realm in Resources */,
+				489E7ADD207B4BEB00697A98 /* default_v1.0.realm in Resources */,
 				487D91F520453736008CB44E /* LaunchScreen.storyboard in Resources */,
 				487D91F220453736008CB44E /* Assets.xcassets in Resources */,
 			);

@@ -41,8 +41,17 @@ class SceneCoordinator: SceneCoordinatorType {
       
     case .push:
       var navigationController: UINavigationController
-      if let _ = currentViewController as? SidebarViewController {
+      print(currentViewController)
+      if let taskViewController = currentViewController as? TaskViewController {
+        if let nav = taskViewController.navigationController {
+          if let sideBarViewController = nav.parent as? SidebarViewController {
+            sideBarViewController.viewModel.isScroll.onNext(false)
+          }
+        }
+      }
+      if let sideBarViewController = currentViewController as? SidebarViewController {
         navigationController = currentViewController.childViewControllers.last as! UINavigationController
+        sideBarViewController.viewModel.isScroll.onNext(false)
       } else {
         navigationController = currentViewController.navigationController!
       }
@@ -51,7 +60,7 @@ class SceneCoordinator: SceneCoordinatorType {
         .map { _ in }
         .bind(to: subject)
       navigationController.pushViewController(viewController, animated: true)
-      //currentViewController = SceneCoordinator.actualViewController(for: viewController)
+      currentViewController = SceneCoordinator.actualViewController(for: viewController)
       
     case .modal:
       currentViewController.present(viewController, animated: true) {
@@ -67,18 +76,19 @@ class SceneCoordinator: SceneCoordinatorType {
   @discardableResult
   func pop(animated: Bool) -> Completable {
     let subject = PublishSubject<Void>()
-    if let _ = currentViewController as? SidebarViewController {
-      if let nav = currentViewController.childViewControllers.last as? UINavigationController {
-        nav.popViewController(animated: true)
-        subject.onCompleted()
-      }
-    }
-    else if let presenter = currentViewController.presentingViewController {
+    if let presenter = currentViewController.presentingViewController {
       currentViewController.dismiss(animated: animated) {
         self.currentViewController = SceneCoordinator.actualViewController(for: presenter)
         subject.onCompleted()
       }
     } else if let navigationController = currentViewController.navigationController {
+      if let editViewController = currentViewController as? EditViewController {
+        if let nav = editViewController.navigationController {
+          if let sideBarViewController = nav.parent as? SidebarViewController {
+            sideBarViewController.viewModel.isScroll.onNext(true)
+          }
+        }
+      }
       _ = navigationController.rx.delegate
         .sentMessage(#selector(UINavigationControllerDelegate.navigationController(_:didShow:animated:)))
         .map { _ in }

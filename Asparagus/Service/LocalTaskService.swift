@@ -212,6 +212,7 @@ class LocalTaskService: LocalTaskServiceType {
   }
   
   func openTasks() -> Observable<Results<TaskItem>> {
+    print("------realmfile-------", RealmConfig.main.configuration.fileURL)
     let result = withRealm("getting tasks") { realm -> Observable<Results<TaskItem>> in
       let tasks = realm.objects(TaskItem.self).filter("checked = 'open'")
       return Observable.collection(from: tasks)
@@ -220,7 +221,6 @@ class LocalTaskService: LocalTaskServiceType {
   }
   
   func tags() -> Observable<Results<Tag>> {
-    //print("------realmfile-------", RealmConfig.main.configuration.fileURL)
     let result = withRealm("tags") { realm -> Observable<Results<Tag>> in
       let tags = realm.objects(Tag.self)
       return Observable.collection(from: tags)
