@@ -11,6 +11,7 @@ import RxSwift
 import RxCocoa
 import RxGesture
 import Kingfisher
+import RxKeyboard
 
 class AuthViewController: UIViewController, BindableType {
   var viewModel: AuthViewModel!
@@ -109,6 +110,29 @@ class AuthViewController: UIViewController, BindableType {
   }
   
   func bindViewModel() {
+    RxKeyboard.instance.visibleHeight
+      .skip(1)
+      .filter{ $0 == 0}
+      .drive(onNext: { [unowned self] _ in
+        UIView.animate(withDuration: 1.0) {
+          self.imgView.snp.updateConstraints { make in
+            make.centerY.equalToSuperview().offset(-UIScreen.main.bounds.height / 8)
+          }
+          self.view.layoutIfNeeded()
+        }
+      })
+      .disposed(by: bag)
+    
+    RxKeyboard.instance.willShowVisibleHeight
+      .drive(onNext: { [unowned self] _ in
+        UIView.animate(withDuration: 1.0) {
+          self.imgView.snp.updateConstraints { make in
+            make.centerY.equalToSuperview().offset(-UIScreen.main.bounds.height / 5)
+          }
+          self.view.layoutIfNeeded()
+        }
+      })
+      .disposed(by: bag)
     
     Observable.combineLatest(idTextField.rx.text.orEmpty, passWordTextField.rx.text.orEmpty)
       .map { (tuple) -> Bool in

@@ -129,6 +129,7 @@ class TaskCell: UITableViewCell {
   
   override func prepareForReuse() {
     checkButton.rx.action = nil
+    titleLabel.text = ""
     bag = DisposeBag()
     super.prepareForReuse()
   }

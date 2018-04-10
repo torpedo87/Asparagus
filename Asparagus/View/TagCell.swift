@@ -56,6 +56,7 @@ class TagCell: UITableViewCell {
   }
   
   override func prepareForReuse() {
+    titleLabel.text = ""
     super.prepareForReuse()
   }
 }

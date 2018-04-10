@@ -66,6 +66,7 @@ class SubTagCell: UITableViewCell {
   
   override func prepareForReuse() {
     deleteButton.rx.action = nil
+    titleLabel.text = ""
     bag = DisposeBag()
     super.prepareForReuse()
   }

@@ -11,6 +11,7 @@ import RxSwift
 import RxCocoa
 import RxGesture
 import RxDataSources
+import RxKeyboard
 
 class EditViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
@@ -20,7 +21,7 @@ class EditViewController: UIViewController, BindableType {
     return view
   }()
   private lazy var segmentedControl: UISegmentedControl = {
-    let view = UISegmentedControl(items: ["Repository", "Tags", "CheckList"])
+    let view = UISegmentedControl(items: ["Connect", "Tags", "CheckList"])
     view.selectedSegmentIndex = 0
     view.layer.cornerRadius = 10
     view.backgroundColor = UIColor.white
@@ -107,7 +108,6 @@ class EditViewController: UIViewController, BindableType {
     super.viewDidLoad()
     setupView()
     configureDataSource()
-    titleTextField.becomeFirstResponder()
   }
   
   override func viewWillAppear(_ animated: Bool) {
@@ -253,7 +253,31 @@ class EditViewController: UIViewController, BindableType {
     })
   }
   
-  func bindViewModel() {  
+  func bindViewModel() {
+    RxKeyboard.instance.visibleHeight
+      .skip(1)
+      .filter{ $0 == 0}
+      .drive(onNext: { [unowned self] _ in
+        UIView.animate(withDuration: 1.0) {
+          self.topView.snp.updateConstraints { make in
+            make.height.equalTo(UIScreen.main.bounds.height * 1 / 3)
+          }
+          self.view.layoutIfNeeded()
+        }
+      })
+      .disposed(by: bag)
+    
+    RxKeyboard.instance.willShowVisibleHeight
+      .drive(onNext: { [unowned self] _ in
+        UIView.animate(withDuration: 1.0) {
+          self.topView.snp.updateConstraints { make in
+            make.height.equalTo(UIScreen.main.bounds.height * 1 / 4)
+          }
+          self.view.layoutIfNeeded()
+        }
+      })
+      .disposed(by: bag)
+    
     cancelButton.rx.action = viewModel.onCancel
     
     viewModel.tags()
