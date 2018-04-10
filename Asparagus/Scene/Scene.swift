@@ -12,11 +12,11 @@ enum Scene {
   case sidebar(LeftViewModel, TaskViewModel)
   case auth(AuthViewModel)
   case edit(EditViewModel)
+  case setting(SettingViewModel)
 }
 
 extension Scene {
   func viewController() -> UIViewController {
-    
     switch self {
     case .auth(let viewModel):
       var vc = AuthViewController()
@@ -41,6 +41,11 @@ extension Scene {
       var sidebarVC = SidebarViewController(leftVC: leftVC, mainNav: nav)
       sidebarVC.bindViewModel(to: sidebarViewModel)
       return sidebarVC
+    case .setting(let viewModel):
+      var vc = SettingViewController()
+      vc.bindViewModel(to: viewModel)
+      let nav = UINavigationController(rootViewController: vc)
+      return nav
     }
   }
 }

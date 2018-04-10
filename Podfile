@@ -10,7 +10,6 @@ target 'Asparagus' do
   pod 'RxSwift'
   pod 'RxCocoa'
   pod 'Moya/RxSwift'
-  pod 'Kingfisher', '~> 4.0'
   pod 'RealmSwift'
   pod 'RxRealm'
   pod 'Action'

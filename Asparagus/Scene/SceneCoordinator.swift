@@ -18,7 +18,7 @@ class SceneCoordinator: SceneCoordinatorType {
     window.makeKeyAndVisible()
     return window
   }()
-
+  
   fileprivate var currentViewController: UIViewController!
   
   static func actualViewController(for viewController: UIViewController) -> UIViewController {
@@ -41,7 +41,6 @@ class SceneCoordinator: SceneCoordinatorType {
       
     case .push:
       var navigationController: UINavigationController
-      print(currentViewController)
       if let taskViewController = currentViewController as? TaskViewController {
         if let nav = taskViewController.navigationController {
           if let sideBarViewController = nav.parent as? SidebarViewController {
@@ -82,6 +81,7 @@ class SceneCoordinator: SceneCoordinatorType {
         subject.onCompleted()
       }
     } else if let navigationController = currentViewController.navigationController {
+      print("-------")
       if let editViewController = currentViewController as? EditViewController {
         if let nav = editViewController.navigationController {
           if let sideBarViewController = nav.parent as? SidebarViewController {
@@ -105,4 +105,3 @@ class SceneCoordinator: SceneCoordinatorType {
       .ignoreElements()
   }
 }
-

@@ -26,11 +26,9 @@ class LeftViewController: UIViewController, BindableType {
     label.textColor = UIColor.white
     return label
   }()
-  private lazy var authButton: UIButton = {
+  private lazy var settingButton: UIButton = {
     let btn = UIButton()
-    btn.layer.cornerRadius = 10
-    btn.backgroundColor = UIColor(hex: "2676AC")
-    btn.setTitleColor(UIColor.white, for: .normal)
+    btn.setImage(UIImage(named: "setting"), for: .normal)
     return btn
   }()
   
@@ -55,7 +53,7 @@ class LeftViewController: UIViewController, BindableType {
   func setupView() {
     view.backgroundColor = UIColor(hex: "283A45")
     topView.addSubview(appLabel)
-    topView.addSubview(authButton)
+    topView.addSubview(settingButton)
     view.addSubview(topView)
     view.addSubview(tableView)
     topView.snp.makeConstraints { (make) in
@@ -74,9 +72,8 @@ class LeftViewController: UIViewController, BindableType {
       make.centerY.equalTo(topView)
       make.left.equalTo(topView).offset(10)
     }
-    authButton.snp.makeConstraints { (make) in
-      make.height.equalTo(30)
-      make.width.equalTo(100)
+    settingButton.snp.makeConstraints { (make) in
+      make.width.height.equalTo(30)
       make.centerY.equalTo(topView)
       make.right.equalTo(topView).offset(-10)
     }
@@ -92,12 +89,7 @@ class LeftViewController: UIViewController, BindableType {
   }
   
   func bindViewModel() {
-    authButton.rx.action = viewModel.goToAuth()
-    
-    viewModel.isLoggedIn.asDriver(onErrorJustReturn: false)
-      .map { $0 ? "Disconnect" : "Connect" }
-      .drive(authButton.rx.title())
-      .disposed(by: bag)
+    settingButton.rx.action = viewModel.goToSetting()
     
     viewModel.sectionedItems
       .bind(to: tableView.rx.items(dataSource: dataSource))

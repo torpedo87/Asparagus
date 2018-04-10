@@ -21,7 +21,7 @@ class EditViewController: UIViewController, BindableType {
     return view
   }()
   private lazy var segmentedControl: UISegmentedControl = {
-    let view = UISegmentedControl(items: ["Connect", "Tags", "CheckList"])
+    let view = UISegmentedControl(items: ["Github", "Tags", "Sub-Tasks"])
     view.selectedSegmentIndex = 0
     view.layer.cornerRadius = 10
     view.backgroundColor = UIColor.white

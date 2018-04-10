@@ -16,7 +16,6 @@ struct AuthViewModel {
   private let sceneCoordinator: SceneCoordinatorType
   private let authService: AuthServiceRepresentable
   let onAuth: Action<(String, String), AuthService.AccountStatus>
-  let onCancel: CocoaAction!
   let isLoggedIn = BehaviorRelay<Bool>(value: false)
   
   init(authService: AuthServiceRepresentable = AuthService(),
@@ -25,11 +24,6 @@ struct AuthViewModel {
     self.authService = authService
     self.sceneCoordinator = coordinator
     self.onAuth = authAction
-    
-    onCancel = CocoaAction {
-      return coordinator.pop()
-        .asObservable().map { _ in }
-    }
     
     bindOutput()
   }
@@ -65,6 +59,13 @@ struct AuthViewModel {
         observer.onCompleted()
         return Disposables.create()
       })
+    }
+  }
+  
+  func dismissView() -> CocoaAction {
+    return CocoaAction {
+      return self.sceneCoordinator.pop()
+        .asObservable().map{ _ in }
     }
   }
 }
