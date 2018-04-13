@@ -85,6 +85,18 @@ class SidebarViewController: UIViewController, BindableType {
         make.top.bottom.equalTo(view)
       }
     }
+    
+    scrollView.rx.contentOffset
+      .filter({ [unowned self] _ -> Bool in
+        if let _ = self.mainNav.viewControllers.first as? TaskViewController {
+          return true
+        }
+        return false
+      })
+      .map { offset -> Bool in
+        return offset.x != 0
+      }.bind(to: mainNav.viewControllers.first!.view.rx.isUserInteractionEnabled)
+      .disposed(by: bag)
   }
   
   func setupViewControllers() {
