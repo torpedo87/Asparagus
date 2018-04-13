@@ -14,3 +14,4 @@
 - AuthView : Connect with your Github Issues
 - TaskView : Issue List by Tags
 - EditView : Create new issue or edit existing issue
+- SettingView : Opensource license info
