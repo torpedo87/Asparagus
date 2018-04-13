@@ -10,7 +10,6 @@ import UIKit
 import RxSwift
 import RxCocoa
 import RxGesture
-import Kingfisher
 import RxKeyboard
 
 class AuthViewController: UIViewController, BindableType {
@@ -188,7 +187,8 @@ class AuthViewController: UIViewController, BindableType {
       .subscribe(onNext: { [unowned self] bool in
         if bool {
           if let me = UserDefaults.loadUser(), let imgUrl = me.imgUrl {
-            self.imgView.kf.setImage(with: imgUrl)
+            let imgData = try! Data(contentsOf: imgUrl)
+            self.imgView.image = UIImage(data: imgData)
           }
         } else {
           self.imgView.image = UIImage(named: "user")

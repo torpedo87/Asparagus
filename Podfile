@@ -16,7 +16,6 @@ target 'Asparagus' do
   pod 'RxDataSources'
   pod 'Reveal-SDK', :configurations => ['Debug']
   pod 'RxGesture'
-  pod 'Kingfisher'
   pod 'RxKeyboard'
 
   target 'AsparagusTests' do

@@ -40,7 +40,7 @@ extension IssueAPI: TargetType {
     case .fetchAllIssues(_):
       return "/issues"
     case .editIssue(_, _, _, let exTask):
-      return "/repos/\(exTask.owner!.name)/\(exTask.repository!.name)/issues/\(exTask.number)"
+      return "/repos/\(exTask.repository!.owner!.name)/\(exTask.repository!.name)/issues/\(exTask.number)"
     case .createIssue(_, _, let repo):
       return "/repos/\(repo.owner!.name)/\(repo.name)/issues"
     case .createIssueWithLocalTask(let tuple):

@@ -20,12 +20,6 @@ class LeftViewController: UIViewController, BindableType {
     view.backgroundColor = UIColor(hex: "283A45")
     return view
   }()
-  private lazy var appLabel: UILabel = {
-    let label = UILabel()
-    label.text = "Asparagus"
-    label.textColor = UIColor.white
-    return label
-  }()
   private lazy var settingButton: UIButton = {
     let btn = UIButton()
     btn.setImage(UIImage(named: "setting"), for: .normal)
@@ -42,6 +36,11 @@ class LeftViewController: UIViewController, BindableType {
     view.delegate = self
     return view
   }()
+  private lazy var authButton: UIButton = {
+    let btn = UIButton()
+    btn.imageView?.layer.cornerRadius = UIScreen.main.bounds.height / 30
+    return btn
+  }()
   private var dataSource: RxTableViewSectionedReloadDataSource<TagSection>!
   
   override func viewDidLoad() {
@@ -52,12 +51,12 @@ class LeftViewController: UIViewController, BindableType {
   
   func setupView() {
     view.backgroundColor = UIColor(hex: "283A45")
-    topView.addSubview(appLabel)
+    topView.addSubview(authButton)
     topView.addSubview(settingButton)
     view.addSubview(topView)
     view.addSubview(tableView)
     topView.snp.makeConstraints { (make) in
-      make.height.equalTo(50)
+      make.height.equalTo(UIScreen.main.bounds.height / 10)
       make.bottom.equalTo(tableView.snp.top)
       if #available(iOS 11.0, *) {
         make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
@@ -67,13 +66,13 @@ class LeftViewController: UIViewController, BindableType {
         make.left.top.right.equalTo(view)
       }
     }
-    appLabel.snp.makeConstraints { (make) in
-      appLabel.sizeToFit()
+    authButton.snp.makeConstraints { (make) in
+      make.width.height.equalTo(UIScreen.main.bounds.height / 15)
       make.centerY.equalTo(topView)
       make.left.equalTo(topView).offset(10)
     }
     settingButton.snp.makeConstraints { (make) in
-      make.width.height.equalTo(30)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
       make.centerY.equalTo(topView)
       make.right.equalTo(topView).offset(-10)
     }
@@ -90,7 +89,7 @@ class LeftViewController: UIViewController, BindableType {
   
   func bindViewModel() {
     settingButton.rx.action = viewModel.goToSetting()
-    
+    authButton.rx.action = viewModel.onAuth()
     viewModel.sectionedItems
       .bind(to: tableView.rx.items(dataSource: dataSource))
       .disposed(by: bag)
@@ -101,6 +100,19 @@ class LeftViewController: UIViewController, BindableType {
         return tag.title
       })
       .bind(to: viewModel.selectedGroupTitle)
+      .disposed(by: bag)
+    
+    viewModel.isLoggedIn.asObservable()
+      .subscribe(onNext: { [unowned self] bool in
+        if bool {
+          if let me = UserDefaults.loadUser(), let imgUrl = me.imgUrl {
+            let imgData = try! Data(contentsOf: imgUrl)
+            self.authButton.setImage(UIImage(data: imgData), for: .normal)
+          }
+        } else {
+          self.authButton.setImage(UIImage(named: "user"), for: .normal)
+        }
+      })
       .disposed(by: bag)
   }
   
