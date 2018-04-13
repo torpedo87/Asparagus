@@ -21,6 +21,7 @@ class TaskViewController: UIViewController, BindableType {
     let view = UITableView()
     view.register(TaskCell.self,
                   forCellReuseIdentifier: TaskCell.reuseIdentifier)
+    view.register(SubTaskCell.self, forCellReuseIdentifier: SubTaskCell.reuseIdentifier)
     view.rowHeight = UIScreen.main.bounds.height / 8
     view.backgroundColor = UIColor.clear
     view.delegate = self

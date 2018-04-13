@@ -24,12 +24,10 @@ class SubTaskCell: UITableViewCell {
     return btn
   }()
   
-  override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-    super.init(style: style, reuseIdentifier: reuseIdentifier)
+  func setupSubviews() {
     backgroundColor = UIColor.white
     addSubview(titleLabel)
     addSubview(checkButton)
-    
     titleLabel.snp.makeConstraints { (make) in
       make.left.equalTo(contentView).offset(10)
       make.top.equalTo(contentView.snp.top)
@@ -43,11 +41,8 @@ class SubTaskCell: UITableViewCell {
     }
   }
   
-  required init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-  
   func configureCell(item: SubTask, action: CocoaAction) {
+    setupSubviews()
     checkButton.rx.action = action
     item.rx.observe(String.self, "title")
       .subscribe(onNext: { [unowned self] title in

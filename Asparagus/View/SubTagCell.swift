@@ -25,13 +25,10 @@ class SubTagCell: UITableViewCell {
     return btn
   }()
   
-  override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-    super.init(style: style, reuseIdentifier: reuseIdentifier)
+  func setupSubviews() {
     backgroundColor = UIColor.white
-    
     addSubview(titleLabel)
     addSubview(deleteButton)
-    
     titleLabel.snp.makeConstraints { (make) in
       make.left.top.bottom.equalTo(contentView).inset(10)
       make.right.equalTo(deleteButton.snp.left).offset(-5)
@@ -43,12 +40,8 @@ class SubTagCell: UITableViewCell {
     }
   }
   
-  required init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-  
   func configureCell(item: Tag, onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>) {
-    
+    setupSubviews()
     item.rx.observe(String.self, "title")
       .subscribe(onNext: { [unowned self] title in
         self.titleLabel.text = title!

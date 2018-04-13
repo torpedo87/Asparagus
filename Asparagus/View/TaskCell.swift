@@ -45,8 +45,7 @@ class TaskCell: UITableViewCell {
     return btn
   }()
   
-  override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-    super.init(style: style, reuseIdentifier: reuseIdentifier)
+  func setupSubviews() {
     backgroundColor = UIColor.white
     addSubview(baseView)
     baseView.addSubview(numberLabel)
@@ -54,15 +53,12 @@ class TaskCell: UITableViewCell {
     baseView.addSubview(achievementView)
     baseView.addSubview(titleLabel)
     baseView.addSubview(checkButton)
-    
-    
     baseView.snp.makeConstraints { (make) in
       make.edges.equalToSuperview().inset(10)
     }
-    
     achievementView.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 15)
-      make.left.equalTo(baseView).offset(10)
+      make.left.equalTo(baseView)
       make.centerY.equalTo(contentView)
     }
     numberLabel.snp.makeConstraints { (make) in
@@ -77,22 +73,19 @@ class TaskCell: UITableViewCell {
       make.right.equalTo(imgView.snp.left).offset(-5)
     }
     imgView.snp.makeConstraints { (make) in
-      make.width.height.equalTo(25)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 25)
       make.right.equalTo(checkButton.snp.left).offset(-5)
       make.centerY.equalTo(contentView)
     }
     checkButton.snp.makeConstraints { (make) in
-      make.right.equalTo(baseView).offset(-10)
+      make.right.equalTo(baseView)
       make.centerY.equalTo(contentView)
-      make.width.height.equalTo(UIScreen.main.bounds.height / 20)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 25)
     }
   }
   
-  required init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-  
   func configureCell(item: TaskItem, action: CocoaAction) {
+    setupSubviews()
     checkButton.rx.action = action
     numberLabel.isHidden = !item.isServerGeneratedType
     imgView.image = item.isServerGeneratedType ? UIImage(named: "sync") : UIImage(named: "local")

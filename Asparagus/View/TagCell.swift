@@ -20,14 +20,13 @@ class TagCell: UITableViewCell {
     label.textColor = UIColor(hex: "F5F5F5")
     return label
   }()
-  override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-    super.init(style: style, reuseIdentifier: reuseIdentifier)
+  
+  func setupSubviews() {
     let selectedView = UIView()
     selectedView.backgroundColor = UIColor.darkGray
     selectedBackgroundView = selectedView
     backgroundColor = UIColor.clear
     addSubview(titleLabel)
-    
     titleLabel.snp.makeConstraints { (make) in
       if #available(iOS 11.0, *) {
         make.left.equalTo(safeAreaLayoutGuide.snp.left).offset(50)
@@ -42,12 +41,8 @@ class TagCell: UITableViewCell {
     }
   }
   
-  required init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-  
   func configureCell(tag: Tag) {
-    
+    setupSubviews()
     tag.rx.observe(String.self, "title")
       .subscribe(onNext: { [unowned self] title in
         self.titleLabel.text = "# " + (title ?? "")

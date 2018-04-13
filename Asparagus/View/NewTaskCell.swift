@@ -30,12 +30,11 @@ class NewTaskCell: UITableViewCell {
     btn.setImage(UIImage(named: "add"), for: UIControlState.normal)
     return btn
   }()
-  override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-    super.init(style: style, reuseIdentifier: reuseIdentifier)
+  
+  func setupSubviews() {
     backgroundColor = UIColor.white
     addSubview(titleTextField)
     addSubview(addButton)
-    
     titleTextField.snp.makeConstraints { (make) in
       make.left.top.bottom.equalTo(self).inset(10)
       make.right.equalTo(addButton.snp.left).offset(-5)
@@ -51,11 +50,8 @@ class NewTaskCell: UITableViewCell {
     }
   }
   
-  required init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-  
   func configureCell(onAddTasks: Action<String, Void>) {
+    setupSubviews()
     addButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .map({ [unowned self] _ -> String in
