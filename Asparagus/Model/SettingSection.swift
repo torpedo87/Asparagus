@@ -18,9 +18,8 @@ enum License: String {
   case moya
   case rxRealm
   case rxGesture
-  case kingFisher
   
-  static let arr: [License] = [.rxSwift, .action, .rxDataSource, .rxKeyboard, .snapKit, .moya, .rxRealm, .rxGesture, .kingFisher]
+  static let arr: [License] = [.rxSwift, .action, .rxDataSource, .rxKeyboard, .snapKit, .moya, .rxRealm, .rxGesture]
   
   func licenseUrl() -> String {
     switch self {
@@ -40,8 +39,6 @@ enum License: String {
       return "https://github.com/RxSwiftCommunity/RxRealm"
     case .rxGesture:
       return "https://github.com/RxSwiftCommunity/RxGesture"
-    case .kingFisher:
-      return "https://github.com/onevcat/Kingfisher"
     }
   }
 }

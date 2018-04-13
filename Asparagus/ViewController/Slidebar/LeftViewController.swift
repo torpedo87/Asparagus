@@ -20,12 +20,17 @@ class LeftViewController: UIViewController, BindableType {
     view.backgroundColor = UIColor(hex: "283A45")
     return view
   }()
-  private lazy var settingButton: UIButton = {
-    let btn = UIButton()
-    btn.setImage(UIImage(named: "setting"), for: .normal)
-    return btn
+//  private lazy var settingButton: UIButton = {
+//    let btn = UIButton()
+//    btn.setImage(UIImage(named: "setting"), for: .normal)
+//    return btn
+//  }()
+  private lazy var appLabel: UILabel = {
+    let label = UILabel()
+    label.text = "Asparagus"
+    label.textColor = UIColor.white
+    return label
   }()
-  
   private lazy var tableView: UITableView = {
     let view = UITableView()
     view.backgroundColor = UIColor.clear
@@ -38,7 +43,7 @@ class LeftViewController: UIViewController, BindableType {
   }()
   private lazy var authButton: UIButton = {
     let btn = UIButton()
-    btn.imageView?.layer.cornerRadius = UIScreen.main.bounds.height / 30
+    btn.imageView?.layer.cornerRadius = UIScreen.main.bounds.height / 40
     return btn
   }()
   private var dataSource: RxTableViewSectionedReloadDataSource<TagSection>!
@@ -52,11 +57,12 @@ class LeftViewController: UIViewController, BindableType {
   func setupView() {
     view.backgroundColor = UIColor(hex: "283A45")
     topView.addSubview(authButton)
-    topView.addSubview(settingButton)
+    topView.addSubview(appLabel)
+    //topView.addSubview(settingButton)
     view.addSubview(topView)
     view.addSubview(tableView)
     topView.snp.makeConstraints { (make) in
-      make.height.equalTo(UIScreen.main.bounds.height / 10)
+      make.height.equalTo(UIScreen.main.bounds.height / 15)
       make.bottom.equalTo(tableView.snp.top)
       if #available(iOS 11.0, *) {
         make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
@@ -67,15 +73,19 @@ class LeftViewController: UIViewController, BindableType {
       }
     }
     authButton.snp.makeConstraints { (make) in
-      make.width.height.equalTo(UIScreen.main.bounds.height / 15)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 20)
       make.centerY.equalTo(topView)
       make.left.equalTo(topView).offset(10)
     }
-    settingButton.snp.makeConstraints { (make) in
-      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
-      make.centerY.equalTo(topView)
-      make.right.equalTo(topView).offset(-10)
+    appLabel.snp.makeConstraints { (make) in
+      appLabel.sizeToFit()
+      make.center.equalTo(topView)
     }
+//    settingButton.snp.makeConstraints { (make) in
+//      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
+//      make.centerY.equalTo(topView)
+//      make.right.equalTo(topView).offset(-10)
+//    }
     tableView.snp.makeConstraints { (make) in
       if #available(iOS 11.0, *) {
         make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
@@ -88,7 +98,7 @@ class LeftViewController: UIViewController, BindableType {
   }
   
   func bindViewModel() {
-    settingButton.rx.action = viewModel.goToSetting()
+    //settingButton.rx.action = viewModel.goToSetting()
     authButton.rx.action = viewModel.onAuth()
     viewModel.sectionedItems
       .bind(to: tableView.rx.items(dataSource: dataSource))
