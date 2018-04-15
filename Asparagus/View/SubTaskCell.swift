@@ -14,12 +14,12 @@ class SubTaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "SubTaskCell"
   
-  private let titleLabel: UILabel = {
+  private lazy var titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
     return label
   }()
-  private var checkButton: UIButton = {
+  private lazy var checkButton: UIButton = {
     let btn = UIButton()
     return btn
   }()
@@ -37,7 +37,7 @@ class SubTaskCell: UITableViewCell {
     checkButton.snp.makeConstraints { (make) in
       make.right.equalTo(contentView.snp.right).offset(-10)
       make.centerY.equalToSuperview()
-      make.width.height.equalTo(UIScreen.main.bounds.height / 20)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
     }
   }
   

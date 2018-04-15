@@ -14,7 +14,7 @@ class TagCell: UITableViewCell {
   private let bag = DisposeBag()
   static let reuseIdentifier = "TagCell"
   
-  private let titleLabel: UILabel = {
+  private lazy var titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
     label.textColor = UIColor(hex: "F5F5F5")

@@ -15,6 +15,7 @@ protocol AuthServiceRepresentable {
   var status: Driver<AuthService.AccountStatus> { get }
   func requestToken(userId: String, userPassword: String) -> Observable<AuthService.AccountStatus>
   func removeToken(userId: String, userPassword: String) -> Observable<AuthService.AccountStatus>
+  func getUser() -> Observable<User>
 }
 
 struct AuthService: AuthServiceRepresentable {
@@ -69,7 +70,6 @@ struct AuthService: AuthServiceRepresentable {
       .map({ (response, data) -> AccountStatus in
         if 200 ..< 300 ~= response.statusCode {
           let token = try! JSONDecoder().decode(Token.self, from: data)
-          //토큰저장을 여기서 하면 안될듯
           UserDefaults.saveToken(token: token)
           return AccountStatus.authorized(token)
         } else if 401 == response.statusCode {
@@ -140,6 +140,39 @@ struct AuthService: AuthServiceRepresentable {
           }
         }
         return Observable.just(.unavailable(error.localizedDescription))
+      })
+  }
+  
+  func getUser() -> Observable<User> {
+    guard let token = UserDefaults.loadToken()?.token else { fatalError() }
+    guard let urlComponents = URLComponents(string: "https://api.github.com/user") else { fatalError() }
+    
+    let request: Observable<URLRequest> = Observable.create{ observer in
+      let request: URLRequest = {
+        var request = URLRequest(url: $0)
+        request.httpMethod = "GET"
+        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        return request
+      }(urlComponents.url!)
+      
+      observer.onNext(request)
+      observer.onCompleted()
+      return Disposables.create()
+    }
+    
+    return request.flatMap{
+      URLSession.shared.rx.response(request: $0)
+      }
+      .map({ (response, data) -> User in
+        if 200 ..< 300 ~= response.statusCode {
+          let me = try! JSONDecoder().decode(User.self, from: data)
+          return me
+        } else {
+          throw AccountError.requestFail
+        }
+      })
+      .catchError({ (error) -> Observable<User> in
+        return Observable.empty()
       })
   }
   

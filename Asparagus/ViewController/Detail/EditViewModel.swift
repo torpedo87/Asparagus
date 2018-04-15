@@ -77,6 +77,7 @@ struct EditViewModel {
         let doneTasks = results
           .filter("checked = 'closed'")
           .sorted(byKeyPath: "added", ascending: false)
+        
         let newTask = SubTask()
         return [
           SubTaskSection(header: "Add newTask", items: [newTask]),

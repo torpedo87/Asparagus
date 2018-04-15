@@ -147,6 +147,7 @@ class TaskViewController: UIViewController, BindableType {
       }
       .subscribe(viewModel.editAction.inputs)
       .disposed(by: bag)
+    
     searchButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .asObservable()

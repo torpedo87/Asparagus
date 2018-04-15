@@ -14,12 +14,12 @@ class SubTagCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "SubTagCell"
   
-  private let titleLabel: UILabel = {
+  private lazy var titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
     return label
   }()
-  private var deleteButton: UIButton = {
+  private lazy var deleteButton: UIButton = {
     let btn = UIButton()
     btn.setImage(UIImage(named: "trash"), for: UIControlState.normal)
     return btn

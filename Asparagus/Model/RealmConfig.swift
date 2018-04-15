@@ -23,7 +23,6 @@ enum RealmConfig {
     schemaVersion: 1,
     migrationBlock: LocalTaskService.migrate
   )
-  
   var configuration: Realm.Configuration {
     switch self {
     case .main:

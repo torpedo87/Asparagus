@@ -26,12 +26,24 @@ struct LeftViewModel {
     self.sceneCoordinator = coordinator
     self.localTaskService = localTaskService
     
+    Observable.combineLatest(Reachability.rx.isOnline,
+                             authService.isLoggedIn.asObservable())
+      .filter { $0.0 && $0.1 }
+      .flatMap { _ -> Observable<User> in
+        return authService.getUser()
+      }
+      .map({ user -> Bool in
+        UserDefaults.saveMe(me: user)
+        return true
+      })
+      .bind(to: isLoggedIn)
+      .disposed(by: bag)
+    
     bindOutput()
   }
   
   func bindOutput() {
     authService.isLoggedIn
-      .debug("------")
       .drive(isLoggedIn)
       .disposed(by: bag)
   }

@@ -22,8 +22,15 @@ class CircleProgressView: UIView {
   }
   
   override func draw(_ rect: CGRect) {
-    let circlePath = UIBezierPath(ovalIn: rect)
-    UIColor(hex: "F5F5F5").setFill()
+    let outterPath = UIBezierPath(ovalIn: rect)
+    UIColor(hex: "7DC062").setFill()
+    outterPath.fill()
+    
+    let circlePath = UIBezierPath(ovalIn: CGRect(x: rect.origin.x + 1,
+                                                 y: rect.origin.y + 1,
+                                                 width: rect.width - 2,
+                                                 height: rect.height - 2))
+    UIColor.white.setFill()
     circlePath.fill()
     
     let center = CGPoint(x: bounds.width / 2,

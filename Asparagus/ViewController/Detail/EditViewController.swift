@@ -21,7 +21,7 @@ class EditViewController: UIViewController, BindableType {
     return view
   }()
   private lazy var segmentedControl: UISegmentedControl = {
-    let view = UISegmentedControl(items: ["Github", "Tags", "Sub-Tasks"])
+    let view = UISegmentedControl(items: ["Sub-Tasks", "Tags", "GitHub"])
     view.selectedSegmentIndex = 0
     view.layer.cornerRadius = 10
     view.backgroundColor = UIColor.white
@@ -229,9 +229,9 @@ class EditViewController: UIViewController, BindableType {
   func switchTableViews(index: Int) {
     switch index {
     case 0: do {
-      fadeView(view: repoView, hidden: false)
+      fadeView(view: repoView, hidden: true)
       fadeView(view: tagTableView, hidden: true)
-      fadeView(view: checkListTableView, hidden: true)
+      fadeView(view: checkListTableView, hidden: false)
       }
     case 1: do {
       fadeView(view: repoView, hidden: true)
@@ -239,9 +239,9 @@ class EditViewController: UIViewController, BindableType {
       fadeView(view: checkListTableView, hidden: true)
       }
     case 2: do {
-      fadeView(view: repoView, hidden: true)
+      fadeView(view: repoView, hidden: false)
       fadeView(view: tagTableView, hidden: true)
-      fadeView(view: checkListTableView, hidden: false)
+      fadeView(view: checkListTableView, hidden: true)
       }
     default: do {}
     }
@@ -281,6 +281,7 @@ class EditViewController: UIViewController, BindableType {
     cancelButton.rx.action = viewModel.onCancel
     
     viewModel.tags()
+      .subscribeOn(MainScheduler.instance)
       .bind(to: tagTableView.rx.items) { [unowned self]
         (tableView: UITableView, index: Int, item: Tag) in
         if index == 0 {

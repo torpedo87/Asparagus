@@ -187,8 +187,12 @@ class AuthViewController: UIViewController, BindableType {
       .subscribe(onNext: { [unowned self] bool in
         if bool {
           if let me = UserDefaults.loadUser(), let imgUrl = me.imgUrl {
-            let imgData = try! Data(contentsOf: imgUrl)
-            self.imgView.image = UIImage(data: imgData)
+            do {
+              let imgData = try Data(contentsOf: imgUrl)
+              self.imgView.image = UIImage(data: imgData)
+            } catch {
+              self.imgView.image = UIImage(named: "user")
+            }
           }
         } else {
           self.imgView.image = UIImage(named: "user")

@@ -12,7 +12,6 @@ import Action
 import RealmSwift
 
 // TODO: 뷰가 램을 알지 못하게 개선하기
-
 class TaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "TaskCell"
@@ -21,26 +20,24 @@ class TaskCell: UITableViewCell {
     let view = UIView()
     return view
   }()
-  private let numberLabel: UILabel = {
+  private lazy var numberLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .center
+    label.adjustsFontSizeToFitWidth = true
     return label
   }()
-  private let imgView: UIImageView = {
-    let view = UIImageView(image: UIImage(named: "local"))
-    return view
-  }()
-  private var achievementView: CircleProgressView = {
+  private lazy var achievementView: CircleProgressView = {
     let view = CircleProgressView(achieveRate: 0)
     view.backgroundColor = UIColor.clear
     return view
   }()
-  private let titleLabel: UILabel = {
+  private lazy var titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
+    label.numberOfLines = 3
     return label
   }()
-  private var checkButton: UIButton = {
+  private lazy var checkButton: UIButton = {
     let btn = UIButton()
     return btn
   }()
@@ -49,7 +46,6 @@ class TaskCell: UITableViewCell {
     backgroundColor = UIColor.white
     addSubview(baseView)
     baseView.addSubview(numberLabel)
-    baseView.addSubview(imgView)
     baseView.addSubview(achievementView)
     baseView.addSubview(titleLabel)
     baseView.addSubview(checkButton)
@@ -57,30 +53,24 @@ class TaskCell: UITableViewCell {
       make.edges.equalToSuperview().inset(10)
     }
     achievementView.snp.makeConstraints { (make) in
-      make.width.height.equalTo(UIScreen.main.bounds.height / 15)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
       make.left.equalTo(baseView)
-      make.centerY.equalTo(contentView)
+      make.centerY.equalTo(baseView)
     }
     numberLabel.snp.makeConstraints { (make) in
-      make.width.height.equalTo(50)
-      make.left.equalTo(achievementView.snp.right).offset(5)
-      make.centerY.equalTo(contentView)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
+      make.left.top.equalTo(baseView)
     }
     titleLabel.snp.makeConstraints { (make) in
-      make.left.equalTo(numberLabel.snp.right).offset(5)
+      make.left.equalTo(achievementView.snp.right).offset(15)
       make.top.equalTo(baseView)
       make.bottom.equalTo(baseView)
-      make.right.equalTo(imgView.snp.left).offset(-5)
-    }
-    imgView.snp.makeConstraints { (make) in
-      make.width.height.equalTo(UIScreen.main.bounds.height / 25)
-      make.right.equalTo(checkButton.snp.left).offset(-5)
-      make.centerY.equalTo(contentView)
+      make.right.equalTo(checkButton.snp.left).offset(-15)
     }
     checkButton.snp.makeConstraints { (make) in
       make.right.equalTo(baseView)
-      make.centerY.equalTo(contentView)
-      make.width.height.equalTo(UIScreen.main.bounds.height / 25)
+      make.centerY.equalTo(baseView)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
     }
   }
   
@@ -88,12 +78,12 @@ class TaskCell: UITableViewCell {
     setupSubviews()
     checkButton.rx.action = action
     numberLabel.isHidden = !item.isServerGeneratedType
-    imgView.image = item.isServerGeneratedType ? UIImage(named: "sync") : UIImage(named: "local")
+    backgroundColor = item.isServerGeneratedType ? UIColor.white : UIColor(hex: "F5F5F5")
     
     item.rx.observe(Int.self, "number")
       .subscribe(onNext: { [unowned self] number in
         if number != 0 {
-          self.numberLabel.text = "# \(number!)"
+          self.numberLabel.text = "#\(number!)"
         }
       })
       .disposed(by: bag)

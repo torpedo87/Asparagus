@@ -43,6 +43,7 @@ class LeftViewController: UIViewController, BindableType {
   }()
   private lazy var authButton: UIButton = {
     let btn = UIButton()
+    btn.setImage(UIImage(named: "user"), for: .normal)
     btn.imageView?.layer.cornerRadius = UIScreen.main.bounds.height / 40
     return btn
   }()
@@ -112,12 +113,16 @@ class LeftViewController: UIViewController, BindableType {
       .bind(to: viewModel.selectedGroupTitle)
       .disposed(by: bag)
     
-    viewModel.isLoggedIn.asObservable()
-      .subscribe(onNext: { [unowned self] bool in
+    viewModel.isLoggedIn.asDriver()
+      .drive(onNext: { [unowned self] bool in
         if bool {
           if let me = UserDefaults.loadUser(), let imgUrl = me.imgUrl {
-            let imgData = try! Data(contentsOf: imgUrl)
-            self.authButton.setImage(UIImage(data: imgData), for: .normal)
+            do {
+              let imgData = try Data(contentsOf: imgUrl)
+              self.authButton.setImage(UIImage(data: imgData), for: .normal)
+            } catch {
+              self.authButton.setImage(UIImage(named: "user"), for: .normal)
+            }
           }
         } else {
           self.authButton.setImage(UIImage(named: "user"), for: .normal)

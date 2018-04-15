@@ -48,17 +48,6 @@ struct TaskViewModel {
       })
       .disposed(by: bag)
     
-    //내 정보 가져오기
-    Observable.combineLatest(Reachability.rx.isOnline,
-                             authService.isLoggedIn.asObservable())
-      .filter { $0.0 && $0.1 }
-      .flatMap { _ -> Observable<User> in
-        return issueService.getUser()
-      }.subscribe(onNext: { user in
-        UserDefaults.saveMe(me: user)
-      })
-      .disposed(by: bag)
-    
     localTaskService.openTasks()
       .map { results -> Int in
         return results.count

@@ -30,7 +30,6 @@ struct AuthViewModel {
   
   private func bindOutput() {
     authService.isLoggedIn
-      .debug("------")
       .drive(isLoggedIn)
       .disposed(by: bag)
   }

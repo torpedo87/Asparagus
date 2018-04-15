@@ -15,7 +15,6 @@ enum IssueAPI {
   case createIssue(title: String, body: String, repo: Repository)
   case editIssue(newTitle: String, newBody: String, newState: String, exTask: TaskItem)
   case createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference)
-  case getUser()
 }
 
 extension IssueAPI: TargetType {
@@ -45,14 +44,12 @@ extension IssueAPI: TargetType {
       return "/repos/\(repo.owner!.name)/\(repo.name)/issues"
     case .createIssueWithLocalTask(let tuple):
       return "/repos/\(tuple.0.repository!.owner!.name)/\(tuple.0.repository!.name)/issues"
-    case .getUser():
-      return "/user"
     }
   }
   
   var method: Moya.Method {
     switch self {
-    case .fetchAllIssues, .getUser:
+    case .fetchAllIssues:
       return .get
     case .editIssue:
       return .patch
@@ -65,8 +62,6 @@ extension IssueAPI: TargetType {
   
   var task: Task {
     switch self {
-    case .getUser:
-      return .requestPlain
     case let .fetchAllIssues(page):
       return .requestParameters(parameters: ["sort": "created",
                                              "state": "all",

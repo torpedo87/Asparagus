@@ -14,18 +14,18 @@ import Action
 class NewTaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "NewTaskCell"
-  private let numberLabel: UILabel = {
+  private lazy var numberLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .center
     return label
   }()
   
-  private let titleTextField: UITextField = {
+  private lazy var titleTextField: UITextField = {
     let view = UITextField()
     view.placeholder = "add newItem"
     return view
   }()
-  private var addButton: UIButton = {
+  private lazy var addButton: UIButton = {
     let btn = UIButton()
     btn.setImage(UIImage(named: "add"), for: UIControlState.normal)
     return btn
@@ -66,6 +66,7 @@ class NewTaskCell: UITableViewCell {
   }
   
   func configureNewTagCell(onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>) {
+    setupSubviews()
     addButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .filter{return self.titleTextField.text != nil}
