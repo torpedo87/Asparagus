@@ -47,7 +47,7 @@ class LeftViewController: UIViewController, BindableType {
     btn.imageView?.layer.cornerRadius = UIScreen.main.bounds.height / 40
     return btn
   }()
-  private var dataSource: RxTableViewSectionedReloadDataSource<TagSection>!
+  private var dataSource: RxTableViewSectionedReloadDataSource<TotalSection>!
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -101,16 +101,13 @@ class LeftViewController: UIViewController, BindableType {
   func bindViewModel() {
     //settingButton.rx.action = viewModel.goToSetting()
     authButton.rx.action = viewModel.onAuth()
+    
     viewModel.sectionedItems
       .bind(to: tableView.rx.items(dataSource: dataSource))
       .disposed(by: bag)
     
-    tableView.rx
-      .modelSelected(Tag.self)
-      .map({ (tag) -> String in
-        return tag.title
-      })
-      .bind(to: viewModel.selectedGroupTitle)
+    tableView.rx.modelSelected(MyModel.self)
+      .bind(to: viewModel.selectedItemSubject)
       .disposed(by: bag)
     
     viewModel.isLoggedIn.asDriver()
@@ -132,11 +129,11 @@ class LeftViewController: UIViewController, BindableType {
   }
   
   func configureDataSource() {
-    dataSource = RxTableViewSectionedReloadDataSource<TagSection> (
+    dataSource = RxTableViewSectionedReloadDataSource<TotalSection> (
       configureCell: { dataSource, tableView, indexPath, item in
         let cell = tableView.dequeueReusableCell(withIdentifier: TagCell.reuseIdentifier,
                                                  for: indexPath) as! TagCell
-        cell.configureCell(tag: item)
+        cell.configureCell(model: item)
         return cell
       },
       titleForHeaderInSection: { dataSource, index in

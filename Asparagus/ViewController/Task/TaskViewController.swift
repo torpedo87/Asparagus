@@ -124,9 +124,6 @@ class TaskViewController: UIViewController, BindableType {
   }
   
   func bindViewModel() {
-    viewModel.selectedGroupTitle
-      .bind(to: navigationItem.rx.title)
-      .disposed(by: bag)
     
     newTaskButton.rx.action = viewModel.onCreateTask()
     
@@ -157,6 +154,7 @@ class TaskViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     searchBar.rx.text.orEmpty
+      .skip(1)
       .debounce(0.5, scheduler: MainScheduler.instance)
       .map({ [unowned self] query in
         var dueSection = TaskSection(header: "Due Tasks", items: [])

@@ -13,8 +13,9 @@ enum IssueAPI {
   
   case fetchAllIssues(page: Int)
   case createIssue(title: String, body: String, repo: Repository)
-  case editIssue(newTitle: String, newBody: String, newState: String, exTask: TaskItem)
+  case editIssue(newTitle: String, newBody: String, newState: String, newLabels: [String], newAssignees: [String], exTask: TaskItem)
   case createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference)
+  case getRepoUsers(repo: Repository)
 }
 
 extension IssueAPI: TargetType {
@@ -38,24 +39,24 @@ extension IssueAPI: TargetType {
     switch self {
     case .fetchAllIssues(_):
       return "/issues"
-    case .editIssue(_, _, _, let exTask):
+    case .editIssue(_, _, _, _, _, let exTask):
       return "/repos/\(exTask.repository!.owner!.name)/\(exTask.repository!.name)/issues/\(exTask.number)"
     case .createIssue(_, _, let repo):
       return "/repos/\(repo.owner!.name)/\(repo.name)/issues"
     case .createIssueWithLocalTask(let tuple):
       return "/repos/\(tuple.0.repository!.owner!.name)/\(tuple.0.repository!.name)/issues"
+    case .getRepoUsers(let repo):
+      return "/repos/\(repo.owner!.name)/\(repo.name)/assignees"
     }
   }
   
   var method: Moya.Method {
     switch self {
-    case .fetchAllIssues:
+    case .fetchAllIssues, .getRepoUsers:
       return .get
     case .editIssue:
       return .patch
-    case .createIssue:
-      return .post
-    case .createIssueWithLocalTask:
+    case .createIssue, .createIssueWithLocalTask:
       return .post
     }
   }
@@ -68,10 +69,12 @@ extension IssueAPI: TargetType {
                                              "filter": "all",
                                              "page": "\(page)"],
                                 encoding: URLEncoding.queryString)
-    case .editIssue(let newTitle, let newBody, let newState, _):
+    case .editIssue(let newTitle, let newBody, let newState, let newLabels, let newAssignees, _):
       return .requestParameters(parameters: ["body": newBody,
                                              "title": newTitle,
-                                             "state": newState],
+                                             "state": newState,
+                                             "labels": newLabels,
+                                             "assignees": newAssignees],
                                 encoding: JSONEncoding.default)
     case let .createIssue(title, body, _):
       return .requestParameters(parameters: ["body": body,
@@ -79,8 +82,12 @@ extension IssueAPI: TargetType {
                                 encoding: JSONEncoding.default)
     case let .createIssueWithLocalTask(tuple):
       return .requestParameters(parameters: ["body": tuple.0.body ?? "",
-                                             "title": tuple.0.title],
+                                             "title": tuple.0.title,
+                                             "labels": tuple.0.labels.toArray().map{ $0.name },
+                                             "assignees": tuple.0.assignees.toArray().map{ $0.name }],
                                 encoding: JSONEncoding.default)
+    case .getRepoUsers(_):
+      return .requestPlain
     }
   }
   

@@ -72,7 +72,7 @@ class NewTaskCell: UITableViewCell {
       .filter{return self.titleTextField.text != nil}
       .map { _ -> (Tag, LocalTaskService.TagMode) in
         let title = self.titleTextField.text!
-        let newTag = Tag(title: title, added: "", isCreatedInServer: false)
+        let newTag = Tag(title: title)
         newTag.setDateWhenCreated()
         return (newTag, LocalTaskService.TagMode.add)
       }.bind(to: onUpdateTags.inputs)

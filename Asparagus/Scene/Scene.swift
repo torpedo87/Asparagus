@@ -13,6 +13,7 @@ enum Scene {
   case auth(AuthViewModel)
   case edit(EditViewModel)
   case setting(SettingViewModel)
+  case popUp(EditViewModel)
 }
 
 extension Scene {
@@ -25,7 +26,6 @@ extension Scene {
     case .edit(let viewModel):
       var vc = EditViewController()
       vc.bindViewModel(to: viewModel)
-      vc.modalPresentationStyle = .overCurrentContext
       return vc
     case .sidebar(let leftViewModel, let taskViewModel):
       var leftVC = LeftViewController()
@@ -46,6 +46,12 @@ extension Scene {
       vc.bindViewModel(to: viewModel)
       let nav = UINavigationController(rootViewController: vc)
       return nav
+    case .popUp(let viewModel):
+      var vc = PopUpViewController()
+      vc.bindViewModel(to: viewModel)
+      vc.modalPresentationStyle = .overFullScreen
+      vc.modalTransitionStyle = .crossDissolve
+      return vc
     }
   }
 }

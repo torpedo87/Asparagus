@@ -75,13 +75,22 @@ class SceneCoordinator: SceneCoordinatorType {
   @discardableResult
   func pop(animated: Bool) -> Completable {
     let subject = PublishSubject<Void>()
-    if let presenter = currentViewController.presentingViewController {
+    //dismiss
+    var presenter = UIViewController()
+    if let parent = currentViewController.presentingViewController {
+      if let _ = parent as? SidebarViewController,
+        let nav = parent.childViewControllers[1] as? UINavigationController,
+        let editViewController = nav.viewControllers[1] as? EditViewController {
+        presenter = editViewController
+      } else {
+        presenter = parent
+      }
       currentViewController.dismiss(animated: animated) {
         self.currentViewController = SceneCoordinator.actualViewController(for: presenter)
         subject.onCompleted()
       }
     } else if let navigationController = currentViewController.navigationController {
-      print("-------")
+      //pop
       if let editViewController = currentViewController as? EditViewController {
         if let nav = editViewController.navigationController {
           if let sideBarViewController = nav.parent as? SidebarViewController {

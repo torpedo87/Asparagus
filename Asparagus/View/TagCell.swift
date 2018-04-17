@@ -41,13 +41,19 @@ class TagCell: UITableViewCell {
     }
   }
   
-  func configureCell(tag: Tag) {
+  func configureCell(model: MyModel) {
     setupSubviews()
-    tag.rx.observe(String.self, "title")
-      .subscribe(onNext: { [unowned self] title in
-        self.titleLabel.text = "# " + (title ?? "")
-      })
-      .disposed(by: bag)
+    switch model {
+    case .inbox(_): do {
+      self.titleLabel.text = "Inbox"
+      }
+    case .localRepo(let localRepo): do {
+      self.titleLabel.text = localRepo.name
+      }
+    case .tag(let label): do {
+      self.titleLabel.text = label.title
+      }
+    }
   }
   
   override func prepareForReuse() {

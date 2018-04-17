@@ -19,7 +19,7 @@ struct TaskViewModel {
   private let authService: AuthServiceRepresentable
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
-  let selectedGroupTitle = BehaviorSubject<String>(value: "Inbox")
+  let selectedItemSubject = BehaviorSubject<MyModel>(value: .inbox("inbox"))
   let searchSections = BehaviorSubject<[TaskSection]>(value: [])
   
   //output
@@ -48,14 +48,16 @@ struct TaskViewModel {
       })
       .disposed(by: bag)
     
-    localTaskService.openTasks()
-      .map { results -> Int in
-        return results.count
-      }.asDriver(onErrorJustReturn: 0)
-      .drive(onNext: { counts in
-        UIApplication.shared.applicationIconBadgeNumber = counts
-      })
-      .disposed(by: bag)
+    if let me = UserDefaults.loadUser() {
+      localTaskService.tasksForAssignee(username: me.name)
+        .map { results -> Int in
+          return results.count
+        }.asDriver(onErrorJustReturn: 0)
+        .drive(onNext: { counts in
+          UIApplication.shared.applicationIconBadgeNumber = counts
+        })
+        .disposed(by: bag)
+    }
     
     bindOutput()
   }
@@ -74,12 +76,20 @@ struct TaskViewModel {
   }
   
   var sectionedItems: Observable<[TaskSection]> {
-    return selectedGroupTitle
-      .flatMap({ title -> Observable<Results<TaskItem>> in
-        if title == "Inbox" {
-          return self.localTaskService.openTasks()
-        } else {
-          return self.localTaskService.tasksForTag(tagTitle: title)
+    return selectedItemSubject
+      .flatMap({ myModel -> Observable<Results<TaskItem>> in
+        switch myModel {
+        case .inbox(_):
+          if let me = UserDefaults.loadUser() {
+            return self.localTaskService.tasksForAssignee(username: me.name)
+          }
+          return Observable.empty()
+          
+        case .localRepo(let localRepo):
+          return self.localTaskService.tasksForLocalRepo(repoUid: localRepo.uid)
+          
+        case .tag(let tag):
+          return self.localTaskService.tasksForTag(tagTitle: tag.title)
         }
       })
       .map { results in
@@ -108,7 +118,8 @@ struct TaskViewModel {
                                         updateTagsAction: this.onUpdateTagsTask(task: task),
                                         updateRepo: this.onUpdateRepo(task: task),
                                         addSubTask: this.onAddSubTask(task: task),
-                                        localTaskService: this.localTaskService)
+                                        localTaskService: this.localTaskService,
+                                        issueService: this.issueService)
       return this.sceneCoordinator
         .transition(to: Scene.edit(editViewModel), type: .push)
         .asObservable()
@@ -168,7 +179,8 @@ struct TaskViewModel {
                                               updateTagsAction: self.onUpdateTagsTask(task: task),
                                               updateRepo: self.onUpdateRepo(task: task),
                                               addSubTask: self.onAddSubTask(task: task),
-                                              localTaskService: self.localTaskService)
+                                              localTaskService: self.localTaskService,
+                                              issueService: self.issueService)
           return self.sceneCoordinator
             .transition(to: Scene.edit(viewModel), type: .modal)
             .asObservable().map { _ in }

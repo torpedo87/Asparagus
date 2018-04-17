@@ -21,6 +21,7 @@
 		4848EC11204A87E600B59315 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848EC10204A87E600B59315 /* User.swift */; };
 		4848EC13204A8A2B00B59315 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848EC12204A8A2B00B59315 /* SyncService.swift */; };
 		4848EC15204A8C5200B59315 /* Repository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848EC14204A8C5200B59315 /* Repository.swift */; };
+		484AF8DD20837FDA006270EF /* PopUpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484AF8DC20837FDA006270EF /* PopUpViewController.swift */; };
 		485DBD48207CC57600AF5CC2 /* UINavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485DBD47207CC57600AF5CC2 /* UINavigationController.swift */; };
 		487A8F9A20636BF5001E5BD4 /* SubTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9920636BF5001E5BD4 /* SubTask.swift */; };
 		487A8F9C206389E9001E5BD4 /* CircleProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */; };
@@ -48,6 +49,10 @@
 		487D923C2046B603008CB44E /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D923B2046B603008CB44E /* TaskItem.swift */; };
 		487D92422046BECD008CB44E /* IssueAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D92412046BECD008CB44E /* IssueAPI.swift */; };
 		487D92452046C9B6008CB44E /* TaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487D92442046C9B6008CB44E /* TaskCell.swift */; };
+		488368142084FD8F001F5688 /* Assignee.swift in Sources */ = {isa = PBXBuildFile; fileRef = 488368132084FD8F001F5688 /* Assignee.swift */; };
+		4883681620850085001F5688 /* Label.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4883681520850085001F5688 /* Label.swift */; };
+		488368182085733A001F5688 /* LocalRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 488368172085733A001F5688 /* LocalRepository.swift */; };
+		4883681A2085EBC9001F5688 /* TotalSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 488368192085EBC9001F5688 /* TotalSection.swift */; };
 		48912A7C206B693100599CB6 /* SubTaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48912A7B206B693100599CB6 /* SubTaskCell.swift */; };
 		48912A7E206B9DFE00599CB6 /* NewTaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48912A7D206B9DFE00599CB6 /* NewTaskCell.swift */; };
 		489E7ADD207B4BEB00697A98 /* default_v1.0.realm in Resources */ = {isa = PBXBuildFile; fileRef = 489E7ADC207B4BD700697A98 /* default_v1.0.realm */; };
@@ -84,6 +89,7 @@
 		4848EC10204A87E600B59315 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		4848EC12204A8A2B00B59315 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		4848EC14204A8C5200B59315 /* Repository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Repository.swift; sourceTree = "<group>"; };
+		484AF8DC20837FDA006270EF /* PopUpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopUpViewController.swift; sourceTree = "<group>"; };
 		485DBD47207CC57600AF5CC2 /* UINavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINavigationController.swift; sourceTree = "<group>"; };
 		487A8F9920636BF5001E5BD4 /* SubTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTask.swift; sourceTree = "<group>"; };
 		487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleProgressView.swift; sourceTree = "<group>"; };
@@ -115,6 +121,10 @@
 		487D923B2046B603008CB44E /* TaskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
 		487D92412046BECD008CB44E /* IssueAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueAPI.swift; sourceTree = "<group>"; };
 		487D92442046C9B6008CB44E /* TaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCell.swift; sourceTree = "<group>"; };
+		488368132084FD8F001F5688 /* Assignee.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Assignee.swift; sourceTree = "<group>"; };
+		4883681520850085001F5688 /* Label.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Label.swift; sourceTree = "<group>"; };
+		488368172085733A001F5688 /* LocalRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRepository.swift; sourceTree = "<group>"; };
+		488368192085EBC9001F5688 /* TotalSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TotalSection.swift; sourceTree = "<group>"; };
 		48912A7B206B693100599CB6 /* SubTaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTaskCell.swift; sourceTree = "<group>"; };
 		48912A7D206B9DFE00599CB6 /* NewTaskCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTaskCell.swift; sourceTree = "<group>"; };
 		489E7ADC207B4BD700697A98 /* default_v1.0.realm */ = {isa = PBXFileReference; lastKnownFileType = file; path = default_v1.0.realm; sourceTree = "<group>"; };
@@ -177,6 +187,7 @@
 			children = (
 				487A8FA6206614AD001E5BD4 /* EditViewController.swift */,
 				487A8FA8206614EC001E5BD4 /* EditViewModel.swift */,
+				484AF8DC20837FDA006270EF /* PopUpViewController.swift */,
 			);
 			name = Edit;
 			path = Detail;
@@ -263,6 +274,10 @@
 				48480A1B205FA1DB004ED59A /* RealmConfig.swift */,
 				487A8F9920636BF5001E5BD4 /* SubTask.swift */,
 				489E7AEA207CA2C600697A98 /* SettingSection.swift */,
+				488368132084FD8F001F5688 /* Assignee.swift */,
+				4883681520850085001F5688 /* Label.swift */,
+				488368172085733A001F5688 /* LocalRepository.swift */,
+				488368192085EBC9001F5688 /* TotalSection.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -604,6 +619,7 @@
 				487A8F9E20638C79001E5BD4 /* PlusButton.swift in Sources */,
 				487D921B20453F5D008CB44E /* AuthViewController.swift in Sources */,
 				487D921D20453F75008CB44E /* TaskViewController.swift in Sources */,
+				488368142084FD8F001F5688 /* Assignee.swift in Sources */,
 				485DBD48207CC57600AF5CC2 /* UINavigationController.swift in Sources */,
 				489E7AE7207C96D600697A98 /* SettingViewController.swift in Sources */,
 				4842DB2320592B590093B496 /* UIColor.swift in Sources */,
@@ -613,10 +629,12 @@
 				4848EC11204A87E600B59315 /* User.swift in Sources */,
 				4848BEC020566E54009C1B97 /* LeftViewController.swift in Sources */,
 				4848EC13204A8A2B00B59315 /* SyncService.swift in Sources */,
+				488368182085733A001F5688 /* LocalRepository.swift in Sources */,
 				487D922E20454421008CB44E /* IssueService.swift in Sources */,
 				48480A1C205FA1DB004ED59A /* RealmConfig.swift in Sources */,
 				487D92452046C9B6008CB44E /* TaskCell.swift in Sources */,
 				4848BEC4205675C1009C1B97 /* LeftViewModel.swift in Sources */,
+				484AF8DD20837FDA006270EF /* PopUpViewController.swift in Sources */,
 				4848EC052047F68200B59315 /* TaskSection.swift in Sources */,
 				487A8F9A20636BF5001E5BD4 /* SubTask.swift in Sources */,
 				487D923020454473008CB44E /* AuthService.swift in Sources */,
@@ -634,6 +652,8 @@
 				487D923C2046B603008CB44E /* TaskItem.swift in Sources */,
 				48480A1E205FA511004ED59A /* URL.swift in Sources */,
 				487D923A20458E79008CB44E /* RxReachability.swift in Sources */,
+				4883681620850085001F5688 /* Label.swift in Sources */,
+				4883681A2085EBC9001F5688 /* TotalSection.swift in Sources */,
 				487D91EB20453735008CB44E /* AppDelegate.swift in Sources */,
 				487D92232045411D008CB44E /* SceneCoordinatorType.swift in Sources */,
 				4842DB2920596A610093B496 /* Tag.swift in Sources */,

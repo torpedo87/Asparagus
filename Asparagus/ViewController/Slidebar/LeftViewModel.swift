@@ -10,13 +10,14 @@ import Foundation
 import RxSwift
 import RxCocoa
 import Action
+import RealmSwift
 
 struct LeftViewModel {
   private let bag = DisposeBag()
   private let authService: AuthServiceRepresentable
   private let sceneCoordinator: SceneCoordinatorType
   private let localTaskService: LocalTaskServiceType
-  let selectedGroupTitle = PublishSubject<String>()
+  let selectedItemSubject = PublishSubject<MyModel>()
   let isLoggedIn = BehaviorRelay<Bool>(value: false)
   
   init(authService: AuthServiceRepresentable = AuthService(),
@@ -48,23 +49,28 @@ struct LeftViewModel {
       .disposed(by: bag)
   }
   
-  var sectionedItems: Observable<[TagSection]> {
-    return localTaskService.tags()
-      .map { results in
-        let inboxTag = Tag()
-        inboxTag.title = "Inbox"
-        let inboxItems = [inboxTag]
-        let tagItems = results
-          .filter("tasks.@count > 0")
-          .filter("title != 'Inbox'")
-          .sorted(byKeyPath: "title", ascending: true)
-          .toArray()
-        
+  var sectionedItems: Observable<[TotalSection]> {
+    return Observable.from([localTaskService.tags(), localTaskService.localRepositories()])
+      .map({ results in
+        var localRepoItems = [LocalRepository]()
+        var tagItems = [Tag]()
+        if let localRepos = results as? Results<LocalRepository> {
+          localRepoItems = localRepos
+            .filter("tasks.@count > 0")
+            .sorted(byKeyPath: "name", ascending: true)
+            .toArray()
+        } else if let tags = results as? Results<Tag> {
+          tagItems = tags
+            .filter("tasks.@count > 0")
+            .sorted(byKeyPath: "title", ascending: true)
+            .toArray()
+        }
         return [
-          TagSection(header: "Inbox", items: inboxItems),
-          TagSection(header: "Tags", items: tagItems)
+          TotalSection(header: "Inbox", items: [.inbox("inbox")]),
+          TotalSection(header: "Repository", items: localRepoItems.map{ .localRepo($0)}),
+          TotalSection(header: "Tag", items: tagItems.map{ .tag($0) })
         ]
-    }
+      })
   }
   
   func goToSetting() -> CocoaAction {

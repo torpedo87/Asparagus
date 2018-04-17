@@ -19,11 +19,9 @@ class Tag: Object {
     return "title"
   }
   
-  convenience init(title: String, added: String, isCreatedInServer: Bool) {
+  convenience init(title: String) {
     self.init()
     self.title = title
-    self.added = added
-    self.isCreatedInServer = isCreatedInServer
   }
   
   func setDateWhenCreated() {

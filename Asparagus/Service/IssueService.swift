@@ -15,9 +15,10 @@ import Moya
 protocol IssueServiceRepresentable {
   func fetchAllIssues(page: Int) -> Observable<[TaskItem]>
   @discardableResult
-  func editServerTask(newTitle: String, newBody: String, newState: String, exTask: TaskItem) -> Observable<TaskItem>
+  func editServerTask(newTitle: String, newBody: String, newState: String, newLabels: [String], newAssignees: [String], exTask: TaskItem) -> Observable<TaskItem>
   func createIssue(title: String, body: String, repo: Repository) -> Observable<TaskItem>
   func createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<LocalTaskService.TaskItemWithReference>
+  func getRepoUsers(repo: Repository) -> Observable<[User]>
 }
 class IssueService: IssueServiceRepresentable {
   
@@ -27,6 +28,7 @@ class IssueService: IssueServiceRepresentable {
     case pagingFailed
     case createIssueFailed
     case getUserFailed
+    case getAssigneesFailed
   }
   
   private let bag = DisposeBag()
@@ -73,11 +75,18 @@ class IssueService: IssueServiceRepresentable {
     }
   }
   
-  func editServerTask(newTitle: String, newBody: String, newState: String, exTask: TaskItem) -> Observable<TaskItem> {
+  func editServerTask(newTitle: String,
+                      newBody: String,
+                      newState: String,
+                      newLabels: [String],
+                      newAssignees: [String],
+                      exTask: TaskItem) -> Observable<TaskItem> {
     return Observable.create({ (observer) -> Disposable in
       self.provider.request(.editIssue(newTitle: newTitle,
                                        newBody: newBody,
                                        newState: newState,
+                                       newLabels: newLabels,
+                                       newAssignees: newAssignees,
                                        exTask: exTask))
       { (result) in
         switch result {
@@ -88,6 +97,8 @@ class IssueService: IssueServiceRepresentable {
             let newTask = try! JSONDecoder().decode(TaskItem.self, from: data)
             newTask.subTasks = exTask.subTasks
             newTask.tag = exTask.tag
+            newTask.assignee = exTask.assignee
+            newTask.localRepository = exTask.localRepository
             observer.onNext(newTask)
           } else {
             observer.onError(Errors.editServerTaskFailed)
@@ -137,7 +148,9 @@ class IssueService: IssueServiceRepresentable {
           let newIssue = try! JSONDecoder().decode(TaskItem.self, from: data)
           newIssue.repository = localTaskWithRef.0.repository
           newIssue.tag = localTaskWithRef.0.tag
+          newIssue.assignee = localTaskWithRef.0.assignee
           newIssue.subTasks = localTaskWithRef.0.subTasks
+          newIssue.localRepository = localTaskWithRef.0.localRepository
           let tuple = (newIssue, localTaskWithRef.1)
           observer.onNext(tuple)
         } else {
@@ -146,6 +159,27 @@ class IssueService: IssueServiceRepresentable {
       case let .failure(error):
         observer.onError(error)
       }
+      }
+      return Disposables.create()
+    })
+  }
+  
+  func getRepoUsers(repo: Repository) -> Observable<[User]> {
+    return Observable.create({ (observer) -> Disposable in
+      self.provider.request(.getRepoUsers(repo: repo)) { (result) in
+        switch result {
+        case let .success(moyaResponse):
+          let data = moyaResponse.data
+          let statusCode = moyaResponse.statusCode
+          if 200 ..< 300 ~= statusCode {
+            let assignees = try! JSONDecoder().decode([User].self, from: data)
+            observer.onNext(assignees)
+          } else {
+            observer.onError(Errors.getAssigneesFailed)
+          }
+        case let .failure(error):
+          observer.onError(error)
+        }
       }
       return Disposables.create()
     })

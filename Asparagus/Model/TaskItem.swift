@@ -20,10 +20,14 @@ class TaskItem: Object, Decodable {
   @objc dynamic var owner: User?
   @objc dynamic var repository: Repository?
   @objc dynamic var number = 0
-  var tag = LinkingObjects(fromType: Tag.self, property: "tasks")
-  var subTasks = List<SubTask>()
+  var assignees = List<User>()
+  var labels = List<Label>()
   
   // local only properties
+  var tag = LinkingObjects(fromType: Tag.self, property: "tasks")
+  var assignee = LinkingObjects(fromType: Assignee.self, property: "tasks")
+  var subTasks = List<SubTask>()
+  var localRepository = LinkingObjects(fromType: LocalRepository.self, property: "tasks")
   var updatedDate: Date {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
@@ -43,6 +47,13 @@ class TaskItem: Object, Decodable {
     return uid.count != UUID().uuidString.count
   }
   
+  var isMine: Bool {
+    if let me = UserDefaults.loadUser() {
+      return assignees.contains(me)
+    }
+    return false
+  }
+  
   override static func primaryKey() -> String? {
     return "uid"
   }
@@ -57,9 +68,11 @@ class TaskItem: Object, Decodable {
     case owner = "user"
     case repository
     case number
+    case assignees
+    case labels
   }
   
-  convenience init(uid: String = UUID().uuidString, title: String, body: String?, checked: String, added: String, updated: String, owner: User?, repository: Repository?, number: Int) {
+  convenience init(uid: String = UUID().uuidString, title: String, body: String?, checked: String, added: String, updated: String, owner: User?, repository: Repository?, number: Int, assignees: List<User>, labels: List<Label>) {
     self.init()
     self.uid = uid
     self.title = title
@@ -70,6 +83,8 @@ class TaskItem: Object, Decodable {
     self.owner = owner
     self.repository = repository
     self.number = number
+    self.assignees = assignees
+    self.labels = labels
   }
   
   convenience required init(from decoder: Decoder) throws {
@@ -84,7 +99,13 @@ class TaskItem: Object, Decodable {
     let owner = try container.decode(User.self, forKey: .owner)
     let repository = try container.decodeIfPresent(Repository.self, forKey: .repository)
     let number = try container.decode(Int.self, forKey: .number)
-    self.init(uid: uid, title: title, body: body, checked: checked, added: added, updated: updated, owner: owner, repository: repository, number: number)
+    let assignees = List<User>()
+    let assigneesArr = try container.decode([User].self, forKey: .assignees)
+    assigneesArr.forEach{ assignees.append($0) }
+    let labels = List<Label>()
+    let labelsArr = try container.decode([Label].self, forKey: .labels)
+    labelsArr.forEach{ labels.append($0) }
+    self.init(uid: uid, title: title, body: body, checked: checked, added: added, updated: updated, owner: owner, repository: repository, number: number, assignees: assignees, labels: labels)
   }
 }
 
@@ -99,6 +120,10 @@ extension TaskItem: Encodable {
     try container.encodeIfPresent(owner, forKey: .owner)
     try container.encodeIfPresent(repository, forKey: .repository)
     try container.encode(number, forKey: .number)
+    let assigneesArr = Array(self.assignees)
+    try container.encode(assigneesArr, forKey: .assignees)
+    let labelsArr = Array(self.labels)
+    try container.encode(labelsArr, forKey: .labels)
   }
 }
 

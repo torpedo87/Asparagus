@@ -22,8 +22,10 @@ struct EditViewModel {
   let onUpdateRepo: Action<Repository?, Void>
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
+  private let issueService: IssueServiceRepresentable
   private let coordinator: SceneCoordinatorType
   let repoTitles = BehaviorRelay<[String]>(value: [])
+  let selectedRepoTitle = BehaviorRelay<String>(value: "")
   
   init(task: TaskItem,
        coordinator: SceneCoordinatorType,
@@ -32,7 +34,8 @@ struct EditViewModel {
        updateTagsAction: Action<(Tag, LocalTaskService.TagMode), Void>,
        updateRepo: Action<Repository?, Void>,
        addSubTask: Action<String, Void>,
-       localTaskService: LocalTaskServiceType) {
+       localTaskService: LocalTaskServiceType,
+       issueService: IssueServiceRepresentable) {
     self.task = task
     self.onUpdateTitleBody = updateTitleBodyAction
     self.onUpdateTags = updateTagsAction
@@ -40,6 +43,7 @@ struct EditViewModel {
     self.onAddSubTask = addSubTask
     self.localTaskService = localTaskService
     self.coordinator = coordinator
+    self.issueService = issueService
     
     onUpdateRepo.executionObservables
       .take(1)
@@ -80,14 +84,14 @@ struct EditViewModel {
         
         let newTask = SubTask()
         return [
-          SubTaskSection(header: "Add newTask", items: [newTask]),
+          SubTaskSection(header: "Add SubTask", items: [newTask]),
           SubTaskSection(header: "Due SubTasks", items: dueTasks.toArray()),
           SubTaskSection(header: "Done SubTasks", items: doneTasks.toArray())
         ]
       })
   }
   
-  func pop() {
+  func dismissView() {
     coordinator.pop()
   }
   
@@ -101,6 +105,14 @@ struct EditViewModel {
     return localTaskService.getRepository(repoName: repoName)
   }
   
+  func assignees() -> Observable<[User]> {
+    if let repo = task.repository {
+      return issueService.getRepoUsers(repo: repo)
+    } else {
+      return Observable<[User]>.just([])
+    }
+  }
+  
   func tags() -> Observable<[Tag]> {
     return localTaskService.tagsForTask(task: task)
       .map({ result -> [Tag] in
@@ -112,5 +124,14 @@ struct EditViewModel {
         })
         return temp
       })
+  }
+  
+  func goToPopUpScene() -> CocoaAction {
+    return CocoaAction {
+      let popUpScene = Scene.popUp(self)
+      return self.coordinator.transition(to: popUpScene, type: .modal)
+        .asObservable()
+        .map{ _ in }
+    }
   }
 }
