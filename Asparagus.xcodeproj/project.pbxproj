@@ -23,6 +23,7 @@
 		4848EC15204A8C5200B59315 /* Repository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848EC14204A8C5200B59315 /* Repository.swift */; };
 		484AF8DD20837FDA006270EF /* PopUpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484AF8DC20837FDA006270EF /* PopUpViewController.swift */; };
 		485DBD48207CC57600AF5CC2 /* UINavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485DBD47207CC57600AF5CC2 /* UINavigationController.swift */; };
+		48774F20208AF79C000A8955 /* PopUpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48774F1F208AF79C000A8955 /* PopUpViewModel.swift */; };
 		487A8F9A20636BF5001E5BD4 /* SubTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9920636BF5001E5BD4 /* SubTask.swift */; };
 		487A8F9C206389E9001E5BD4 /* CircleProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */; };
 		487A8F9E20638C79001E5BD4 /* PlusButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9D20638C79001E5BD4 /* PlusButton.swift */; };
@@ -91,6 +92,7 @@
 		4848EC14204A8C5200B59315 /* Repository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Repository.swift; sourceTree = "<group>"; };
 		484AF8DC20837FDA006270EF /* PopUpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopUpViewController.swift; sourceTree = "<group>"; };
 		485DBD47207CC57600AF5CC2 /* UINavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINavigationController.swift; sourceTree = "<group>"; };
+		48774F1F208AF79C000A8955 /* PopUpViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopUpViewModel.swift; sourceTree = "<group>"; };
 		487A8F9920636BF5001E5BD4 /* SubTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTask.swift; sourceTree = "<group>"; };
 		487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleProgressView.swift; sourceTree = "<group>"; };
 		487A8F9D20638C79001E5BD4 /* PlusButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusButton.swift; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 				487A8FA6206614AD001E5BD4 /* EditViewController.swift */,
 				487A8FA8206614EC001E5BD4 /* EditViewModel.swift */,
 				484AF8DC20837FDA006270EF /* PopUpViewController.swift */,
+				48774F1F208AF79C000A8955 /* PopUpViewModel.swift */,
 			);
 			name = Edit;
 			path = Detail;
@@ -658,6 +661,7 @@
 				487D92232045411D008CB44E /* SceneCoordinatorType.swift in Sources */,
 				4842DB2920596A610093B496 /* Tag.swift in Sources */,
 				487D922120453F8A008CB44E /* TaskViewModel.swift in Sources */,
+				48774F20208AF79C000A8955 /* PopUpViewModel.swift in Sources */,
 				487D92422046BECD008CB44E /* IssueAPI.swift in Sources */,
 				487D922520454135008CB44E /* SceneCoordinator.swift in Sources */,
 				48912A7C206B693100599CB6 /* SubTaskCell.swift in Sources */,

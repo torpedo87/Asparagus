@@ -50,27 +50,28 @@ struct LeftViewModel {
   }
   
   var sectionedItems: Observable<[TotalSection]> {
-    return Observable.from([localTaskService.tags(), localTaskService.localRepositories()])
-      .map({ results in
+    //List 타입을 합칠 방법이 필요하다
+    return Observable.combineLatest(localTaskService.tags(), localTaskService.localRepositories())
+      .map { (tagResults, localRepoResults) -> [TotalSection] in
         var localRepoItems = [LocalRepository]()
         var tagItems = [Tag]()
-        if let localRepos = results as? Results<LocalRepository> {
-          localRepoItems = localRepos
-            .filter("tasks.@count > 0")
-            .sorted(byKeyPath: "name", ascending: true)
-            .toArray()
-        } else if let tags = results as? Results<Tag> {
-          tagItems = tags
-            .filter("tasks.@count > 0")
-            .sorted(byKeyPath: "title", ascending: true)
-            .toArray()
-        }
+        
+        localRepoItems = localRepoResults
+          .filter("tasks.@count > 0")
+          .sorted(byKeyPath: "name", ascending: true)
+          .toArray()
+        
+        tagItems = tagResults
+          .filter("tasks.@count > 0")
+          .sorted(byKeyPath: "title", ascending: true)
+          .toArray()
+        
         return [
           TotalSection(header: "Inbox", items: [.inbox("inbox")]),
           TotalSection(header: "Repository", items: localRepoItems.map{ .localRepo($0)}),
           TotalSection(header: "Tag", items: tagItems.map{ .tag($0) })
         ]
-      })
+    }
   }
   
   func goToSetting() -> CocoaAction {

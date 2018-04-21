@@ -65,16 +65,16 @@ class NewTaskCell: UITableViewCell {
       .disposed(by: bag)
   }
   
-  func configureNewTagCell(onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>) {
+  func configureNewTagCell(onUpdateTags: Action<(Tag, LocalTaskService.EditMode), Void>) {
     setupSubviews()
     addButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .filter{return self.titleTextField.text != nil}
-      .map { _ -> (Tag, LocalTaskService.TagMode) in
+      .map { _ -> (Tag, LocalTaskService.EditMode) in
         let title = self.titleTextField.text!
         let newTag = Tag(title: title)
         newTag.setDateWhenCreated()
-        return (newTag, LocalTaskService.TagMode.add)
+        return (newTag, LocalTaskService.EditMode.add)
       }.bind(to: onUpdateTags.inputs)
       .disposed(by: bag)
   }

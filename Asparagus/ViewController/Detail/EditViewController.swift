@@ -58,11 +58,8 @@ class EditViewController: UIViewController, BindableType {
     btn.setTitle("SAVE", for: .normal)
     return btn
   }()
-  private var assigneeButton: UIButton = {
-    let btn = UIButton()
-    btn.setTitleColor(UIColor(hex: "283A45"), for: .normal)
-    btn.setTitleColor(UIColor.lightGray, for: .disabled)
-    btn.setTitle("assignee", for: .normal)
+  private lazy var detailButton: PlusButton = {
+    let btn = PlusButton()
     return btn
   }()
   private lazy var bottomView: UIView = {
@@ -90,12 +87,12 @@ class EditViewController: UIViewController, BindableType {
     view.backgroundColor = UIColor(hex: "F5F5F5")
     view.addSubview(cancelButton)
     view.addSubview(saveButton)
-    view.addSubview(assigneeButton)
     view.addSubview(topView)
     topView.addSubview(titleTextField)
     topView.addSubview(bodyTextView)
     view.addSubview(bottomView)
     bottomView.addSubview(checkListTableView)
+    view.addSubview(detailButton)
     
     cancelButton.snp.makeConstraints { (make) in
       make.width.equalTo(100)
@@ -118,14 +115,13 @@ class EditViewController: UIViewController, BindableType {
         make.right.equalTo(view).offset(-10)
       }
     }
-    assigneeButton.snp.makeConstraints { (make) in
-      make.width.equalTo(100)
-      make.height.equalTo(40)
-      make.centerX.equalToSuperview()
+    detailButton.snp.makeConstraints { (make) in
+      make.width.height.equalTo(50)
       if #available(iOS 11.0, *) {
-        make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-10)
+        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
       } else {
-        make.top.equalTo(view).offset(10)
+        make.right.bottom.equalTo(view).offset(-10)
       }
     }
     topView.snp.makeConstraints { (make) in
@@ -169,7 +165,7 @@ class EditViewController: UIViewController, BindableType {
   }
 
   func bindViewModel() {
-    assigneeButton.rx.action = viewModel.goToPopUpScene()
+    detailButton.rx.action = viewModel.goToPopUpScene()
     
     RxKeyboard.instance.visibleHeight
       .skip(1)
@@ -195,9 +191,8 @@ class EditViewController: UIViewController, BindableType {
       })
       .disposed(by: bag)
     
+    //delete new task
     cancelButton.rx.action = viewModel.onCancel
-    
-
     
     titleTextField.rx.text.orEmpty
       .map { title -> Bool in
@@ -208,12 +203,17 @@ class EditViewController: UIViewController, BindableType {
     titleTextField.text = viewModel.task.title
     bodyTextView.text = viewModel.task.body
     
+    //title, body 변경시 자동 저장
     Observable.combineLatest(titleTextField.rx.text.orEmpty,
                              bodyTextView.rx.text.orEmpty)
       .debounce(0.5, scheduler: MainScheduler.instance)
+      .filter({ tuple -> Bool in
+        return !tuple.0.isEmpty
+      })
       .bind(to: viewModel.onUpdateTitleBody.inputs)
       .disposed(by: bag)
     
+    //save 버튼 클릭시 repository 저장
     saveButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .filter({ [unowned self] _ -> Bool in
@@ -225,8 +225,9 @@ class EditViewController: UIViewController, BindableType {
       .bind(to: viewModel.onUpdateRepo.inputs)
       .disposed(by: bag)
     
+    //화면 탭시 키보드 내리기
     view.rx.tapGesture()
-      .when(UIGestureRecognizerState.recognized)
+      .skip(1)
       .subscribe(onNext: { [unowned self] _ in
         self.view.endEditing(true)
       })

@@ -91,9 +91,10 @@ class LeftViewController: UIViewController, BindableType {
       if #available(iOS 11.0, *) {
         make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
         make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
-        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-20)
       } else {
-        make.left.right.bottom.equalTo(view)
+        make.left.right.equalTo(view)
+        make.bottom.equalTo(view).offset(-20)
       }
     }
   }

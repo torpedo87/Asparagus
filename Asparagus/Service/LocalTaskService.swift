@@ -13,7 +13,7 @@ import RxSwift
 import RxRealm
 
 protocol LocalTaskServiceType {
-  var oldLocalDict: [String:TaskItem] { get }
+  var recentServerDict: [String:LocalTaskService.TaskItemWithReference] { get }
   var recentLocalDict: [String:TaskItem] { get }
   var newServerDict: [String:TaskItem] { get }
   @discardableResult
@@ -23,19 +23,18 @@ protocol LocalTaskServiceType {
   @discardableResult
   func updateTitleBody(exTask: TaskItem, newTitle: String, newBody: String) -> Observable<TaskItem>
   func updateRepo(taskWithRef: LocalTaskService.TaskItemWithReference, repo: Repository?) -> Observable<TaskItem>
-  func updateTag(taskWithRef: LocalTaskService.TaskItemWithReference, tag: Tag, mode: LocalTaskService.TagMode) -> Observable<TaskItem>
+  func updateTag(taskWithRef: LocalTaskService.TaskItemWithReference, tag: Tag, mode: LocalTaskService.EditMode) -> Observable<TaskItem>
+  func updateAssignee(taskWithRef: LocalTaskService.TaskItemWithReference, assignee: Assignee, mode: LocalTaskService.EditMode) -> Observable<TaskItem>
   @discardableResult
   func toggle(task: TaskItem) -> Observable<TaskItem>
   func toggle(task: SubTask) -> Observable<SubTask>
   func repositories() -> Observable<Results<Repository>>
   func getRecentLocal() -> Observable<TaskItem>
-  func getOldLocal() -> Observable<TaskItem>
+  func getRecentServer() -> Observable<LocalTaskService.TaskItemWithReference>
   func getNewServer() -> Observable<TaskItem>
   func seperateSequence(fetchedTasks: [TaskItem]) -> Completable
-  func updateOldLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
-  func addNewTask(fetchedTasks: [TaskItem]) -> Observable<TaskItem>
   func getLocalCreated() -> Observable<LocalTaskService.TaskItemWithReference>
-  func deleteTask(newTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<TaskItem>
+  func deleteTask(newTaskWithOldRef: LocalTaskService.TaskItemWithReference) -> Observable<TaskItem>
   func add(newTask: TaskItem) -> Observable<TaskItem>
   func observeEditTask() -> Observable<[TaskItem]>
   func observeCreateTask() -> Observable<[TaskItem]>
@@ -43,18 +42,18 @@ protocol LocalTaskServiceType {
   func tasksForTag(tagTitle: String) -> Observable<Results<TaskItem>>
   func tags() -> Observable<Results<Tag>>
   func localRepositories() -> Observable<Results<LocalRepository>>
-  func openTasks() -> Observable<Results<TaskItem>>
   func subTasksForTask(task: TaskItem) -> Observable<Results<SubTask>>
   func tagsForTask(task: TaskItem) -> Observable<Results<Tag>>
   func getRepository(repoName: String) -> Repository?
   func tasksForAssignee(username: String) -> Observable<Results<TaskItem>>
   func tasksForLocalRepo(repoUid: String) -> Observable<Results<TaskItem>>
+  func updateTask(newTaskWithOldRef: LocalTaskService.TaskItemWithReference) -> Observable<TaskItem>
 }
 
 class LocalTaskService: LocalTaskServiceType {
   typealias TaskItemReference = ThreadSafeReference<TaskItem>
   typealias TaskItemWithReference = (TaskItem, TaskItemReference)
-  var oldLocalDict = [String:TaskItem]()
+  var recentServerDict = [String:TaskItemWithReference]()
   var recentLocalDict = [String:TaskItem]()
   var newServerDict = [String:TaskItem]()
   
@@ -138,7 +137,7 @@ class LocalTaskService: LocalTaskServiceType {
             exTask.setDateWhenUpdated()
             exTask.repository = self.getRepository(repoName: repoName)
           }
-          print(Thread.current, "write thread \(#function) 3333333333")
+          print(Thread.current, "write thread \(#function)")
         })
         return .just(exTask)
       }
@@ -147,12 +146,12 @@ class LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  enum TagMode {
+  enum EditMode {
     case add
     case delete
   }
   
-  func updateTag(taskWithRef: TaskItemWithReference, tag: Tag, mode: TagMode) -> Observable<TaskItem> {
+  func updateTag(taskWithRef: TaskItemWithReference, tag: Tag, mode: EditMode) -> Observable<TaskItem> {
     let result = withRealm("updating title") { realm -> Observable<TaskItem> in
       //파라미터의 tag는 Ref 없어서 thread 이동 불가
       let tagTitle = tag.title
@@ -163,14 +162,48 @@ class LocalTaskService: LocalTaskServiceType {
             switch mode {
             case .add: do {
               group.tasks.append(exTask)
+              exTask.labels.append(Label(name: tagTitle))
               }
             case .delete: do {
               let i = self.findIndex(tasks: group.tasks.toArray(), exTask: exTask)
               group.tasks.remove(at: i)
+              let j = self.findIndex(labels: exTask.labels.toArray(), exTagTitle: tagTitle)
+              exTask.labels.remove(at: j)
               }
             }
+            exTask.setDateWhenUpdated()
           }
-          print(Thread.current, "write thread \(#function) 3333333333")
+          print(Thread.current, "write thread \(#function)")
+        })
+        return .just(exTask)
+      }
+      return .empty()
+    }
+    return result ?? .empty()
+  }
+  
+  func updateAssignee(taskWithRef: TaskItemWithReference, assignee: Assignee, mode: EditMode) -> Observable<TaskItem> {
+    let result = withRealm("updating title") { realm -> Observable<TaskItem> in
+      let assigneeName = assignee.name
+      if let exTask = realm.resolve(taskWithRef.1) {
+        realm.writeAsync(obj: exTask, block: { (realm, exTask) in
+          if let exTask = exTask {
+            let group = self.defaultAssignee(realm: realm, assigneeName: assigneeName)
+            switch mode {
+            case .add: do {
+              group.tasks.append(exTask)
+              exTask.assignees.append(User(name: assigneeName))
+              }
+            case .delete: do {
+              let i = self.findIndex(tasks: group.tasks.toArray(), exTask: exTask)
+              group.tasks.remove(at: i)
+              let j = self.findIndex(assignees: exTask.assignees.toArray(), username: assigneeName)
+              exTask.assignees.remove(at: j)
+              }
+            }
+            exTask.setDateWhenUpdated()
+          }
+          print(Thread.current, "write thread \(#function)")
         })
         return .just(exTask)
       }
@@ -182,6 +215,27 @@ class LocalTaskService: LocalTaskServiceType {
   func findIndex(tasks: [TaskItem], exTask: TaskItem) -> Int {
     for i in 0..<tasks.count {
       if tasks[i].uid == exTask.uid {
+        print("task index-----------")
+        return i
+      }
+    }
+    return -1
+  }
+  
+  func findIndex(labels: [Label], exTagTitle: String) -> Int {
+    for i in 0..<labels.count {
+      if labels[i].name == exTagTitle {
+        print("label index-----------")
+        return i
+      }
+    }
+    return -1
+  }
+  
+  func findIndex(assignees: [User], username: String) -> Int {
+    for i in 0..<assignees.count {
+      if assignees[i].name == username {
+        print("user index-----------")
         return i
       }
     }
@@ -218,14 +272,6 @@ class LocalTaskService: LocalTaskServiceType {
         print(Thread.current, "write thread \(#function)")
       })
       return .just(task)
-    }
-    return result ?? .empty()
-  }
-  
-  func openTasks() -> Observable<Results<TaskItem>> {
-    let result = withRealm("getting tasks") { realm -> Observable<Results<TaskItem>> in
-      let tasks = realm.objects(TaskItem.self).filter("checked = 'open'")
-      return Observable.collection(from: tasks)
     }
     return result ?? .empty()
   }
@@ -287,6 +333,7 @@ class LocalTaskService: LocalTaskServiceType {
       let assignees = realm.objects(Assignee.self)
       if let assignee = assignees.filter("name = '\(username)'").first {
         let tasks = assignee.tasks
+          .filter("checked = 'open'")
           .sorted(byKeyPath: "added", ascending: false)
         return Observable.collection(from: tasks)
       }
@@ -335,43 +382,6 @@ class LocalTaskService: LocalTaskServiceType {
     return repositories.first ?? nil
   }
   
-  //서버에서 생성한 이슈를 찾아서 로컬에 추가
-  func addNewTask(fetchedTasks: [TaskItem]) -> Observable<TaskItem> {
-    let result = withRealm("addNewTask") { realm in
-      return Observable<TaskItem>.create({ observer -> Disposable in
-        fetchedTasks.forEach { fetchedTask in
-          if let _ = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
-          } else {
-            try! realm.write {
-              //repo
-              let localRepo = self.defaultLocalRepo(realm: realm,
-                                                    repoUid: fetchedTask.repository!.uid,
-                                                    repoName: fetchedTask.repository!.name)
-              localRepo.tasks.append(fetchedTask)
-              //assignee
-              fetchedTask.assignees.forEach {
-                let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
-                assignee.tasks.append(fetchedTask)
-              }
-              //label
-              fetchedTask.labels.forEach {
-                let label = self.defaultTag(realm: realm, tagTitle: $0.name)
-                label.tasks.append(fetchedTask)
-              }
-              print(Thread.current, "write thread \(#function)")
-            }
-            if let managedTask = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
-              observer.onNext(managedTask)
-            }
-          }
-        }
-        observer.onCompleted()
-        return Disposables.create()
-      })
-    }
-    return result ?? .empty()
-  }
-  
   //로컬이 최신인 것만 필터링
   func getRecentLocal() -> Observable<TaskItem> {
     let result = withRealm("getRecentLocal") { realm in
@@ -386,10 +396,10 @@ class LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
-  func getOldLocal() -> Observable<TaskItem> {
-    let result = withRealm("getOldLocal") { realm in
-      return Observable<TaskItem>.create({ observer -> Disposable in
-        self.oldLocalDict.forEach({ (key, value) in
+  func getRecentServer() -> Observable<TaskItemWithReference> {
+    let result = withRealm("getRecentServer") { realm in
+      return Observable<TaskItemWithReference>.create({ observer -> Disposable in
+        self.recentServerDict.forEach({ (key, value) in
           observer.onNext(value)
         })
         observer.onCompleted()
@@ -418,64 +428,16 @@ class LocalTaskService: LocalTaskServiceType {
         fetchedTasks.forEach { fetchedTask in
           if let localTask = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
             if localTask.updatedDate > fetchedTask.updatedDate {
-              self.recentLocalDict.updateValue(fetchedTask, forKey: fetchedTask.uid)
+              self.recentLocalDict.updateValue(localTask, forKey: fetchedTask.uid)
             } else if localTask.updatedDate < fetchedTask.updatedDate {
-              self.oldLocalDict.updateValue(fetchedTask, forKey: fetchedTask.uid)
+              let localRef = TaskItemReference(to: localTask)
+              self.recentServerDict.updateValue((fetchedTask, localRef), forKey: fetchedTask.uid)
             }
           } else {
             self.newServerDict.updateValue(fetchedTask, forKey: fetchedTask.uid)
           }
         }
         completable(.completed)
-        return Disposables.create()
-      })
-    }
-    return result ?? .empty()
-  }
-  
-  //서버가 최신인 것 찾아서 로컬변형
-  func updateOldLocal(fetchedTasks: [TaskItem]) -> Observable<TaskItem> {
-    let result = withRealm("updateOldLocal") { realm in
-      return Observable<TaskItem>.create({ observer -> Disposable in
-        fetchedTasks.forEach { fetchedTask in
-          if let localTask = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
-            realm.writeAsync(obj: localTask, block: { (realm, localTask) in
-              localTask?.title = fetchedTask.title
-              localTask?.body = fetchedTask.body
-              localTask?.added = fetchedTask.added
-              localTask?.checked = fetchedTask.checked
-              localTask?.number = fetchedTask.number
-              localTask?.owner = fetchedTask.owner
-              localTask?.updated = fetchedTask.updated
-              
-              //라벨
-              localTask?.labels.forEach {
-                let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
-                let i = self.findIndex(tasks: tag.tasks.toArray(), exTask: localTask!)
-                tag.tasks.remove(at: i)
-              }
-              //assignee
-              localTask?.assignees.forEach {
-                let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
-                let i = self.findIndex(tasks: assignee.tasks.toArray(), exTask: localTask!)
-                assignee.tasks.remove(at: i)
-              }
-              fetchedTask.labels.forEach {
-                let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
-                tag.tasks.append(fetchedTask)
-              }
-              fetchedTask.assignees.forEach {
-                let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
-                assignee.tasks.append(fetchedTask)
-              }
-              localTask?.assignees = fetchedTask.assignees
-              localTask?.labels = fetchedTask.labels
-              print(Thread.current, "write thread \(#function)")
-            })
-            observer.onNext(localTask)
-          }
-        }
-        observer.onCompleted()
         return Disposables.create()
       })
     }
@@ -551,33 +513,89 @@ class LocalTaskService: LocalTaskServiceType {
   }
   
   @discardableResult
-  func deleteTask(newTaskWithRef: TaskItemWithReference) -> Observable<TaskItem> {
+  func deleteTask(newTaskWithOldRef: TaskItemWithReference) -> Observable<TaskItem> {
     let result = withRealm("deleteTask") { realm in
       return Observable<TaskItem>.create({ observer -> Disposable in
-        if let exTask = realm.resolve(newTaskWithRef.1) {
+        if let exTask = realm.resolve(newTaskWithOldRef.1) {
           realm.writeAsync(obj: exTask, block: { (realm, exTask) in
-            //라벨
-            exTask!.labels.forEach {
-              let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
-              let i = self.findIndex(tasks: tag.tasks.toArray(), exTask: exTask!)
-              tag.tasks.remove(at: i)
+            if let exTask = exTask {
+              //라벨
+              exTask.labels.forEach {
+                let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
+                let i = self.findIndex(tasks: tag.tasks.toArray(), exTask: exTask)
+                tag.tasks.remove(at: i)
+              }
+              //repo
+              let localRepo = self.defaultLocalRepo(realm: realm,
+                                                    repoUid: exTask.repository!.uid,
+                                                    repoName: exTask.repository!.name)
+              let i = self.findIndex(tasks: localRepo.tasks.toArray(), exTask: exTask)
+              localRepo.tasks.remove(at: i)
+              //assignee
+              exTask.assignees.forEach {
+                let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
+                let i = self.findIndex(tasks: assignee.tasks.toArray(), exTask: exTask)
+                assignee.tasks.remove(at: i)
+              }
+              realm.delete(exTask)
+              print(Thread.current, "write thread \(#function)")
             }
-            //repo
-            let localRepo = self.defaultLocalRepo(realm: realm,
-                                                  repoUid: exTask!.repository!.uid,
-                                                  repoName: exTask!.repository!.name)
-            let i = self.findIndex(tasks: localRepo.tasks.toArray(), exTask: exTask!)
-            localRepo.tasks.remove(at: i)
-            //assignee
-            exTask!.assignees.forEach {
-              let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
-              let i = self.findIndex(tasks: assignee.tasks.toArray(), exTask: exTask!)
-              assignee.tasks.remove(at: i)
-            }
-            realm.delete(exTask!)
-            print(Thread.current, "write thread \(#function)")
           })
-          observer.onNext(newTaskWithRef.0)
+          observer.onNext(newTaskWithOldRef.0)
+        }
+        observer.onCompleted()
+        return Disposables.create()
+      })
+    }
+    return result ?? .empty()
+  }
+  
+  func updateTask(newTaskWithOldRef: TaskItemWithReference) -> Observable<TaskItem> {
+    let result = withRealm("deleteTask") { realm in
+      return Observable<TaskItem>.create({ observer -> Disposable in
+        if let exTask = realm.resolve(newTaskWithOldRef.1) {
+          realm.writeAsync(obj: exTask, block: { (realm, exTask) in
+            if let exTask = exTask {
+              let newTask = newTaskWithOldRef.0
+              exTask.title = newTask.title
+              exTask.body = newTask.body
+              
+              //라벨
+//              let exLabelSet = Set(exTask.labels)
+//              let newLabelSet = Set(newTask.labels)
+//              let intersect = exLabelSet.intersection(newLabelSet)
+//              let deletedLabels = exLabelSet.subtracting(intersect)
+//              let newLabels = newLabelSet.subtracting(intersect)
+//              deletedLabels.forEach {
+//                let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
+//                let i = self.findIndex(tasks: tag.tasks.toArray(), exTask: exTask)
+//                tag.tasks.remove(at: i)
+//              }
+//              newLabels.forEach {
+//                let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
+//                tag.tasks.append(newTask)
+//              }
+//              //assignee
+//              let exAssigneeSet = Set(exTask.assignees)
+//              let newAssigneeSet = Set(newTask.assignees)
+//              let intersectAssignee = exAssigneeSet.intersection(newAssigneeSet)
+//              let deletedAssignees = exAssigneeSet.subtracting(intersectAssignee)
+//              let newAssignees = newAssigneeSet.subtracting(intersectAssignee)
+//              deletedAssignees.forEach {
+//                let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
+//                let i = self.findIndex(tasks: assignee.tasks.toArray(), exTask: exTask)
+//                assignee.tasks.remove(at: i)
+//              }
+//              newAssignees.forEach {
+//                let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
+//                assignee.tasks.append(newTask)
+//              }
+              exTask.labels = newTask.labels
+              exTask.assignees = newTask.assignees
+              print(Thread.current, "write thread \(#function)")
+            }
+          })
+          observer.onNext(newTaskWithOldRef.0)
         }
         observer.onCompleted()
         return Disposables.create()

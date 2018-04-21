@@ -40,7 +40,7 @@ class SubTagCell: UITableViewCell {
     }
   }
   
-  func configureCell(item: Tag, onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>) {
+  func configureCell(item: Tag, onUpdateTags: Action<(Tag, LocalTaskService.EditMode), Void>) {
     setupSubviews()
     item.rx.observe(String.self, "title")
       .subscribe(onNext: { [unowned self] title in
@@ -50,8 +50,8 @@ class SubTagCell: UITableViewCell {
     
     deleteButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
-      .map { _ -> (Tag, LocalTaskService.TagMode) in
-        return (item, LocalTaskService.TagMode.delete)
+      .map { _ -> (Tag, LocalTaskService.EditMode) in
+        return (item, LocalTaskService.EditMode.delete)
       }
       .bind(to: onUpdateTags.inputs)
       .disposed(by: bag)

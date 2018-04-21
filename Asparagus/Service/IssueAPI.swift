@@ -12,7 +12,6 @@ import Moya
 enum IssueAPI {
   
   case fetchAllIssues(page: Int)
-  case createIssue(title: String, body: String, repo: Repository)
   case editIssue(newTitle: String, newBody: String, newState: String, newLabels: [String], newAssignees: [String], exTask: TaskItem)
   case createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference)
   case getRepoUsers(repo: Repository)
@@ -41,8 +40,6 @@ extension IssueAPI: TargetType {
       return "/issues"
     case .editIssue(_, _, _, _, _, let exTask):
       return "/repos/\(exTask.repository!.owner!.name)/\(exTask.repository!.name)/issues/\(exTask.number)"
-    case .createIssue(_, _, let repo):
-      return "/repos/\(repo.owner!.name)/\(repo.name)/issues"
     case .createIssueWithLocalTask(let tuple):
       return "/repos/\(tuple.0.repository!.owner!.name)/\(tuple.0.repository!.name)/issues"
     case .getRepoUsers(let repo):
@@ -56,7 +53,7 @@ extension IssueAPI: TargetType {
       return .get
     case .editIssue:
       return .patch
-    case .createIssue, .createIssueWithLocalTask:
+    case .createIssueWithLocalTask:
       return .post
     }
   }
@@ -75,10 +72,6 @@ extension IssueAPI: TargetType {
                                              "state": newState,
                                              "labels": newLabels,
                                              "assignees": newAssignees],
-                                encoding: JSONEncoding.default)
-    case let .createIssue(title, body, _):
-      return .requestParameters(parameters: ["body": body,
-                                             "title": title],
                                 encoding: JSONEncoding.default)
     case let .createIssueWithLocalTask(tuple):
       return .requestParameters(parameters: ["body": tuple.0.body ?? "",

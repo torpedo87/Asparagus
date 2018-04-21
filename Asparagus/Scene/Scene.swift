@@ -13,7 +13,7 @@ enum Scene {
   case auth(AuthViewModel)
   case edit(EditViewModel)
   case setting(SettingViewModel)
-  case popUp(EditViewModel)
+  case popUp(PopUpViewModel)
 }
 
 extension Scene {

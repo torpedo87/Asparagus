@@ -12,7 +12,7 @@ import RxCocoa
 
 class PopUpViewController: UIViewController, BindableType {
   private let bag = DisposeBag()
-  var viewModel: EditViewModel!
+  var viewModel: PopUpViewModel!
   private lazy var segmentedControl: UISegmentedControl = {
     let view = UISegmentedControl(items: ["Assignees", "Tags", "GitHub"])
     view.selectedSegmentIndex = 0
@@ -131,17 +131,44 @@ class PopUpViewController: UIViewController, BindableType {
       })
       .disposed(by: bag)
     
-    viewModel.assignees()
+    viewModel.repoUsers()
       .bind(to: assigneeTableView.rx.items) {
-        (tableView: UITableView, index: Int, element: User) in
+        [unowned self] (tableView: UITableView, index: Int, element: User) in
         let cell = UITableViewCell(style: .default, reuseIdentifier: "TableViewCell")
         cell.textLabel?.text = element.name
+        let assigneeNameArr = self.viewModel.task.assignees.toArray().map{ $0.name }
+        cell.accessoryType = assigneeNameArr.contains(element.name) ? .checkmark : .none
         return cell
       }
       .disposed(by: bag)
     
+    assigneeTableView.rx.itemSelected
+      .subscribe(onNext: { [unowned self] indexPath in
+        self.assigneeTableView.deselectRow(at: indexPath, animated: false)
+        if let cell = self.assigneeTableView.cellForRow(at: indexPath) {
+          if cell.accessoryType == .checkmark {
+            cell.accessoryType = .none
+          } else {
+            cell.accessoryType = .checkmark
+          }
+        }
+      })
+      .disposed(by: bag)
+    
+    assigneeTableView.rx.modelSelected(User.self)
+      .map { [unowned self] user -> (Assignee, LocalTaskService.EditMode) in
+        let assignee = Assignee(name: user.name)
+        let assigneeNameArr = self.viewModel.task.assignees.toArray().map{ $0.name }
+        if assigneeNameArr.contains(user.name) {
+          return (assignee, .delete)
+        } else {
+          return (assignee, .add)
+        }
+      }
+      .bind(to: viewModel.onUpdateAssignees.inputs)
+      .disposed(by: bag)
+    
     viewModel.tags()
-      .subscribeOn(MainScheduler.instance)
       .bind(to: tagTableView.rx.items) { [unowned self]
         (tableView: UITableView, index: Int, item: Tag) in
         if index == 0 {

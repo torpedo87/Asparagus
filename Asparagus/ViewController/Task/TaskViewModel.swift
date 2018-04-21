@@ -19,7 +19,7 @@ struct TaskViewModel {
   private let authService: AuthServiceRepresentable
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
-  let selectedItemSubject = BehaviorSubject<MyModel>(value: .inbox("inbox"))
+  let selectedItemSubject = BehaviorRelay<MyModel>(value: .inbox("inbox"))
   let searchSections = BehaviorSubject<[TaskSection]>(value: [])
   
   //output
@@ -58,7 +58,6 @@ struct TaskViewModel {
         })
         .disposed(by: bag)
     }
-    
     bindOutput()
   }
   
@@ -115,7 +114,8 @@ struct TaskViewModel {
       let editViewModel = EditViewModel(task: task,
                                         coordinator: this.sceneCoordinator,
                                         updateTitleBodyAction: this.onUpdateTitleBodyTask(task: task),
-                                        updateTagsAction: this.onUpdateTagsTask(task: task),
+                                        updateTagsAction: this.onUpdateTags(task: task),
+                                        updateAssigneesAction: this.onUpdateAssignees(task: task),
                                         updateRepo: this.onUpdateRepo(task: task),
                                         addSubTask: this.onAddSubTask(task: task),
                                         localTaskService: this.localTaskService,
@@ -130,7 +130,7 @@ struct TaskViewModel {
     return CocoaAction {
       return self.localTaskService.convertToTaskWithRef(task: task)
         .flatMap({ taskWithRef in
-          return self.localTaskService.deleteTask(newTaskWithRef: taskWithRef)
+          return self.localTaskService.deleteTask(newTaskWithOldRef: taskWithRef)
         })
         .map { _ in }
     }
@@ -151,11 +151,20 @@ struct TaskViewModel {
     }
   }
   
-  func onUpdateTagsTask(task: TaskItem) -> Action<(Tag, LocalTaskService.TagMode), Void> {
+  func onUpdateTags(task: TaskItem) -> Action<(Tag, LocalTaskService.EditMode), Void> {
     return Action { tuple in
       return self.localTaskService.convertToTaskWithRef(task: task)
         .flatMap { self.localTaskService.updateTag(taskWithRef: $0,
                                                    tag: tuple.0,
+                                                   mode: tuple.1).map { _ in }}
+    }
+  }
+  
+  func onUpdateAssignees(task: TaskItem) -> Action<(Assignee, LocalTaskService.EditMode), Void> {
+    return Action { tuple in
+      return self.localTaskService.convertToTaskWithRef(task: task)
+        .flatMap { self.localTaskService.updateAssignee(taskWithRef: $0,
+                                                   assignee: tuple.0,
                                                    mode: tuple.1).map { _ in }}
     }
   }
@@ -176,7 +185,8 @@ struct TaskViewModel {
                                               coordinator: self.sceneCoordinator,
                                               cancelAction: self.onDelete(task: task),
                                               updateTitleBodyAction: self.onUpdateTitleBodyTask(task: task),
-                                              updateTagsAction: self.onUpdateTagsTask(task: task),
+                                              updateTagsAction: self.onUpdateTags(task: task),
+                                              updateAssigneesAction: self.onUpdateAssignees(task: task),
                                               updateRepo: self.onUpdateRepo(task: task),
                                               addSubTask: self.onAddSubTask(task: task),
                                               localTaskService: self.localTaskService,

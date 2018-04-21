@@ -17,21 +17,22 @@ struct EditViewModel {
   let task: TaskItem
   let onCancel: CocoaAction!
   let onUpdateTitleBody: Action<(String, String), Void>
-  let onUpdateTags: Action<(Tag, LocalTaskService.TagMode), Void>
+  let onUpdateTags: Action<(Tag, LocalTaskService.EditMode), Void>
+  let onUpdateAssignees: Action<(Assignee, LocalTaskService.EditMode), Void>
   let onAddSubTask: Action<String, Void>
   let onUpdateRepo: Action<Repository?, Void>
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
   private let issueService: IssueServiceRepresentable
   private let coordinator: SceneCoordinatorType
-  let repoTitles = BehaviorRelay<[String]>(value: [])
   let selectedRepoTitle = BehaviorRelay<String>(value: "")
   
   init(task: TaskItem,
        coordinator: SceneCoordinatorType,
        cancelAction: CocoaAction? = nil,
        updateTitleBodyAction: Action<(String, String), Void>,
-       updateTagsAction: Action<(Tag, LocalTaskService.TagMode), Void>,
+       updateTagsAction: Action<(Tag, LocalTaskService.EditMode), Void>,
+       updateAssigneesAction: Action<(Assignee, LocalTaskService.EditMode), Void>,
        updateRepo: Action<Repository?, Void>,
        addSubTask: Action<String, Void>,
        localTaskService: LocalTaskServiceType,
@@ -39,6 +40,7 @@ struct EditViewModel {
     self.task = task
     self.onUpdateTitleBody = updateTitleBodyAction
     self.onUpdateTags = updateTagsAction
+    self.onUpdateAssignees = updateAssigneesAction
     self.onUpdateRepo = updateRepo
     self.onAddSubTask = addSubTask
     self.localTaskService = localTaskService
@@ -60,15 +62,6 @@ struct EditViewModel {
         .asObservable()
         .map{ _ in }
     }
-    
-    localTaskService.repositories()
-      .map { results -> [String] in
-        let titles = results.map { $0.name }
-        let filteredTitles = Array(Set(titles))
-        return filteredTitles
-      }.asDriver(onErrorJustReturn: [])
-      .drive(repoTitles)
-      .disposed(by: bag)
   }
   
   var sectionedItems: Observable<[SubTaskSection]> {
@@ -105,30 +98,16 @@ struct EditViewModel {
     return localTaskService.getRepository(repoName: repoName)
   }
   
-  func assignees() -> Observable<[User]> {
-    if let repo = task.repository {
-      return issueService.getRepoUsers(repo: repo)
-    } else {
-      return Observable<[User]>.just([])
-    }
-  }
-  
-  func tags() -> Observable<[Tag]> {
-    return localTaskService.tagsForTask(task: task)
-      .map({ result -> [Tag] in
-        let tags = result.toArray()
-        let newTag = Tag()
-        var temp = [newTag]
-        tags.forEach({ (tag) in
-          temp.append(tag)
-        })
-        return temp
-      })
-  }
-  
   func goToPopUpScene() -> CocoaAction {
     return CocoaAction {
-      let popUpScene = Scene.popUp(self)
+      let viewModel = PopUpViewModel(task: self.task,
+                                     coordinator: self.coordinator,
+                                     updateTagsAction: self.onUpdateTags,
+                                     updateAssigneesAction: self.onUpdateAssignees,
+                                     localTaskService: self.localTaskService,
+                                     issueService: self.issueService,
+                                     editViewModel: self)
+      let popUpScene = Scene.popUp(viewModel)
       return self.coordinator.transition(to: popUpScene, type: .modal)
         .asObservable()
         .map{ _ in }
