@@ -50,7 +50,6 @@ struct LeftViewModel {
   }
   
   var sectionedItems: Observable<[TotalSection]> {
-    //List 타입을 합칠 방법이 필요하다
     return Observable.combineLatest(localTaskService.tags(), localTaskService.localRepositories())
       .map { (tagResults, localRepoResults) -> [TotalSection] in
         var localRepoItems = [LocalRepository]()
@@ -67,7 +66,8 @@ struct LeftViewModel {
           .toArray()
         
         return [
-          TotalSection(header: "Inbox", items: [.inbox("inbox")]),
+          TotalSection(header: "Me", items: [.inbox("Inbox")]),
+          TotalSection(header: "Local", items: [.inbox("Local")]),
           TotalSection(header: "Repository", items: localRepoItems.map{ .localRepo($0)}),
           TotalSection(header: "Tag", items: tagItems.map{ .tag($0) })
         ]

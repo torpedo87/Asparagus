@@ -58,8 +58,12 @@ class EditViewController: UIViewController, BindableType {
     btn.setTitle("SAVE", for: .normal)
     return btn
   }()
-  private lazy var detailButton: PlusButton = {
-    let btn = PlusButton()
+  private lazy var detailButton: UIButton = {
+    let btn = UIButton()
+    btn.setImage(UIImage(named: "property"), for: .normal)
+    btn.layer.cornerRadius = 25
+    btn.backgroundColor = UIColor(hex: "2676AC")
+    btn.imageEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
     return btn
   }()
   private lazy var bottomView: UIView = {

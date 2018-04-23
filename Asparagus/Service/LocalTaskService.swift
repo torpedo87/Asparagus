@@ -47,7 +47,7 @@ protocol LocalTaskServiceType {
   func getRepository(repoName: String) -> Repository?
   func tasksForAssignee(username: String) -> Observable<Results<TaskItem>>
   func tasksForLocalRepo(repoUid: String) -> Observable<Results<TaskItem>>
-  //func updateTask(newTaskWithOldRef: LocalTaskService.TaskItemWithReference) -> Observable<TaskItem>
+  func localTasks() -> Observable<Results<TaskItem>>
 }
 
 class LocalTaskService: LocalTaskServiceType {
@@ -347,6 +347,17 @@ class LocalTaskService: LocalTaskServiceType {
     return result ?? .empty()
   }
   
+  func localTasks() -> Observable<Results<TaskItem>> {
+    let result = withRealm("openLocalTasks") { realm -> Observable<Results<TaskItem>> in
+      let tasks = realm.objects(TaskItem.self)
+        .filter("repository == nil")
+        .sorted(byKeyPath: "added", ascending: false)
+      
+      return Observable.collection(from: tasks)
+    }
+    return result ?? .empty()
+  }
+  
   func subTasksForTask(task: TaskItem) -> Observable<Results<SubTask>> {
     let result = withRealm("subTasksForTask") { realm -> Observable<Results<SubTask>> in
       if let taskItem = realm.object(ofType: TaskItem.self, forPrimaryKey: task.uid) {
@@ -553,70 +564,6 @@ class LocalTaskService: LocalTaskServiceType {
     }
     return result ?? .empty()
   }
-  
-//  func updateTask(newTaskWithOldRef: TaskItemWithReference) -> Observable<TaskItem> {
-//    let result = withRealm("deleteTask") { realm in
-//      return Observable<TaskItem>.create({ observer -> Disposable in
-//        if let exTask = realm.resolve(newTaskWithOldRef.1) {
-//          realm.writeAsync(obj: exTask, block: { (realm, exTask) in
-//            if let exTask = exTask {
-//              let newTask = newTaskWithOldRef.0
-//              //라벨
-//              let exLabelSet = Set(exTask.labels)
-//              let newLabelSet = Set(newTask.labels)
-//              let intersect = exLabelSet.intersection(newLabelSet)
-//              let deletedLabels = exLabelSet.subtracting(intersect)
-//              let newLabels = newLabelSet.subtracting(intersect)
-//              //새로 추가된 라벨
-//              newLabels.forEach {
-//                let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
-//                tag.tasks.append(newTask)
-//              }
-//              //삭제된 라벨
-//              deletedLabels.forEach {
-//                let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
-//                if let i = self.findIndex(tasks: tag.tasks.toArray(), exTask: exTask) {
-//                  tag.tasks.remove(at: i)
-//                }
-//
-//              }
-//
-//              //assignee
-//              let exAssigneeSet = Set(exTask.assignees)
-//              let newAssigneeSet = Set(newTask.assignees)
-//              let intersectAssignee = exAssigneeSet.intersection(newAssigneeSet)
-//              let deletedAssignees = exAssigneeSet.subtracting(intersectAssignee)
-//              let newAssignees = newAssigneeSet.subtracting(intersectAssignee)
-//
-//              //새로 추가된 assignee
-//              newAssignees.forEach {
-//                let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
-//                print("------newAssignee----, \($0.name)")
-//                assignee.tasks.append(newTask)
-//              }
-//              //삭제된 assignee
-//              deletedAssignees.forEach {
-//                let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
-//                if let i = self.findIndex(tasks: assignee.tasks.toArray(), exTask: exTask) {
-//                  assignee.tasks.remove(at: i)
-//                }
-//              }
-//
-//              exTask.title = newTask.title
-//              exTask.body = newTask.body
-//              exTask.labels = newTask.labels
-//              exTask.assignees = newTask.assignees
-//              print(Thread.current, "write thread \(#function)")
-//            }
-//          })
-//          observer.onNext(newTaskWithOldRef.0)
-//        }
-//        observer.onCompleted()
-//        return Disposables.create()
-//      })
-//    }
-//    return result ?? .empty()
-//  }
   
   @discardableResult
   func add(newTask: TaskItem) -> Observable<TaskItem> {

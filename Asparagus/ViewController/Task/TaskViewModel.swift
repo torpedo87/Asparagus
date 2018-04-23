@@ -19,7 +19,7 @@ struct TaskViewModel {
   private let authService: AuthServiceRepresentable
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
-  let selectedItemSubject = BehaviorRelay<MyModel>(value: .inbox("inbox"))
+  let selectedItemSubject = BehaviorSubject<MyModel>(value: .inbox("Inbox"))
   let searchSections = BehaviorSubject<[TaskSection]>(value: [])
   
   //output
@@ -78,11 +78,15 @@ struct TaskViewModel {
     return selectedItemSubject
       .flatMap({ myModel -> Observable<Results<TaskItem>> in
         switch myModel {
-        case .inbox(_):
-          if let me = UserDefaults.loadUser() {
-            return self.localTaskService.tasksForAssignee(username: me.name)
+        case .inbox(let inbox):
+          if inbox == "Inbox" {
+            if let me = UserDefaults.loadUser() {
+              return self.localTaskService.tasksForAssignee(username: me.name)
+            }
+            return .empty()
+          } else {
+            return self.localTaskService.localTasks()
           }
-          return Observable.empty()
           
         case .localRepo(let localRepo):
           return self.localTaskService.tasksForLocalRepo(repoUid: localRepo.uid)
@@ -93,13 +97,11 @@ struct TaskViewModel {
       })
       .map { results in
         let dueTasks = results
-          .filter("title != ''")
-          .filter("checked = 'open'")
+          .filter("title != '' AND checked = 'open'")
           .sorted(byKeyPath: "added", ascending: false)
 
         let doneTasks = results
-          .filter("title != ''")
-          .filter("checked = 'closed'")
+          .filter("title != '' AND checked = 'closed'")
           .sorted(byKeyPath: "added", ascending: false)
 
         return [

@@ -71,7 +71,7 @@ class NewTaskCell: UITableViewCell {
       .throttle(0.5, scheduler: MainScheduler.instance)
       .filter{return self.titleTextField.text != nil}
       .map { _ -> (Tag, LocalTaskService.EditMode) in
-        let title = self.titleTextField.text!
+        let title = self.titleTextField.text!.lowercased()
         let newTag = Tag(title: title)
         newTag.setDateWhenCreated()
         return (newTag, LocalTaskService.EditMode.add)
