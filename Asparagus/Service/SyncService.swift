@@ -167,9 +167,17 @@ class SyncService: SyncServiceRepresentable {
   //기존의 것중에 서버가 최신인 경우 로컬 변형
   func updateOldLocalWithRecentServer() {
     localTaskService.getRecentServer()
-      .flatMap({ [unowned self] in
-        self.localTaskService.updateTask(newTaskWithOldRef: $0)
-      })
+      .debug("----------recentserver---------")
+      //로컬에 기존 task 삭제
+      .flatMap { [unowned self] in
+        self.localTaskService.deleteTask(newTaskWithOldRef: $0)
+      }
+      .debug("---------delete-------------")
+      //서버에서 생성한 새로운 이슈를 로컬에 추가
+      .flatMap { [unowned self] in
+        self.localTaskService.add(newTask: $0)
+      }
+      .debug("------------add-------------")
       //업데이트 완료시점 확인
       .reduce([TaskItem]()) { arr, task in
         return arr + [task]
