@@ -630,21 +630,26 @@ extension LocalTaskService {
   
   static func migrate(_ migration: Migration, fileSchemaVersion: UInt64) {
     if fileSchemaVersion == 1 {
-      migration.enumerateObjects(ofType: "Tag") { (oldObject, newObject) in
-        if let newObject = newObject {
-          if let tasks = newObject["tasks"] as? List<TaskItem> {
-            tasks.forEach{ $0.labels.append(Label(name: newObject["title"] as! String)) }
-          }
-        }
-      }
-      migration.enumerateObjects(ofType: "TaskItem") { (oldObject, newObject) in
-        if let newObject = newObject {
-          if let repository = newObject["repository"] as? Repository {
-            let localRepo = LocalRepository(uid: repository.uid, name: repository.name)
-            
-          }
-        }
-      }
+//      migration.enumerateObjects(ofType: "Tag") { (oldObject, newObject) in
+//        if let newObject = newObject,
+//          let oldObject = oldObject {
+//          //기존의 custom tag를 이슈의 라벨에 동기화
+//          if let tasks = oldObject["tasks"] as? List<TaskItem> {
+//            tasks.forEach{ $0.labels.append(Label(name: newObject["title"] as! String)) }
+//          }
+//        }
+//      }
+//      migration.enumerateObjects(ofType: "TaskItem") { (oldObject, newObject) in
+//        if let newObject = newObject {
+//          //기존의 이슈들을 다시 fetch하기 위해 updated 시간 변경
+//          if let _ = newObject["repository"] as? Repository,
+//            let updated = newObject["updated"] as? String {
+//            let oldDate = updated.convertToDate()!
+//            let newUpdated = oldDate.converToPastDateString()
+//            newObject["updated"] = newUpdated
+//          }
+//        }
+//      }
     }
   }
   

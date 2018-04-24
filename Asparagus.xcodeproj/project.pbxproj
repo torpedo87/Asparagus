@@ -23,6 +23,8 @@
 		4848EC15204A8C5200B59315 /* Repository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4848EC14204A8C5200B59315 /* Repository.swift */; };
 		484AF8DD20837FDA006270EF /* PopUpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484AF8DC20837FDA006270EF /* PopUpViewController.swift */; };
 		485DBD48207CC57600AF5CC2 /* UINavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485DBD47207CC57600AF5CC2 /* UINavigationController.swift */; };
+		48679FD0208F443A00A6ECDA /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48679FCF208F443A00A6ECDA /* String.swift */; };
+		48679FD2208F46B000A6ECDA /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48679FD1208F46B000A6ECDA /* Date.swift */; };
 		48774F20208AF79C000A8955 /* PopUpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48774F1F208AF79C000A8955 /* PopUpViewModel.swift */; };
 		487A8F9A20636BF5001E5BD4 /* SubTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9920636BF5001E5BD4 /* SubTask.swift */; };
 		487A8F9C206389E9001E5BD4 /* CircleProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */; };
@@ -92,6 +94,8 @@
 		4848EC14204A8C5200B59315 /* Repository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Repository.swift; sourceTree = "<group>"; };
 		484AF8DC20837FDA006270EF /* PopUpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopUpViewController.swift; sourceTree = "<group>"; };
 		485DBD47207CC57600AF5CC2 /* UINavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINavigationController.swift; sourceTree = "<group>"; };
+		48679FCF208F443A00A6ECDA /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
+		48679FD1208F46B000A6ECDA /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
 		48774F1F208AF79C000A8955 /* PopUpViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopUpViewModel.swift; sourceTree = "<group>"; };
 		487A8F9920636BF5001E5BD4 /* SubTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubTask.swift; sourceTree = "<group>"; };
 		487A8F9B206389E9001E5BD4 /* CircleProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleProgressView.swift; sourceTree = "<group>"; };
@@ -305,6 +309,8 @@
 				4842DB2220592B590093B496 /* UIColor.swift */,
 				48480A1D205FA511004ED59A /* URL.swift */,
 				485DBD47207CC57600AF5CC2 /* UINavigationController.swift */,
+				48679FCF208F443A00A6ECDA /* String.swift */,
+				48679FD1208F46B000A6ECDA /* Date.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -630,11 +636,13 @@
 				48912A7E206B9DFE00599CB6 /* NewTaskCell.swift in Sources */,
 				4842DB2520592F170093B496 /* TagCell.swift in Sources */,
 				4848EC11204A87E600B59315 /* User.swift in Sources */,
+				48679FD0208F443A00A6ECDA /* String.swift in Sources */,
 				4848BEC020566E54009C1B97 /* LeftViewController.swift in Sources */,
 				4848EC13204A8A2B00B59315 /* SyncService.swift in Sources */,
 				488368182085733A001F5688 /* LocalRepository.swift in Sources */,
 				487D922E20454421008CB44E /* IssueService.swift in Sources */,
 				48480A1C205FA1DB004ED59A /* RealmConfig.swift in Sources */,
+				48679FD2208F46B000A6ECDA /* Date.swift in Sources */,
 				487D92452046C9B6008CB44E /* TaskCell.swift in Sources */,
 				4848BEC4205675C1009C1B97 /* LeftViewModel.swift in Sources */,
 				484AF8DD20837FDA006270EF /* PopUpViewController.swift in Sources */,

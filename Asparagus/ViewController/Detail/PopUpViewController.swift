@@ -16,7 +16,6 @@ class PopUpViewController: UIViewController, BindableType {
   private lazy var segmentedControl: UISegmentedControl = {
     let view = UISegmentedControl(items: ["Assignees", "Tags", "GitHub"])
     view.selectedSegmentIndex = 0
-    view.layer.cornerRadius = 10
     view.backgroundColor = UIColor.white
     view.tintColor = UIColor(hex: "283A45")
     return view
@@ -27,13 +26,11 @@ class PopUpViewController: UIViewController, BindableType {
   }()
   private lazy var repoView: UIView = {
     let view = UIView()
-    view.layer.cornerRadius = 10
     return view
   }()
   private lazy var repoLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .center
-    label.layer.cornerRadius = 10
     label.backgroundColor = UIColor.white
     label.text = "Repository :"
     label.adjustsFontSizeToFitWidth = true
@@ -42,13 +39,11 @@ class PopUpViewController: UIViewController, BindableType {
   private lazy var selectedRepositoryLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .center
-    label.layer.cornerRadius = 10
     label.backgroundColor = UIColor.white
     return label
   }()
   private lazy var tagTableView: UITableView = {
     let view = UITableView()
-    view.layer.cornerRadius = 10
     view.rowHeight = UIScreen.main.bounds.height / 15
     view.register(SubTagCell.self, forCellReuseIdentifier: SubTagCell.reuseIdentifier)
     view.register(NewTaskCell.self, forCellReuseIdentifier: NewTaskCell.reuseIdentifier)
@@ -58,6 +53,7 @@ class PopUpViewController: UIViewController, BindableType {
     let view = UIView()
     view.backgroundColor = UIColor.white
     view.layer.cornerRadius = 20
+    view.clipsToBounds = true
     return view
   }()
   private lazy var assigneeTableView: UITableView = {
