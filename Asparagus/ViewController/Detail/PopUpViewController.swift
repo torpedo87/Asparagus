@@ -88,15 +88,15 @@ class PopUpViewController: UIViewController, BindableType {
     }
     assigneeTableView.snp.makeConstraints { (make) in
       make.left.bottom.right.equalTo(baseView)
-      make.top.equalTo(segmentedControl.snp.bottom)
+      make.top.equalTo(segmentedControl.snp.bottom).offset(10)
     }
     repoView.snp.makeConstraints { (make) in
-      make.top.equalTo(segmentedControl.snp.bottom)
+      make.top.equalTo(segmentedControl.snp.bottom).offset(10)
       make.left.right.equalTo(segmentedControl)
       make.bottom.equalTo(baseView)
     }
     tagTableView.snp.makeConstraints { (make) in
-      make.top.equalTo(segmentedControl.snp.bottom)
+      make.top.equalTo(segmentedControl.snp.bottom).offset(10)
       make.left.right.equalTo(segmentedControl)
       make.bottom.equalTo(baseView)
     }

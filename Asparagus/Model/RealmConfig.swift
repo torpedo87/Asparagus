@@ -20,7 +20,7 @@ enum RealmConfig {
   }()
   private static let mainConfig = Realm.Configuration(
     fileURL: URL.inDocumentsFolder(fileName: "main.realm"),
-    schemaVersion: 4,
+    schemaVersion: 2,
     migrationBlock: LocalTaskService.migrate
   )
   var configuration: Realm.Configuration {
