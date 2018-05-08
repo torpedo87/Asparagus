@@ -183,8 +183,8 @@ class SyncService: SyncServiceRepresentable {
       }, onCompleted: {
         print("updateOldLocalWithRecentServer complete")
         self.running.onNext(false)
-        //self.syncWhenTaskEdittedInLocal()
-        //self.syncWhenTaskCreatedInLocal()
+        self.syncWhenTaskEdittedInLocal()
+        self.syncWhenTaskCreatedInLocal()
       })
       .disposed(by: bag)
   }

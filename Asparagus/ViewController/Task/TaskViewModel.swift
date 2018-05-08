@@ -156,27 +156,24 @@ struct TaskViewModel {
   
   func onUpdateTags(task: TaskItem) -> Action<(Tag, LocalTaskService.EditMode), Void> {
     return Action { tuple in
-      return self.localTaskService.convertToTaskWithRef(task: task)
-        .flatMap { self.localTaskService.updateTag(taskWithRef: $0,
-                                                   tag: tuple.0,
-                                                   mode: tuple.1).map { _ in }}
+      return self.localTaskService.updateTag(exTask: task,
+                                             tag: tuple.0,
+                                             mode: tuple.1).map { _ in }
     }
   }
   
   func onUpdateAssignees(task: TaskItem) -> Action<(Assignee, LocalTaskService.EditMode), Void> {
     return Action { tuple in
-      return self.localTaskService.convertToTaskWithRef(task: task)
-        .flatMap { self.localTaskService.updateAssignee(taskWithRef: $0,
-                                                   assignee: tuple.0,
-                                                   mode: tuple.1).map { _ in }}
+      return self.localTaskService.updateAssignee(exTask: task,
+                                                  assignee: tuple.0,
+                                                  mode: tuple.1).map { _ in }
     }
   }
   
   func onUpdateRepo(task: TaskItem) -> Action<Repository?, Void> {
     return Action { repo in
-      return self.localTaskService.convertToTaskWithRef(task: task)
-        .flatMap { self.localTaskService.updateRepo(taskWithRef: $0,
-                                                    repo: repo).map { _ in }}
+      return self.localTaskService.updateRepo(exTask: task,
+                                              repo: repo).map { _ in }
     }
   }
   
