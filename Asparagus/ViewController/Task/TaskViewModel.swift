@@ -48,6 +48,7 @@ struct TaskViewModel {
       })
       .disposed(by: bag)
     
+    //iconbadgenumber
     if let me = UserDefaults.loadUser() {
       localTaskService.tasksForAssignee(username: me.name)
         .map { results -> Int in

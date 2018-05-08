@@ -36,6 +36,7 @@ class SyncService: SyncServiceRepresentable {
   func syncWhenTaskEdittedInLocal() {
     print("-------edit realtime---------")
     localTaskService.observeEditTask()
+      .subscribeOn(MainScheduler.instance)
       .flatMap { taskArr -> Observable<TaskItem> in
         if let task = taskArr.first {
           return self.issueService.editServerTask(newTitle: task.title,
@@ -58,6 +59,7 @@ class SyncService: SyncServiceRepresentable {
   func syncWhenTaskCreatedInLocal() {
     print("-------create realtime---------")
     localTaskService.observeCreateTask()
+      .subscribeOn(MainScheduler.instance)
       .filter { $0.count > 0 }
       .flatMap({ [unowned self] in
         self.localTaskService.convertToTaskWithRef(task: $0.first!)
@@ -73,7 +75,12 @@ class SyncService: SyncServiceRepresentable {
       //서버에서 생성한 새로운 이슈를 로컬에 추가
       .flatMap { [unowned self] in
         self.localTaskService.add(newTask: $0)
-      }.subscribe(onNext: { [unowned self] _ in
+      }
+      //업데이트 완료시점 확인
+      .reduce([TaskItem]()) { arr, task in
+        return arr + [task]
+      }
+      .subscribe(onNext: { [unowned self] _ in
         self.running.onNext(false)
         }, onCompleted: {
           print("realtime create complete")
@@ -100,6 +107,7 @@ class SyncService: SyncServiceRepresentable {
       .flatMap({ [unowned self] in
         self.issueService.createIssueWithLocalTask(localTaskWithRef: $0)
       })
+      .take(localTaskService.localCreatedCount())
       //로컬에 기존 task 삭제
       .flatMap { [unowned self] in
         self.localTaskService.deleteTask(newTaskWithOldRef: $0)
@@ -124,7 +132,6 @@ class SyncService: SyncServiceRepresentable {
   //기존의 것중에 로컬이 최신인 경우 서버 업데이트
   func updateOldServerWithRecentLocal() {
     localTaskService.getRecentLocal()
-      //서버 업데이트 요청
       .flatMap { [unowned self] in
         self.issueService.editServerTask(newTitle: $0.title,
                                          newBody: $0.body ?? "",
@@ -133,10 +140,7 @@ class SyncService: SyncServiceRepresentable {
                                          newAssignees: $0.assignees.toArray().map{ $0.name },
                                          exTask: $0)
       }
-      //업데이트 완료시점 확인
-      .reduce([TaskItem]()) { arr, task in
-        return arr + [task]
-      }
+      .take(localTaskService.recentLocalDict.count)
       .subscribe(onNext: { _ in
         self.running.onNext(true)
       }, onCompleted: {
@@ -152,9 +156,7 @@ class SyncService: SyncServiceRepresentable {
       .flatMap { [unowned self] in
         self.localTaskService.add(newTask: $0)
       }
-      .reduce([TaskItem]()) { arr, task in
-        return arr + [task]
-      }
+      .take(localTaskService.newServerDict.count)
       .subscribe(onNext: { _ in
         self.running.onNext(true)
       }, onCompleted: {
@@ -171,21 +173,18 @@ class SyncService: SyncServiceRepresentable {
       .flatMap { [unowned self] in
         self.localTaskService.deleteTask(newTaskWithOldRef: $0)
       }
+      .take(localTaskService.recentServerDict.count)
       //서버에서 생성한 새로운 이슈를 로컬에 추가
       .flatMap { [unowned self] in
         self.localTaskService.add(newTask: $0)
-      }
-      //업데이트 완료시점 확인
-      .reduce([TaskItem]()) { arr, task in
-        return arr + [task]
       }
       .subscribe(onNext: { _ in
         self.running.onNext(true)
       }, onCompleted: {
         print("updateOldLocalWithRecentServer complete")
         self.running.onNext(false)
-        self.syncWhenTaskEdittedInLocal()
-        self.syncWhenTaskCreatedInLocal()
+        //self.syncWhenTaskEdittedInLocal()
+        //self.syncWhenTaskCreatedInLocal()
       })
       .disposed(by: bag)
   }

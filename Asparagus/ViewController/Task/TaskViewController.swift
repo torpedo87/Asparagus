@@ -80,6 +80,7 @@ class TaskViewController: UIViewController, BindableType {
     super.viewDidLoad()
     setupView()
     configureDataSource()
+    viewModel.selectedItemSubject.onNext(.inbox("Inbox"))
   }
   
   func setupView() {
@@ -121,6 +122,7 @@ class TaskViewController: UIViewController, BindableType {
     searchTableView.snp.makeConstraints { (make) in
       make.left.top.right.bottom.equalTo(blurEffectView.contentView)
     }
+    
   }
   
   func bindViewModel() {
@@ -176,11 +178,13 @@ class TaskViewController: UIViewController, BindableType {
       })
       .disposed(by: bag)
     
-    viewModel.running.asObservable()
+    let running = viewModel.running.asObservable().share()
+    
+    running
       .bind(to: activityIndicator.rx.isAnimating)
       .disposed(by: bag)
     
-    viewModel.running.asObservable()
+    running
       .bind(to: tableView.rx.isHidden)
       .disposed(by: bag)
 
