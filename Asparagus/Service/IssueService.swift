@@ -16,7 +16,7 @@ protocol IssueServiceRepresentable {
   func fetchAllIssues(page: Int) -> Observable<[TaskItem]>
   @discardableResult
   func editServerTask(newTitle: String, newBody: String, newState: String, newLabels: [String], newAssignees: [String], exTask: TaskItem) -> Observable<TaskItem>
-  func createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<LocalTaskService.TaskItemWithReference>
+  func createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<(TaskItem, LocalTaskService.TaskItemWithReference)>
   func getRepoUsers(repo: Repository) -> Observable<[User]>
 }
 class IssueService: IssueServiceRepresentable {
@@ -110,28 +110,23 @@ class IssueService: IssueServiceRepresentable {
     })
   }
   
-  func createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<LocalTaskService.TaskItemWithReference> {
+  func createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<(TaskItem, LocalTaskService.TaskItemWithReference)> {
     return Observable.create({ (observer) -> Disposable in
       self.provider.request(.createIssueWithLocalTask(localTaskWithRef: localTaskWithRef)) { (result) in
-      switch result {
-      case let .success(moyaResponse):
-        let data = moyaResponse.data
-        let statusCode = moyaResponse.statusCode
-        if 200 ..< 300 ~= statusCode {
-          let newIssue = try! JSONDecoder().decode(TaskItem.self, from: data)
-          newIssue.repository = localTaskWithRef.0.repository
-          newIssue.tag = localTaskWithRef.0.tag
-          newIssue.assignee = localTaskWithRef.0.assignee
-          newIssue.subTasks = localTaskWithRef.0.subTasks
-          newIssue.localRepository = localTaskWithRef.0.localRepository
-          let tuple = (newIssue, localTaskWithRef.1)
-          observer.onNext(tuple)
-        } else {
-          observer.onError(Errors.createIssueFailed)
+        switch result {
+        case let .success(moyaResponse):
+          let data = moyaResponse.data
+          let statusCode = moyaResponse.statusCode
+          if 200 ..< 300 ~= statusCode {
+            let newIssue = try! JSONDecoder().decode(TaskItem.self, from: data)
+            let tuple = (newIssue, localTaskWithRef)
+            observer.onNext(tuple)
+          } else {
+            observer.onError(Errors.createIssueFailed)
+          }
+        case let .failure(error):
+          observer.onError(error)
         }
-      case let .failure(error):
-        observer.onError(error)
-      }
       }
       return Disposables.create()
     })

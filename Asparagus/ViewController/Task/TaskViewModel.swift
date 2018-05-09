@@ -131,11 +131,8 @@ struct TaskViewModel {
   
   func onDelete(task: TaskItem) -> CocoaAction {
     return CocoaAction {
-      return self.localTaskService.convertToTaskWithRef(task: task)
-        .flatMap({ taskWithRef in
-          return self.localTaskService.deleteTask(newTaskWithOldRef: taskWithRef)
-        })
-        .map { _ in }
+      return self.localTaskService.deleteTaskOnMain(localTask: task)
+        .debug("-------delete--------")
     }
   }
   

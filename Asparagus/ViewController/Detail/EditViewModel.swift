@@ -59,8 +59,7 @@ struct EditViewModel {
         cancelAction.execute(())
       }
       return coordinator.pop()
-        .asObservable()
-        .map{ _ in }
+        .asObservable().map { _ in }
     }
   }
   
