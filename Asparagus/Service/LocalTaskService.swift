@@ -56,6 +56,7 @@ protocol LocalTaskServiceType {
   func deleteTaskOnMain(localTask: TaskItem) -> Observable<Void>
   func addTask(newTaskWithOldRef: (TaskItem, LocalTaskService.TaskItemWithReference)) -> Observable<LocalTaskService.TaskItemWithReference>
   func deleteOldTask(oldTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<TaskItem>
+  func updateTask(newTaskWithOldRef: (TaskItem, LocalTaskService.TaskItemWithReference)) -> Observable<TaskItem>
 }
 
 class LocalTaskService: LocalTaskServiceType {
@@ -546,6 +547,7 @@ class LocalTaskService: LocalTaskServiceType {
         let realm = try! Realm(configuration: RealmConfig.main.configuration)
         if let exTask = realm.resolve(newTaskWithOldRef.1.1) {
           let newTask = newTaskWithOldRef.0
+          
           try! realm.write {
             realm.delete(exTask)
           }
@@ -559,11 +561,55 @@ class LocalTaskService: LocalTaskServiceType {
     })
   }
   
+  func updateTask(newTaskWithOldRef: (TaskItem, TaskItemWithReference)) -> Observable<TaskItem> {
+    return Observable<TaskItem>.create({ [unowned self] (observer) -> Disposable in
+      self.backgroundQueue.async {
+        let realm = try! Realm(configuration: RealmConfig.main.configuration)
+        if let exTask = realm.resolve(newTaskWithOldRef.1.1) {
+          let newTask = newTaskWithOldRef.0
+          
+          try! realm.write {
+            exTask.labels.forEach({ label in
+              let tag = self.defaultTag(realm: realm, tagTitle: label.name)
+              if let index = self.findIndex(tasks: tag.tasks.toArray(), exTask: exTask) {
+                tag.tasks.remove(at: index)
+              }
+            })
+            exTask.assignees.forEach({ user in
+              let assignee = self.defaultAssignee(realm: realm, assigneeName: user.name)
+              if let index = self.findIndex(tasks: assignee.tasks.toArray(), exTask: exTask) {
+                assignee.tasks.remove(at: index)
+              }
+            })
+            exTask.title = newTask.title
+            exTask.body = newTask.body
+            exTask.checked = newTask.checked
+            exTask.updated = newTask.updated
+            exTask.owner = newTask.owner
+            exTask.assignees = newTask.assignees
+            exTask.labels = newTask.labels
+            exTask.labels.forEach {
+              let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
+              tag.tasks.append(exTask)
+            }
+            exTask.assignees.forEach {
+              let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
+              assignee.tasks.append(exTask)
+            }
+          }
+          observer.onNext(exTask)
+          print(Thread.current, "write thread \(#function)")
+        }
+        observer.onCompleted()
+      }
+      return Disposables.create()
+    })
+  }
+  
   @discardableResult
   func addTask(newTaskWithOldRef: (TaskItem, TaskItemWithReference)) -> Observable<TaskItemWithReference> {
     return Observable<TaskItemWithReference>.create({ [unowned self] (observer) -> Disposable in
       self.backgroundQueue.async {
-        
         let realm = try! Realm(configuration: RealmConfig.main.configuration)
         if let exTask = realm.resolve(newTaskWithOldRef.1.1) {
           let newTask = newTaskWithOldRef.0
@@ -574,7 +620,6 @@ class LocalTaskService: LocalTaskServiceType {
           newTask.localRepository = exTask.localRepository
           try! realm.write {
             realm.add(newTask)
-            
             let localRepo = self.defaultLocalRepo(realm: realm,
                                                   repoUid: newTask.repository!.uid,
                                                   repoName: newTask.repository!.name)

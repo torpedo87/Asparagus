@@ -62,27 +62,22 @@ class SyncService: SyncServiceRepresentable {
       .flatMap({ [unowned self] in
         self.localTaskService.convertToTaskWithRef(task: $0.first!)
       })
-      .debug("------1-------------")
       //서버에 새 이슈 생성
       .flatMap({ [unowned self] in
         self.issueService.createIssueWithLocalTask(localTaskWithRef: $0)
       })
-      .debug("--------2-------------")
-      //로컬에 기존 task 삭제
+      //서버에서 생성한 새로운 이슈를 로컬에 추가
       .flatMap { [unowned self] in
         self.localTaskService.addTask(newTaskWithOldRef: $0)
       }
-      .debug("------3---------------")
-      //서버에서 생성한 새로운 이슈를 로컬에 추가
+      //로컬에 기존 task 삭제
       .flatMap { [unowned self] in
         self.localTaskService.deleteOldTask(oldTaskWithRef: $0)
       }
-      .debug("-------4------------")
       //업데이트 완료시점 확인
       .reduce([TaskItem]()) { arr, task in
         return arr + [task]
       }
-      .debug("---------5---------------")
       .subscribe(onNext: { [unowned self] _ in
         self.running.onNext(false)
         }, onCompleted: {
@@ -111,13 +106,13 @@ class SyncService: SyncServiceRepresentable {
         self.issueService.createIssueWithLocalTask(localTaskWithRef: $0)
       })
       .take(localTaskService.localCreatedCount())
-      //로컬에 기존 task 삭제
+      //serverTask와 localTask의 uid 다르므로 먼저 넣어도 됨
       .flatMap { [unowned self] in
-        self.localTaskService.deleteTask(newTaskWithOldRef: $0)
+        self.localTaskService.addTask(newTaskWithOldRef: $0)
       }
-      //서버에서 생성한 새로운 이슈를 로컬에 추가
+      //localTask 삭제
       .flatMap { [unowned self] in
-        self.localTaskService.add(newTask: $0)
+        self.localTaskService.deleteOldTask(oldTaskWithRef: $0)
       }
       //완료 시점 확인
       .reduce( [TaskItem](), accumulator: { (arr, task) in
@@ -173,21 +168,18 @@ class SyncService: SyncServiceRepresentable {
   func updateOldLocalWithRecentServer() {
     localTaskService.getRecentServer()
       //로컬에 기존 task 삭제
-      .flatMap { [unowned self] in
-        self.localTaskService.deleteTask(newTaskWithOldRef: $0)
-      }
       .take(localTaskService.recentServerDict.count)
       //서버에서 생성한 새로운 이슈를 로컬에 추가
       .flatMap { [unowned self] in
-        self.localTaskService.add(newTask: $0)
+        self.localTaskService.updateTask(newTaskWithOldRef: $0)
       }
       .subscribe(onNext: { _ in
         self.running.onNext(true)
       }, onCompleted: {
         print("updateOldLocalWithRecentServer complete")
         self.running.onNext(false)
-        self.syncWhenTaskEdittedInLocal()
-        self.syncWhenTaskCreatedInLocal()
+        //self.syncWhenTaskEdittedInLocal()
+        //self.syncWhenTaskCreatedInLocal()
       })
       .disposed(by: bag)
   }

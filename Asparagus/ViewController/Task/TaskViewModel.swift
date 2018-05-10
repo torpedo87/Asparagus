@@ -124,7 +124,7 @@ struct TaskViewModel {
                                         localTaskService: this.localTaskService,
                                         issueService: this.issueService)
       return this.sceneCoordinator
-        .transition(to: Scene.edit(editViewModel), type: .push)
+        .transition(to: Scene.edit(editViewModel), type: .modal)
         .asObservable()
     }
   }(self)

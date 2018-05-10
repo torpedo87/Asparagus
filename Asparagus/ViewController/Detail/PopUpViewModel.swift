@@ -68,9 +68,10 @@ struct PopUpViewModel {
     return localTaskService.tagsForTask(task: task)
       .map({ result -> [Tag] in
         let tags = result.toArray()
+        let filteredTags = Array(Set(tags))
         let newTag = Tag()
         var temp = [newTag]
-        tags.forEach({ (tag) in
+        filteredTags.forEach({ (tag) in
           temp.append(tag)
         })
         return temp
