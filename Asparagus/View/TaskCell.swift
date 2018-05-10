@@ -34,7 +34,7 @@ class TaskCell: UITableViewCell {
   private lazy var titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
-    label.numberOfLines = 3
+    label.numberOfLines = 0
     return label
   }()
   private lazy var checkButton: UIButton = {
@@ -50,16 +50,17 @@ class TaskCell: UITableViewCell {
     baseView.addSubview(titleLabel)
     baseView.addSubview(checkButton)
     baseView.snp.makeConstraints { (make) in
-      make.edges.equalToSuperview().inset(10)
+      make.edges.equalToSuperview().inset(20)
     }
-    achievementView.snp.makeConstraints { (make) in
+    numberLabel.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
       make.left.equalTo(baseView)
       make.centerY.equalTo(baseView)
     }
-    numberLabel.snp.makeConstraints { (make) in
+    achievementView.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
-      make.left.top.equalTo(baseView)
+      make.left.equalTo(numberLabel.snp.right).offset(8)
+      make.centerY.equalTo(baseView)
     }
     titleLabel.snp.makeConstraints { (make) in
       make.left.equalTo(achievementView.snp.right).offset(15)
