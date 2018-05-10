@@ -159,12 +159,12 @@ class LocalTaskService: LocalTaskServiceType {
           exTask.labels.append(Label(name: tagTitle))
           }
         case .delete: do {
-          if let i = self.findIndex(tasks: group.tasks.toArray(), exTask: exTask) {
-            group.tasks.remove(at: i)
+          if let index = self.findIndex(tasks: group.tasks.toArray(), exTask: exTask) {
+            group.tasks.remove(at: index)
           }
           
-          if let j = self.findIndex(labels: exTask.labels.toArray(), exTagTitle: tagTitle) {
-            exTask.labels.remove(at: j)
+          if let index = self.findIndex(labels: exTask.labels.toArray(), exTagTitle: tagTitle) {
+            exTask.labels.remove(at: index)
           }
           }
         }
@@ -186,12 +186,12 @@ class LocalTaskService: LocalTaskServiceType {
           exTask.assignees.append(User(name: assigneeName))
           }
         case .delete: do {
-          if let i = self.findIndex(tasks: group.tasks.toArray(), exTask: exTask) {
-            group.tasks.remove(at: i)
+          if let index = self.findIndex(tasks: group.tasks.toArray(), exTask: exTask) {
+            group.tasks.remove(at: index)
           }
           
-          if let j = self.findIndex(assignees: exTask.assignees.toArray(), username: assigneeName) {
-            exTask.assignees.remove(at: j)
+          if let index = self.findIndex(assignees: exTask.assignees.toArray(), username: assigneeName) {
+            exTask.assignees.remove(at: index)
           }
           
           }
@@ -426,7 +426,7 @@ class LocalTaskService: LocalTaskServiceType {
   func seperateSequence(fetchedTasks: [TaskItem]) -> Completable {
     let result = withRealm("getOldLocal") { realm in
       return Completable.create(subscribe: { completable -> Disposable in
-        fetchedTasks.forEach { fetchedTask in
+        for fetchedTask in fetchedTasks {
           if let localTask = realm.object(ofType: TaskItem.self, forPrimaryKey: fetchedTask.uid) {
             if localTask.updatedDate > fetchedTask.updatedDate {
               self.recentLocalDict.updateValue(localTask, forKey: fetchedTask.uid)
@@ -569,18 +569,18 @@ class LocalTaskService: LocalTaskServiceType {
           let newTask = newTaskWithOldRef.0
           
           try! realm.write {
-            exTask.labels.forEach({ label in
+            for label in exTask.labels.toArray() {
               let tag = self.defaultTag(realm: realm, tagTitle: label.name)
               if let index = self.findIndex(tasks: tag.tasks.toArray(), exTask: exTask) {
                 tag.tasks.remove(at: index)
               }
-            })
-            exTask.assignees.forEach({ user in
+            }
+            for user in exTask.assignees.toArray() {
               let assignee = self.defaultAssignee(realm: realm, assigneeName: user.name)
               if let index = self.findIndex(tasks: assignee.tasks.toArray(), exTask: exTask) {
                 assignee.tasks.remove(at: index)
               }
-            })
+            }
             exTask.title = newTask.title
             exTask.body = newTask.body
             exTask.checked = newTask.checked
@@ -588,12 +588,12 @@ class LocalTaskService: LocalTaskServiceType {
             exTask.owner = newTask.owner
             exTask.assignees = newTask.assignees
             exTask.labels = newTask.labels
-            exTask.labels.forEach {
-              let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
+            for label in exTask.labels.toArray() {
+              let tag = self.defaultTag(realm: realm, tagTitle: label.name)
               tag.tasks.append(exTask)
             }
-            exTask.assignees.forEach {
-              let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
+            for user in exTask.assignees.toArray() {
+              let assignee = self.defaultAssignee(realm: realm, assigneeName: user.name)
               assignee.tasks.append(exTask)
             }
           }
@@ -624,12 +624,12 @@ class LocalTaskService: LocalTaskServiceType {
                                                   repoUid: newTask.repository!.uid,
                                                   repoName: newTask.repository!.name)
             localRepo.tasks.append(newTask)
-            newTask.labels.forEach {
-              let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
+            for label in newTask.labels.toArray() {
+              let tag = self.defaultTag(realm: realm, tagTitle: label.name)
               tag.tasks.append(newTask)
             }
-            newTask.assignees.forEach {
-              let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
+            for user in newTask.assignees.toArray() {
+              let assignee = self.defaultAssignee(realm: realm, assigneeName: user.name)
               assignee.tasks.append(newTask)
             }
           }
@@ -676,14 +676,15 @@ class LocalTaskService: LocalTaskServiceType {
                                                 repoUid: newTask.repository!.uid,
                                                 repoName: newTask.repository!.name)
           localRepo.tasks.append(newTask)
-          newTask.labels.forEach {
-            let tag = self.defaultTag(realm: realm, tagTitle: $0.name)
+          for label in newTask.labels.toArray() {
+            let tag = self.defaultTag(realm: realm, tagTitle: label.name)
             tag.tasks.append(newTask)
           }
-          newTask.assignees.forEach {
-            let assignee = self.defaultAssignee(realm: realm, assigneeName: $0.name)
+          for user in newTask.assignees.toArray() {
+            let assignee = self.defaultAssignee(realm: realm, assigneeName: user.name)
             assignee.tasks.append(newTask)
           }
+          
         }
         observer.onNext(newTask)
         print(Thread.current, "write thread \(#function)")
