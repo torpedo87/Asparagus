@@ -16,3 +16,6 @@
 - TaskView : Issue List by Tags
 - EditView : Create new issue or edit existing issue
 - SettingView : Opensource license info
+
+## 유레카
+- Realm managed object는 thread 간 이동시 threadSafe 를 보장해주어야 한다
