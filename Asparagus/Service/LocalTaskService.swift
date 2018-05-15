@@ -325,7 +325,7 @@ class LocalTaskService: LocalTaskServiceType {
           .sorted(byKeyPath: "added", ascending: false)
         return Observable.collection(from: tasks)
       }
-      return Observable.empty()
+      return .empty()
     }
     return result ?? .empty()
   }

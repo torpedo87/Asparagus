@@ -48,14 +48,14 @@ class EditViewController: UIViewController, BindableType {
   private var cancelButton: UIButton = {
     let btn = UIButton()
     btn.setTitleColor(UIColor(hex: "283A45"), for: .normal)
-    btn.setTitle("CLOSE", for: .normal)
+    btn.setTitle("Close", for: .normal)
     return btn
   }()
-  private var saveButton: UIButton = {
+  private var syncButton: UIButton = {
     let btn = UIButton()
     btn.setTitleColor(UIColor(hex: "283A45"), for: .normal)
     btn.setTitleColor(UIColor.lightGray, for: .disabled)
-    btn.setTitle("SAVE", for: .normal)
+    btn.setTitle("Sync", for: .normal)
     return btn
   }()
   private lazy var detailButton: UIButton = {
@@ -90,7 +90,7 @@ class EditViewController: UIViewController, BindableType {
   func setupView() {
     view.backgroundColor = UIColor(hex: "F5F5F5")
     view.addSubview(cancelButton)
-    view.addSubview(saveButton)
+    view.addSubview(syncButton)
     view.addSubview(topView)
     topView.addSubview(titleTextField)
     topView.addSubview(bodyTextView)
@@ -108,7 +108,7 @@ class EditViewController: UIViewController, BindableType {
         make.top.left.equalTo(view).offset(10)
       }
     }
-    saveButton.snp.makeConstraints { (make) in
+    syncButton.snp.makeConstraints { (make) in
       make.width.equalTo(100)
       make.height.equalTo(40)
       if #available(iOS 11.0, *) {
@@ -129,7 +129,7 @@ class EditViewController: UIViewController, BindableType {
       }
     }
     topView.snp.makeConstraints { (make) in
-      make.top.equalTo(saveButton.snp.bottom)
+      make.top.equalTo(syncButton.snp.bottom)
       make.height.equalTo(UIScreen.main.bounds.height / 3)
       if #available(iOS 11.0, *) {
         make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
@@ -198,10 +198,10 @@ class EditViewController: UIViewController, BindableType {
     //delete new task
     cancelButton.rx.action = viewModel.onCancel
     
-    titleTextField.rx.text.orEmpty
-      .map { title -> Bool in
-        return !title.isEmpty
-      }.bind(to: saveButton.rx.isEnabled)
+    self.viewModel.selectedRepoTitle.asObservable()
+      .map { [unowned self] title -> Bool in
+        return !title.isEmpty && !self.viewModel.task.isServerGeneratedType
+      }.bind(to: syncButton.rx.isEnabled)
       .disposed(by: bag)
     
     titleTextField.text = viewModel.task.title
@@ -218,11 +218,8 @@ class EditViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     //save 버튼 클릭시 repository 저장
-    saveButton.rx.tap
+    syncButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
-      .filter({ [unowned self] _ -> Bool in
-        return self.viewModel.selectedRepoTitle.value != ""
-      })
       .map { [unowned self] _ -> Repository? in
         return self.viewModel.getRepo(repoName: self.viewModel.selectedRepoTitle.value)
       }

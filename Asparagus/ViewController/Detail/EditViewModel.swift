@@ -24,6 +24,7 @@ struct EditViewModel {
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
   private let issueService: IssueServiceRepresentable
+  private let authService: AuthServiceRepresentable
   private let coordinator: SceneCoordinatorType
   let selectedRepoTitle = BehaviorRelay<String>(value: "")
   
@@ -36,7 +37,8 @@ struct EditViewModel {
        updateRepo: Action<Repository?, Void>,
        addSubTask: Action<String, Void>,
        localTaskService: LocalTaskServiceType,
-       issueService: IssueServiceRepresentable) {
+       issueService: IssueServiceRepresentable,
+       authService: AuthServiceRepresentable) {
     self.task = task
     self.onUpdateTitleBody = updateTitleBodyAction
     self.onUpdateTags = updateTagsAction
@@ -46,6 +48,7 @@ struct EditViewModel {
     self.localTaskService = localTaskService
     self.coordinator = coordinator
     self.issueService = issueService
+    self.authService = authService
     
     onUpdateRepo.executionObservables
       .take(1)
@@ -105,6 +108,7 @@ struct EditViewModel {
                                      updateAssigneesAction: self.onUpdateAssignees,
                                      localTaskService: self.localTaskService,
                                      issueService: self.issueService,
+                                     authService: self.authService,
                                      editViewModel: self)
       let popUpScene = Scene.popUp(viewModel)
       return self.coordinator.transition(to: popUpScene, type: .modal)

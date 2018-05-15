@@ -13,10 +13,14 @@ import Action
 class SubTaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "SubTaskCell"
-  
+  private lazy var baseView: UIView = {
+    let view = UIView()
+    return view
+  }()
   private lazy var titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
+    label.numberOfLines = 0
     return label
   }()
   private lazy var checkButton: UIButton = {
@@ -26,17 +30,19 @@ class SubTaskCell: UITableViewCell {
   
   func setupSubviews() {
     backgroundColor = UIColor.white
-    addSubview(titleLabel)
-    addSubview(checkButton)
+    addSubview(baseView)
+    baseView.addSubview(titleLabel)
+    baseView.addSubview(checkButton)
+    baseView.snp.makeConstraints { (make) in
+      make.edges.equalToSuperview().inset(8)
+    }
     titleLabel.snp.makeConstraints { (make) in
-      make.left.equalTo(contentView).offset(10)
-      make.top.equalTo(contentView.snp.top)
-      make.bottom.equalTo(contentView.snp.bottom)
+      make.left.top.bottom.equalTo(baseView)
       make.right.equalTo(checkButton.snp.left).offset(-5)
     }
     checkButton.snp.makeConstraints { (make) in
-      make.right.equalTo(contentView.snp.right).offset(-10)
-      make.centerY.equalToSuperview()
+      make.right.equalTo(baseView)
+      make.centerY.equalTo(baseView)
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
     }
   }

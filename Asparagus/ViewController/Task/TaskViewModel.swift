@@ -122,7 +122,8 @@ struct TaskViewModel {
                                         updateRepo: this.onUpdateRepo(task: task),
                                         addSubTask: this.onAddSubTask(task: task),
                                         localTaskService: this.localTaskService,
-                                        issueService: this.issueService)
+                                        issueService: this.issueService,
+                                        authService: this.authService)
       return this.sceneCoordinator
         .transition(to: Scene.edit(editViewModel), type: .modal)
         .asObservable()
@@ -187,7 +188,8 @@ struct TaskViewModel {
                                               updateRepo: self.onUpdateRepo(task: task),
                                               addSubTask: self.onAddSubTask(task: task),
                                               localTaskService: self.localTaskService,
-                                              issueService: self.issueService)
+                                              issueService: self.issueService,
+                                              authService: self.authService)
           return self.sceneCoordinator
             .transition(to: Scene.edit(viewModel), type: .modal)
             .asObservable().map { _ in }

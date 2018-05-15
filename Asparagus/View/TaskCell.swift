@@ -20,6 +20,7 @@ class TaskCell: UITableViewCell {
     let view = UIView()
     return view
   }()
+  
   private lazy var numberLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .center
@@ -42,16 +43,21 @@ class TaskCell: UITableViewCell {
     return btn
   }()
   
+  private var dataSource = BehaviorSubject<[SubTask]>(value: [])
+  
   func setupSubviews() {
     backgroundColor = UIColor.white
     addSubview(baseView)
+    
     baseView.addSubview(numberLabel)
     baseView.addSubview(achievementView)
     baseView.addSubview(titleLabel)
     baseView.addSubview(checkButton)
+    
     baseView.snp.makeConstraints { (make) in
       make.edges.equalToSuperview().inset(20)
     }
+    
     numberLabel.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
       make.left.equalTo(baseView)

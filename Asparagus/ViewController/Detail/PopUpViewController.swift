@@ -127,8 +127,13 @@ class PopUpViewController: UIViewController, BindableType {
       })
       .disposed(by: bag)
     
-    viewModel.repoUsers()
-      .bind(to: assigneeTableView.rx.items) {
+    
+    //로그인상태에서만 assignee 정보 요청하기
+    viewModel.isLoggedIn()
+      .filter{ return $0 }
+      .flatMap({ [unowned self] _ in
+        return self.viewModel.repoUsers()
+      }).bind(to: assigneeTableView.rx.items) {
         [unowned self] (tableView: UITableView, index: Int, element: User) in
         let cell = UITableViewCell(style: .default, reuseIdentifier: "TableViewCell")
         cell.textLabel?.text = element.name

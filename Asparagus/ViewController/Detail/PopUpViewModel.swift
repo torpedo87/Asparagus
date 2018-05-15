@@ -20,6 +20,7 @@ struct PopUpViewModel {
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskServiceType
   private let issueService: IssueServiceRepresentable
+  private let authService: AuthServiceRepresentable
   private let coordinator: SceneCoordinatorType
   let repoTitles = BehaviorRelay<[String]>(value: [])
   let selectedRepoTitle = BehaviorRelay<String>(value: "")
@@ -30,6 +31,7 @@ struct PopUpViewModel {
        updateAssigneesAction: Action<(Assignee, LocalTaskService.EditMode), Void>,
        localTaskService: LocalTaskServiceType,
        issueService: IssueServiceRepresentable,
+       authService: AuthServiceRepresentable,
        editViewModel: EditViewModel) {
     self.task = task
     self.onUpdateTags = updateTagsAction
@@ -37,6 +39,7 @@ struct PopUpViewModel {
     self.localTaskService = localTaskService
     self.coordinator = coordinator
     self.issueService = issueService
+    self.authService = authService
     
     localTaskService.repositories()
       .map { results -> [String] in
@@ -54,6 +57,10 @@ struct PopUpViewModel {
   
   func dismissView() {
     coordinator.pop()
+  }
+  
+  func isLoggedIn() -> Observable<Bool> {
+    return authService.isLoggedIn.asObservable()
   }
   
   func repoUsers() -> Observable<[User]> {

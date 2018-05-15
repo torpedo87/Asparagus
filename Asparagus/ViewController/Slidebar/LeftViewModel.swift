@@ -50,7 +50,7 @@ struct LeftViewModel {
   }
   
   var sectionedItems: Observable<[TotalSection]> {
-    return Observable.combineLatest(localTaskService.tags(), localTaskService.localRepositories())
+    return Observable.zip(localTaskService.tags(), localTaskService.localRepositories())
       .map { (tagResults, localRepoResults) -> [TotalSection] in
         var localRepoItems = [LocalRepository]()
         var tagItems = [Tag]()
