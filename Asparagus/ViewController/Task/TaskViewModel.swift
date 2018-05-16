@@ -48,6 +48,15 @@ struct TaskViewModel {
       })
       .disposed(by: bag)
     
+    syncService.running.asObservable()
+      .observeOn(MainScheduler.instance)
+      .filter{ return !$0 }
+      .debug("----sync------")
+      .subscribe(onNext: { _ in
+        syncService.realTimeSync()
+      })
+      .disposed(by: bag)
+    
     //iconbadgenumber
     if let me = UserDefaults.loadUser() {
       localTaskService.tasksForAssignee(username: me.name)

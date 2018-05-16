@@ -18,6 +18,7 @@ protocol SyncServiceRepresentable {
   func updateOldServerWithRecentLocal()
   func updateOldLocalWithNewServer()
   func updateOldLocalWithRecentServer()
+  func realTimeSync()
   var running: PublishSubject<Bool> { get }
 }
 
@@ -48,9 +49,7 @@ class SyncService: SyncServiceRepresentable {
                                       exTask: task)
         }
         return Observable<TaskItem>.empty()
-      }.subscribe(onNext: { [unowned self] _ in
-        self.running.onNext(false)
-      })
+      }.subscribe()
       .disposed(by: bag)
   }
 
@@ -79,13 +78,13 @@ class SyncService: SyncServiceRepresentable {
       .reduce([TaskItem]()) { arr, task in
         return arr + [task]
       }
-      .subscribe(onNext: { [unowned self] _ in
-        self.running.onNext(false)
-        }, onCompleted: {
-          print("realtime create complete")
-          self.running.onNext(false)
-      })
+      .subscribe()
       .disposed(by: bag)
+  }
+  
+  func realTimeSync() {
+    syncWhenTaskCreatedInLocal()
+    syncWhenTaskEdittedInLocal()
   }
   
   func syncStart(fetchedTasks: Observable<[TaskItem]>) {
@@ -178,8 +177,6 @@ class SyncService: SyncServiceRepresentable {
       }, onCompleted: {
         print("updateOldLocalWithRecentServer complete")
         self.running.onNext(false)
-        self.syncWhenTaskEdittedInLocal()
-        self.syncWhenTaskCreatedInLocal()
       })
       .disposed(by: bag)
   }

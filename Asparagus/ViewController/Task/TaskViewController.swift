@@ -71,7 +71,6 @@ class TaskViewController: UIViewController, BindableType {
     view.delegate = self
     return view
   }()
-  
   private lazy var searchBar: UISearchBar = {
     let bar = UISearchBar()
     bar.isHidden = true
@@ -197,6 +196,7 @@ class TaskViewController: UIViewController, BindableType {
       .asDriver(onErrorJustReturn: ())
       .drive(viewModel.menuTap)
       .disposed(by: bag)
+    
   }
   
   func toggleSearchBar() {
