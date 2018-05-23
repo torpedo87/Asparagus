@@ -72,7 +72,10 @@ class TaskItem: Object, Decodable {
     case labels
   }
   
-  convenience init(uid: String = UUID().uuidString, title: String, body: String?, checked: String, added: String, updated: String, owner: User?, repository: Repository?, number: Int, assignees: List<User>, labels: List<Label>) {
+  convenience init(uid: String = UUID().uuidString, title: String, body: String?,
+                   checked: String, added: String, updated: String, owner: User?,
+                   repository: Repository?, number: Int, assignees: List<User>,
+                   labels: List<Label>) {
     self.init()
     self.uid = uid
     self.title = title
@@ -105,7 +108,9 @@ class TaskItem: Object, Decodable {
     let labels = List<Label>()
     let labelsArr = try container.decode([Label].self, forKey: .labels)
     labelsArr.forEach{ labels.append($0) }
-    self.init(uid: uid, title: title, body: body, checked: checked, added: added, updated: updated, owner: owner, repository: repository, number: number, assignees: assignees, labels: labels)
+    self.init(uid: uid, title: title, body: body, checked: checked, added: added,
+              updated: updated, owner: owner, repository: repository, number: number,
+              assignees: assignees, labels: labels)
   }
 }
 

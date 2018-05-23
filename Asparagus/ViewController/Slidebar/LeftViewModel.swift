@@ -16,13 +16,13 @@ struct LeftViewModel {
   private let bag = DisposeBag()
   private let authService: AuthServiceRepresentable
   private let sceneCoordinator: SceneCoordinatorType
-  private let localTaskService: LocalTaskServiceType
+  private let localTaskService: LocalTaskService
   let selectedItemSubject = PublishSubject<MyModel>()
   let isLoggedIn = BehaviorRelay<Bool>(value: false)
   
-  init(authService: AuthServiceRepresentable = AuthService(),
-       coordinator: SceneCoordinatorType = SceneCoordinator(),
-       localTaskService: LocalTaskServiceType = LocalTaskService()) {
+  init(authService: AuthServiceRepresentable,
+       coordinator: SceneCoordinatorType,
+       localTaskService: LocalTaskService) {
     self.authService = authService
     self.sceneCoordinator = coordinator
     self.localTaskService = localTaskService
@@ -71,16 +71,6 @@ struct LeftViewModel {
           TotalSection(header: "Repository", items: localRepoItems.map{ .localRepo($0)}),
           TotalSection(header: "Tag", items: tagItems.map{ .tag($0) })
         ]
-    }
-  }
-  
-  func goToSetting() -> CocoaAction {
-    return CocoaAction { _ in
-      let settingViewModel = SettingViewModel(authService: self.authService,
-                                              sceneCoordinator: self.sceneCoordinator)
-      let settingScene = Scene.setting(settingViewModel)
-      return self.sceneCoordinator.transition(to: settingScene, type: .modal)
-        .asObservable().map { _ in }
     }
   }
   

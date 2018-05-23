@@ -45,8 +45,10 @@ class PopUpViewController: UIViewController, BindableType {
   private lazy var tagTableView: UITableView = {
     let view = UITableView()
     view.rowHeight = UIScreen.main.bounds.height / 15
-    view.register(SubTagCell.self, forCellReuseIdentifier: SubTagCell.reuseIdentifier)
-    view.register(NewTaskCell.self, forCellReuseIdentifier: NewTaskCell.reuseIdentifier)
+    view.register(SubTagCell.self,
+                  forCellReuseIdentifier: SubTagCell.reuseIdentifier)
+    view.register(NewTaskCell.self,
+                  forCellReuseIdentifier: NewTaskCell.reuseIdentifier)
     return view
   }()
   private lazy var baseView: UIView = {
@@ -173,12 +175,15 @@ class PopUpViewController: UIViewController, BindableType {
       .bind(to: tagTableView.rx.items) { [unowned self]
         (tableView: UITableView, index: Int, item: Tag) in
         if index == 0 {
-          let cell = NewTaskCell(style: .default, reuseIdentifier: NewTaskCell.reuseIdentifier)
+          let cell = NewTaskCell(style: .default,
+                                 reuseIdentifier: NewTaskCell.reuseIdentifier)
           cell.configureNewTagCell(onUpdateTags: self.viewModel.onUpdateTags)
           return cell
         } else {
-          let cell = SubTagCell(style: .default, reuseIdentifier: SubTagCell.reuseIdentifier)
-          cell.configureCell(item: item, onUpdateTags: self.viewModel.onUpdateTags)
+          let cell = SubTagCell(style: .default,
+                                reuseIdentifier: SubTagCell.reuseIdentifier)
+          cell.configureCell(item: item,
+                             onUpdateTags: self.viewModel.onUpdateTags)
           return cell
         }
       }
@@ -214,7 +219,10 @@ class PopUpViewController: UIViewController, BindableType {
   }
   
   func fadeView(view: UIView, hidden: Bool) {
-    UIView.transition(with: view, duration: 0.5, options: [.transitionCrossDissolve], animations: {
+    UIView.transition(with: view,
+                      duration: 0.5,
+                      options: [.transitionCrossDissolve],
+                      animations: {
       view.isHidden = hidden
     })
   }
@@ -242,7 +250,8 @@ class PopUpViewController: UIViewController, BindableType {
 }
 
 extension PopUpViewController: UIGestureRecognizerDelegate {
-  func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+  func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                         shouldReceive touch: UITouch) -> Bool {
     return touch.view == gestureRecognizer.view
   }
 }

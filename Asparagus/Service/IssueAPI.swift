@@ -12,7 +12,8 @@ import Moya
 enum IssueAPI {
   
   case fetchAllIssues(page: Int)
-  case editIssue(newTitle: String, newBody: String, newState: String, newLabels: [String], newAssignees: [String], exTask: TaskItem)
+  case editIssue(newTitle: String, newBody: String, newState: String,
+    newLabels: [String], newAssignees: [String], exTask: TaskItem)
   case createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference)
   case getRepoUsers(repo: Repository)
 }

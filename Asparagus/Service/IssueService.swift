@@ -15,7 +15,12 @@ import Moya
 protocol IssueServiceRepresentable {
   func fetchAllIssues(page: Int) -> Observable<[TaskItem]>
   @discardableResult
-  func editServerTask(newTitle: String, newBody: String, newState: String, newLabels: [String], newAssignees: [String], exTask: TaskItem) -> Observable<TaskItem>
+  func editServerTask(newTitle: String,
+                      newBody: String,
+                      newState: String,
+                      newLabels: [String],
+                      newAssignees: [String],
+                      exTask: TaskItem) -> Observable<TaskItem>
   func createIssueWithLocalTask(localTaskWithRef: LocalTaskService.TaskItemWithReference) -> Observable<(TaskItem, LocalTaskService.TaskItemWithReference)>
   func getRepoUsers(repo: Repository) -> Observable<[User]>
 }

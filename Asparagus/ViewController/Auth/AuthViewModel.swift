@@ -41,6 +41,7 @@ struct AuthViewModel {
     let taskViewModel = TaskViewModel(issueService: issueService,
                                       coordinator: sceneCoordinator,
                                       localTaskService: localTaskService,
+                                      authService: authService,
                                       syncService: syncService)
     let leftViewModel = LeftViewModel(authService: authService,
                                       coordinator: sceneCoordinator,

@@ -22,7 +22,7 @@ struct EditViewModel {
   let onAddSubTask: Action<String, Void>
   let onUpdateRepo: Action<Repository?, Void>
   private let bag = DisposeBag()
-  private let localTaskService: LocalTaskServiceType
+  private let localTaskService: LocalTaskService
   private let issueService: IssueServiceRepresentable
   private let authService: AuthServiceRepresentable
   private let coordinator: SceneCoordinatorType
@@ -36,7 +36,7 @@ struct EditViewModel {
        updateAssigneesAction: Action<(Assignee, LocalTaskService.EditMode), Void>,
        updateRepo: Action<Repository?, Void>,
        addSubTask: Action<String, Void>,
-       localTaskService: LocalTaskServiceType,
+       localTaskService: LocalTaskService,
        issueService: IssueServiceRepresentable,
        authService: AuthServiceRepresentable) {
     self.task = task

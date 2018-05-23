@@ -178,6 +178,8 @@ class TaskViewController: UIViewController, BindableType {
     tableView.rx.itemSelected
       .subscribe(onNext: { [unowned self] indexPath in
         self.tableView.deselectRow(at: indexPath, animated: false)
+        self.tableView.beginUpdates()
+        self.tableView.endUpdates()
       })
       .disposed(by: bag)
     
@@ -217,7 +219,8 @@ class TaskViewController: UIViewController, BindableType {
     dataSource = RxTableViewSectionedAnimatedDataSource<TaskSection> (
       configureCell: {
         [unowned self] dataSource, tableView, indexPath, item in
-        let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier, for: indexPath) as! TaskCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier,
+                                                 for: indexPath) as! TaskCell
         cell.configureCell(item: item, action: self.viewModel.onToggle(task: item))
         return cell
       },
@@ -228,7 +231,8 @@ class TaskViewController: UIViewController, BindableType {
     searchDataSource = RxTableViewSectionedReloadDataSource<TaskSection> (
       configureCell: {
         [unowned self] dataSource, tableView, indexPath, item in
-        let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier, for: indexPath) as! TaskCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.reuseIdentifier,
+                                                 for: indexPath) as! TaskCell
         cell.configureCell(item: item, action: self.viewModel.onToggle(task: item))
         return cell
       },
@@ -240,7 +244,8 @@ class TaskViewController: UIViewController, BindableType {
 }
 
 extension TaskViewController: UITableViewDelegate {
-  func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+  func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView,
+                 forSection section: Int) {
     view.tintColor = UIColor.white
     let header = view as! UITableViewHeaderFooterView
     header.textLabel?.textColor = UIColor(hex: "2E3136")

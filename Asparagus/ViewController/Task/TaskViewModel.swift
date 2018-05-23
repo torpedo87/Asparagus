@@ -15,7 +15,7 @@ import RealmSwift
 struct TaskViewModel {
   private let bag = DisposeBag()
   private let sceneCoordinator: SceneCoordinatorType
-  private let localTaskService: LocalTaskServiceType
+  private let localTaskService: LocalTaskService
   private let authService: AuthServiceRepresentable
   private let issueService: IssueServiceRepresentable
   private let syncService: SyncServiceRepresentable
@@ -26,10 +26,10 @@ struct TaskViewModel {
   let running = BehaviorSubject<Bool>(value: false)
   let menuTap = PublishSubject<Void>()
   
-  init(issueService: IssueServiceRepresentable = IssueService(),
-       coordinator: SceneCoordinatorType = SceneCoordinator(),
-       localTaskService: LocalTaskServiceType = LocalTaskService(),
-       authService: AuthServiceRepresentable = AuthService(),
+  init(issueService: IssueServiceRepresentable,
+       coordinator: SceneCoordinatorType,
+       localTaskService: LocalTaskService,
+       authService: AuthServiceRepresentable,
        syncService: SyncServiceRepresentable) {
     self.localTaskService = localTaskService
     self.sceneCoordinator = coordinator
@@ -59,7 +59,7 @@ struct TaskViewModel {
     
     //iconbadgenumber
     if let me = UserDefaults.loadUser() {
-      localTaskService.tasksForAssignee(username: me.name)
+      localTaskService.openTasksForAssignee(username: me.name)
         .map { results -> Int in
           return results.count
         }.asDriver(onErrorJustReturn: 0)

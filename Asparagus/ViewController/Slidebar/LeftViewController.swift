@@ -20,11 +20,6 @@ class LeftViewController: UIViewController, BindableType {
     view.backgroundColor = UIColor(hex: "283A45")
     return view
   }()
-//  private lazy var settingButton: UIButton = {
-//    let btn = UIButton()
-//    btn.setImage(UIImage(named: "setting"), for: .normal)
-//    return btn
-//  }()
   private lazy var appLabel: UILabel = {
     let label = UILabel()
     label.text = "Asparagus"
@@ -59,7 +54,6 @@ class LeftViewController: UIViewController, BindableType {
     view.backgroundColor = UIColor(hex: "283A45")
     topView.addSubview(authButton)
     topView.addSubview(appLabel)
-    //topView.addSubview(settingButton)
     view.addSubview(topView)
     view.addSubview(tableView)
     topView.snp.makeConstraints { (make) in
@@ -82,11 +76,7 @@ class LeftViewController: UIViewController, BindableType {
       appLabel.sizeToFit()
       make.center.equalTo(topView)
     }
-//    settingButton.snp.makeConstraints { (make) in
-//      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
-//      make.centerY.equalTo(topView)
-//      make.right.equalTo(topView).offset(-10)
-//    }
+
     tableView.snp.makeConstraints { (make) in
       if #available(iOS 11.0, *) {
         make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
@@ -100,7 +90,6 @@ class LeftViewController: UIViewController, BindableType {
   }
   
   func bindViewModel() {
-    //settingButton.rx.action = viewModel.goToSetting()
     authButton.rx.action = viewModel.onAuth()
     
     viewModel.sectionedItems

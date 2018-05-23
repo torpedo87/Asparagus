@@ -25,11 +25,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       self.window = sceneCoordinator.window
       let issueService = IssueService()
       let localTaskService = LocalTaskService()
+      let authService = AuthService()
       let syncService = SyncService(issueService: issueService, localTaskService: localTaskService)
-      let leftViewModel = LeftViewModel(authService: AuthService(), coordinator: sceneCoordinator)
+      let leftViewModel = LeftViewModel(authService: authService,
+                                        coordinator: sceneCoordinator,
+                                        localTaskService: localTaskService)
       let taskViewModel = TaskViewModel(issueService: issueService,
                                         coordinator: sceneCoordinator,
                                         localTaskService: localTaskService,
+                                        authService: authService,
                                         syncService: syncService)
       let sideBarScene = Scene.sidebar(leftViewModel, taskViewModel)
       sceneCoordinator.transition(to: sideBarScene, type: .root)

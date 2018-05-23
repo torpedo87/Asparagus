@@ -18,7 +18,7 @@ struct PopUpViewModel {
   let onUpdateTags: Action<(Tag, LocalTaskService.EditMode), Void>
   let onUpdateAssignees: Action<(Assignee, LocalTaskService.EditMode), Void>
   private let bag = DisposeBag()
-  private let localTaskService: LocalTaskServiceType
+  private let localTaskService: LocalTaskService
   private let issueService: IssueServiceRepresentable
   private let authService: AuthServiceRepresentable
   private let coordinator: SceneCoordinatorType
@@ -29,7 +29,7 @@ struct PopUpViewModel {
        coordinator: SceneCoordinatorType,
        updateTagsAction: Action<(Tag, LocalTaskService.EditMode), Void>,
        updateAssigneesAction: Action<(Assignee, LocalTaskService.EditMode), Void>,
-       localTaskService: LocalTaskServiceType,
+       localTaskService: LocalTaskService,
        issueService: IssueServiceRepresentable,
        authService: AuthServiceRepresentable,
        editViewModel: EditViewModel) {

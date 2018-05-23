@@ -43,8 +43,6 @@ class TaskCell: UITableViewCell {
     return btn
   }()
   
-  private var dataSource = BehaviorSubject<[SubTask]>(value: [])
-  
   func setupSubviews() {
     backgroundColor = UIColor.white
     addSubview(baseView)

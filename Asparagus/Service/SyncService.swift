@@ -26,10 +26,10 @@ class SyncService: SyncServiceRepresentable {
   
   private let bag = DisposeBag()
   private let issueService: IssueServiceRepresentable
-  private let localTaskService: LocalTaskServiceType
+  private let localTaskService: LocalTaskService
   let running = PublishSubject<Bool>()
   
-  init(issueService: IssueServiceRepresentable, localTaskService: LocalTaskServiceType) {
+  init(issueService: IssueServiceRepresentable, localTaskService: LocalTaskService) {
     self.issueService = issueService
     self.localTaskService = localTaskService
   }
