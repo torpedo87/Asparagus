@@ -48,15 +48,6 @@ struct TaskViewModel {
       })
       .disposed(by: bag)
     
-    syncService.running.asObservable()
-      .observeOn(MainScheduler.instance)
-      .filter{ return !$0 }
-      .debug("----sync------")
-      .subscribe(onNext: { _ in
-        syncService.realTimeSync()
-      })
-      .disposed(by: bag)
-    
     //iconbadgenumber
     if let me = UserDefaults.loadUser() {
       localTaskService.openTasksForAssignee(username: me.name)
@@ -72,9 +63,19 @@ struct TaskViewModel {
   }
   
   func bindOutput() {
+    
+    let syncRunning = syncService.running.share()
    
-    syncService.running
+    syncRunning
       .bind(to: running)
+      .disposed(by: bag)
+    
+    syncRunning.asObservable()
+      .observeOn(MainScheduler.instance)
+      .filter{ return !$0 }
+      .subscribe(onNext: { _ in
+        self.syncService.realTimeSync()
+      })
       .disposed(by: bag)
   }
   

@@ -83,7 +83,6 @@ class TaskViewController: UIViewController, BindableType {
     super.viewDidLoad()
     setupView()
     configureDataSource()
-    viewModel.selectedItemSubject.onNext(.inbox("Inbox"))
   }
   
   func setupView() {
