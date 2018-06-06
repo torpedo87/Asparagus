@@ -84,6 +84,13 @@ class IssueViewController: UIViewController, BindableType, GoBackable {
   }
   
   func bindViewModel() {
+    viewModel.sectionedItems
+      .observeOn(MainScheduler.instance)
+      .subscribeOn(MainScheduler.instance)
+      .subscribe(onNext: { [unowned self] sections in
+        self.hideTableviewHeader(sections: sections, i: 1)
+      })
+      .disposed(by: bag)
     
     viewModel.sectionedItems
       .bind(to: tableView.rx.items(dataSource: dataSource))
@@ -110,6 +117,14 @@ class IssueViewController: UIViewController, BindableType, GoBackable {
     
     customBackButton.rx.action = viewModel.popView()
     createBarButtonItem.rx.action = viewModel.onCreateTask()
+  }
+  
+  func hideTableviewHeader(sections: [TaskSection], i: Int) {
+    if sections[i].items.count == 0 {
+      self.tableView.headerView(forSection: i)?.isHidden = true
+    } else {
+      self.tableView.headerView(forSection: i)?.isHidden = false
+    }
   }
   
   func configureDataSource() {

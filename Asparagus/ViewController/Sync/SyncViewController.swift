@@ -69,7 +69,7 @@ class SyncViewController: UIViewController, BindableType {
     }
     
     toggleSwitch.snp.makeConstraints { (make) in
-      toggleSwitch.transform = CGAffineTransform(scaleX: 2.0, y: 2.0)
+      toggleSwitch.transform = CGAffineTransform(scaleX: 2.0, y: 1.7)
       make.top.equalTo(imgView.snp.bottom).offset(10)
       make.centerX.equalToSuperview()
     }

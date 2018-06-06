@@ -95,6 +95,8 @@ class LocalTaskService {
       try realm.write {
         exTask.setDateWhenUpdated()
         exTask.repository = self.getRepository(repoName: repoName)
+        let localRepo = defaultLocalRepo(realm: realm, repoUid: exTask.repository!.uid, repoName: repoName)
+        localRepo.tasks.append(exTask)
       }
       return .just(exTask)
     }
@@ -628,6 +630,7 @@ class LocalTaskService {
             exTask.owner = newTask.owner
             exTask.assignees = newTask.assignees
             exTask.labels = newTask.labels
+            exTask.isStarred = newTask.isStarred
             for label in exTask.labels.toArray() {
               let tag = self.defaultTag(realm: realm, tagTitle: label.name)
               tag.tasks.append(exTask)
@@ -658,6 +661,7 @@ class LocalTaskService {
           newTask.tag = exTask.tag
           newTask.assignee = exTask.assignee
           newTask.subTasks = exTask.subTasks
+          newTask.isStarred = exTask.isStarred
           newTask.localRepository = exTask.localRepository
           try! realm.write {
             realm.add(newTask)

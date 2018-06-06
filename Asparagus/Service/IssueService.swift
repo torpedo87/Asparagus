@@ -103,6 +103,7 @@ class IssueService: IssueServiceRepresentable {
             newTask.tag = exTask.tag
             newTask.assignee = exTask.assignee
             newTask.localRepository = exTask.localRepository
+            newTask.isStarred = exTask.isStarred
             observer.onNext(newTask)
           } else {
             observer.onError(Errors.editServerTaskFailed)

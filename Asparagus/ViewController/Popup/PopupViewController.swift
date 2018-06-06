@@ -159,7 +159,6 @@ class PopupViewController: UIViewController, BindableType {
           return (assignee, .add)
         }
       }
-      .debug("------0------------")
       .bind(to: viewModel.onUpdateAssignees.inputs)
       .disposed(by: bag)
     

@@ -49,11 +49,19 @@ struct RepositoryViewModel {
     
     Observable.combineLatest(Reachability.rx.isOnline,
                              authService.loginStatus.asObservable())
-      .debug("-----------------sync----------------------")
       .filter { $0.0 && $0.1 }
       .subscribeOn(globalScheduler)
       .subscribe(onNext: { _ in
         syncService.syncStart(fetchedTasks: issueService.fetchAllIssues(page: 1))
+      })
+      .disposed(by: bag)
+    
+    localTaskService.tasksForLocalRepo(repoUid: "Today")
+      .map { results -> Int in
+        return results.count
+      }.asDriver(onErrorJustReturn: 0)
+      .drive(onNext: { counts in
+        UIApplication.shared.applicationIconBadgeNumber = counts
       })
       .disposed(by: bag)
     
