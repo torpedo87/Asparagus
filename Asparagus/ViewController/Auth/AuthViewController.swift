@@ -15,17 +15,7 @@ import RxKeyboard
 class AuthViewController: UIViewController, BindableType {
   var viewModel: AuthViewModel!
   private let bag = DisposeBag()
-  private lazy var cancelButton: UIButton = {
-    let btn = UIButton()
-    btn.setTitle("CANCEL", for: .normal)
-    btn.setTitleColor(UIColor.blue, for: .normal)
-    return btn
-  }()
-  private lazy var imgView: UIImageView = {
-    let view = UIImageView()
-    view.contentMode = .scaleAspectFill
-    return view
-  }()
+  
   private lazy var stackView: UIStackView = {
     let stack = UIStackView()
     stack.axis = .vertical
@@ -34,26 +24,51 @@ class AuthViewController: UIViewController, BindableType {
     stack.distribution = .fillEqually
     return stack
   }()
+  private lazy var idView: UIView = {
+    let view = UIView()
+    view.backgroundColor = UIColor(hex: "DBD9DB")
+    view.layer.cornerRadius = 10
+    return view
+  }()
+  private lazy var passwordView: UIView = {
+    let view = UIView()
+    view.backgroundColor = UIColor(hex: "DBD9DB")
+    view.layer.cornerRadius = 10
+    return view
+  }()
+  private lazy var idLabel: UILabel = {
+    let label = UILabel()
+    label.backgroundColor = UIColor.clear
+    label.text = "ID"
+    return label
+  }()
+  private lazy var passwordLabel: UILabel = {
+    let label = UILabel()
+    label.backgroundColor = UIColor.clear
+    label.text = "Password"
+    return label
+  }()
   private lazy var idTextField: UITextField = {
     let txtField = UITextField()
-    txtField.placeholder = "Please enter your GitHub ID"
-    txtField.layer.borderColor = UIColor(hex: "2E3136").cgColor
-    txtField.layer.borderWidth = 0.5
+    txtField.placeholder = "GitHub ID"
+    txtField.backgroundColor = UIColor.clear
+    txtField.autocapitalizationType = .none
     return txtField
   }()
   private lazy var passWordTextField: UITextField = {
     let txtField = UITextField()
-    txtField.placeholder = " Please enter your password"
-    txtField.layer.borderColor = UIColor(hex: "2E3136").cgColor
+    txtField.placeholder = "Required"
+    txtField.backgroundColor = UIColor.clear
+    txtField.autocapitalizationType = .none
     txtField.isSecureTextEntry = true
-    txtField.layer.borderWidth = 0.5
     return txtField
   }()
   private lazy var authButton: UIButton = {
     let btn = UIButton()
     btn.isEnabled = false
-    btn.setTitleColor(UIColor.blue, for: .normal)
-    btn.setTitleColor(UIColor.gray, for: .disabled)
+    btn.setTitleColor(.white, for: .normal)
+    btn.backgroundColor = .blue
+    btn.layer.cornerRadius = 10
     return btn
   }()
   private lazy var forgotPasswordButton: UIButton = {
@@ -69,69 +84,52 @@ class AuthViewController: UIViewController, BindableType {
   }
   
   func setupView() {
+    title = "Github account"
     view.backgroundColor = UIColor.white
-    view.addSubview(cancelButton)
-    view.addSubview(imgView)
     view.addSubview(stackView)
-    stackView.addArrangedSubview(idTextField)
-    stackView.addArrangedSubview(passWordTextField)
-    stackView.addArrangedSubview(authButton)
+    stackView.addArrangedSubview(idView)
+    stackView.addArrangedSubview(passwordView)
     stackView.addArrangedSubview(forgotPasswordButton)
-    
-    cancelButton.snp.makeConstraints { (make) in
-      cancelButton.sizeToFit()
-      if #available(iOS 11.0, *) {
-        make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(20)
-        make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(20)
-      } else {
-        make.top.left.equalTo(view).offset(20)
-      }
+    stackView.addArrangedSubview(authButton)
+    idView.addSubview(idLabel)
+    idView.addSubview(idTextField)
+    passwordView.addSubview(passwordLabel)
+    passwordView.addSubview(passWordTextField)
+    idLabel.snp.makeConstraints { (make) in
+      make.left.equalTo(idView).offset(5)
+      make.top.bottom.equalTo(idView)
+      make.width.equalTo(80)
     }
-    
-    imgView.snp.makeConstraints { (make) in
-      make.centerX.equalToSuperview()
-      make.centerY.equalToSuperview().offset(-UIScreen.main.bounds.height / 8)
-      make.width.height.equalTo(UIScreen.main.bounds.height / 4)
-      make.bottom.equalTo(stackView.snp.top).offset(-20)
+    idTextField.snp.makeConstraints { (make) in
+      make.right.top.bottom.equalTo(idView)
+      make.left.equalTo(idLabel.snp.right)
+    }
+    passwordLabel.snp.makeConstraints { (make) in
+      make.left.equalTo(passwordView).offset(5)
+      make.top.bottom.equalTo(passwordView)
+      make.width.equalTo(80)
+    }
+    passWordTextField.snp.makeConstraints { (make) in
+      make.right.top.bottom.equalTo(passwordView)
+      make.left.equalTo(passwordLabel.snp.right)
     }
     
     stackView.snp.makeConstraints { (make) in
       make.centerX.equalToSuperview()
       make.height.equalTo(UIScreen.main.bounds.height / 4)
       if #available(iOS 11.0, *) {
-        make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(30)
-        make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-30)
+        make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(50)
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left).offset(20)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right).offset(-20)
       } else {
-        make.left.equalTo(view).offset(30)
-        make.right.equalTo(view).offset(-30)
+        make.top.equalTo(view).offset(50)
+        make.left.equalTo(view).offset(20)
+        make.right.equalTo(view).offset(-20)
       }
     }
   }
   
   func bindViewModel() {
-    RxKeyboard.instance.visibleHeight
-      .skip(1)
-      .filter{ $0 == 0}
-      .drive(onNext: { [unowned self] _ in
-        UIView.animate(withDuration: 1.0) {
-          self.imgView.snp.updateConstraints { make in
-            make.centerY.equalToSuperview().offset(-UIScreen.main.bounds.height / 8)
-          }
-          self.view.layoutIfNeeded()
-        }
-      })
-      .disposed(by: bag)
-    
-    RxKeyboard.instance.willShowVisibleHeight
-      .drive(onNext: { [unowned self] _ in
-        UIView.animate(withDuration: 1.0) {
-          self.imgView.snp.updateConstraints { make in
-            make.centerY.equalToSuperview().offset(-UIScreen.main.bounds.height / 5)
-          }
-          self.view.layoutIfNeeded()
-        }
-      })
-      .disposed(by: bag)
     
     Observable.combineLatest(idTextField.rx.text.orEmpty, passWordTextField.rx.text.orEmpty)
       .map { (tuple) -> Bool in
@@ -166,7 +164,7 @@ class AuthViewController: UIViewController, BindableType {
       .asDriver(onErrorJustReturn: .unavailable("request failed"))
       .drive(onNext: { [unowned self] status in
         switch status {
-        case .authorized: self.viewModel.goToSidebarScene()
+        case .authorized: self.navigationController?.popViewController(animated: true)
         case .unavailable(let value): self.alertErrorMsg(message: value)
         }
       })
@@ -174,7 +172,6 @@ class AuthViewController: UIViewController, BindableType {
     
     
     forgotPasswordButton.rx.action = viewModel.onForgotPassword()
-    cancelButton.rx.action = viewModel.dismissView()
     
     view.rx.tapGesture()
       .when(UIGestureRecognizerState.recognized)
@@ -183,22 +180,6 @@ class AuthViewController: UIViewController, BindableType {
       })
       .disposed(by: bag)
     
-    viewModel.isLoggedIn.asObservable()
-      .subscribe(onNext: { [unowned self] bool in
-        if bool {
-          if let me = UserDefaults.loadUser(), let imgUrl = me.imgUrl {
-            do {
-              let imgData = try Data(contentsOf: imgUrl)
-              self.imgView.image = UIImage(data: imgData)
-            } catch {
-              self.imgView.image = UIImage(named: "user")
-            }
-          }
-        } else {
-          self.imgView.image = UIImage(named: "user")
-        }
-      })
-      .disposed(by: bag)
   }
   
   private func alertErrorMsg(message: String) {

@@ -1,8 +1,8 @@
 //
-//  EditViewModel.swift
+//  IssueDetailViewModel.swift
 //  Asparagus
 //
-//  Created by junwoo on 2018. 3. 24..
+//  Created by junwoo on 2018. 6. 3..
 //  Copyright © 2018년 samchon. All rights reserved.
 //
 
@@ -12,21 +12,18 @@ import RxCocoa
 import Action
 import RxDataSources
 
-struct EditViewModel {
-  
+struct IssueDetailViewModel {
   let task: TaskItem
   let onCancel: CocoaAction!
   let onUpdateTitleBody: Action<(String, String), Void>
   let onUpdateTags: Action<(Tag, LocalTaskService.EditMode), Void>
   let onUpdateAssignees: Action<(Assignee, LocalTaskService.EditMode), Void>
   let onAddSubTask: Action<String, Void>
-  let onUpdateRepo: Action<Repository?, Void>
   private let bag = DisposeBag()
   private let localTaskService: LocalTaskService
   private let issueService: IssueServiceRepresentable
   private let authService: AuthServiceRepresentable
   private let coordinator: SceneCoordinatorType
-  let selectedRepoTitle = BehaviorRelay<String>(value: "")
   
   init(task: TaskItem,
        coordinator: SceneCoordinatorType,
@@ -34,7 +31,7 @@ struct EditViewModel {
        updateTitleBodyAction: Action<(String, String), Void>,
        updateTagsAction: Action<(Tag, LocalTaskService.EditMode), Void>,
        updateAssigneesAction: Action<(Assignee, LocalTaskService.EditMode), Void>,
-       updateRepo: Action<Repository?, Void>,
+       updateRepo: CocoaAction,
        addSubTask: Action<String, Void>,
        localTaskService: LocalTaskService,
        issueService: IssueServiceRepresentable,
@@ -43,23 +40,19 @@ struct EditViewModel {
     self.onUpdateTitleBody = updateTitleBodyAction
     self.onUpdateTags = updateTagsAction
     self.onUpdateAssignees = updateAssigneesAction
-    self.onUpdateRepo = updateRepo
     self.onAddSubTask = addSubTask
     self.localTaskService = localTaskService
     self.coordinator = coordinator
     self.issueService = issueService
     self.authService = authService
     
-    onUpdateRepo.executionObservables
-      .take(1)
-      .subscribe(onNext: { _ in
-        coordinator.pop()
-      })
-      .disposed(by: bag)
-    
     onCancel = CocoaAction {
       if let cancelAction = cancelAction {
-        cancelAction.execute(())
+        if task.title == "" && !task.isServerGeneratedType {
+          cancelAction.execute(())
+        } else if task.title != "" && !task.isServerGeneratedType {
+          updateRepo.execute(())
+        }
       }
       return coordinator.pop()
         .asObservable().map { _ in }
@@ -86,8 +79,18 @@ struct EditViewModel {
       })
   }
   
-  func dismissView() {
-    coordinator.pop()
+  func popView() -> CocoaAction {
+    return CocoaAction { _ in
+      return self.coordinator.pop()
+        .asObservable().map{ _ in }
+    }
+  }
+  
+  func popup(mode: PopupMode) -> CocoaAction {
+    return CocoaAction { _ in
+      return self.coordinator.transition(to: .popup(self, mode), type: .modal)
+        .asObservable().map{ _ in }
+    }
   }
   
   func onToggle(task: SubTask) -> CocoaAction {
@@ -96,24 +99,29 @@ struct EditViewModel {
     }
   }
   
-  func getRepo(repoName: String) -> Repository? {
-    return localTaskService.getRepository(repoName: repoName)
+  func isLoggedIn() -> Observable<Bool> {
+    return authService.loginStatus.asObservable()
   }
   
-  func goToPopUpScene() -> CocoaAction {
-    return CocoaAction {
-      let viewModel = PopUpViewModel(task: self.task,
-                                     coordinator: self.coordinator,
-                                     updateTagsAction: self.onUpdateTags,
-                                     updateAssigneesAction: self.onUpdateAssignees,
-                                     localTaskService: self.localTaskService,
-                                     issueService: self.issueService,
-                                     authService: self.authService,
-                                     editViewModel: self)
-      let popUpScene = Scene.popUp(viewModel)
-      return self.coordinator.transition(to: popUpScene, type: .modal)
-        .asObservable()
-        .map{ _ in }
+  func repoUsers() -> Observable<[User]> {
+    if let repo = task.repository {
+      return issueService.getRepoUsers(repo: repo)
+    } else {
+      return Observable<[User]>.just([])
     }
+  }
+  
+  func tags() -> Observable<[Tag]> {
+    return localTaskService.tagsForTask(task: task)
+      .map({ result -> [Tag] in
+        let tags = result.toArray()
+        let filteredTags = Array(Set(tags))
+        let newTag = Tag()
+        var temp = [newTag]
+        filteredTags.forEach({ (tag) in
+          temp.append(tag)
+        })
+        return temp
+      })
   }
 }

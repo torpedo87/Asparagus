@@ -11,14 +11,23 @@ import RxSwift
 import RxCocoa
 
 protocol AuthServiceRepresentable {
-  var isLoggedIn: Driver<Bool> { get }
-  var status: Driver<AuthService.AccountStatus> { get }
+  var loginStatus: BehaviorSubject<Bool> { get }
   func requestToken(userId: String, userPassword: String) -> Observable<AuthService.AccountStatus>
   func removeToken(userId: String, userPassword: String) -> Observable<AuthService.AccountStatus>
   func getUser() -> Observable<User>
 }
 
 struct AuthService: AuthServiceRepresentable {
+  var loginStatus = BehaviorSubject<Bool>(value: false)
+  
+  init() {
+    if let _ = UserDefaults.loadToken() {
+      loginStatus.onNext(true)
+    } else {
+      loginStatus.onNext(false)
+    }
+  }
+  
   enum AccountError: Error {
     case requestFail
     case invalidUserInfo
@@ -71,6 +80,7 @@ struct AuthService: AuthServiceRepresentable {
         if 200 ..< 300 ~= response.statusCode {
           let token = try! JSONDecoder().decode(Token.self, from: data)
           UserDefaults.saveToken(token: token)
+          self.loginStatus.onNext(true)
           return AccountStatus.authorized(token)
         } else if 401 == response.statusCode {
           throw AccountError.invalidUserInfo
@@ -123,6 +133,7 @@ struct AuthService: AuthServiceRepresentable {
         if 200..<300 ~= response.statusCode {
           UserDefaults.removeLocalToken()
           UserDefaults.removeMe()
+          self.loginStatus.onNext(false)
           return .authorized(nil)
         } else if 401 == response.statusCode {
           throw AccountError.invalidUserInfo
@@ -174,31 +185,5 @@ struct AuthService: AuthServiceRepresentable {
       .catchError({ (error) -> Observable<User> in
         return Observable.empty()
       })
-  }
-  
-  var status: Driver<AccountStatus> {
-    return Observable.create { observer in
-      if let token = UserDefaults.loadToken() {
-        observer.onNext(.authorized(token))
-      } else {
-        observer.onNext(.unavailable("caanot load token"))
-      }
-      return Disposables.create()
-      }
-      .asDriver(onErrorJustReturn: .unavailable("unAuthorized"))
-  }
-  
-  var isLoggedIn: Driver<Bool> {
-    return Observable.create { observer in
-      if let _ = UserDefaults.loadToken() {
-        observer.onNext(true)
-        observer.onCompleted()
-      } else {
-        observer.onNext(false)
-        observer.onCompleted()
-      }
-      return Disposables.create()
-      }
-      .asDriver(onErrorJustReturn: false)
   }
 }

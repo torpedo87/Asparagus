@@ -22,6 +22,8 @@ class LocalTaskService {
   var recentServerDict = [String:(TaskItem,TaskItemWithReference)]()
   var recentLocalDict = [String:TaskItem]()
   var newServerDict = [String:TaskItem]()
+  var createdLocalDict = [String:TaskItem]()
+  var deletedLocalDict = [String:TaskItem]()
   let backgroundQueue = DispatchQueue(label: "background")
   
   enum TaskServiceError: Error {
@@ -266,6 +268,7 @@ class LocalTaskService {
     let result = withRealm("tasksForLocalRepo") { realm -> Observable<Results<TaskItem>> in
       if let localRepo = realm.object(ofType: LocalRepository.self, forPrimaryKey: repoUid) {
         let tasks = localRepo.tasks
+          .filter("isDeleted == false")
           .sorted(byKeyPath: "added", ascending: false)
         return Observable.collection(from: tasks)
       }
@@ -274,8 +277,26 @@ class LocalTaskService {
     return result ?? .empty()
   }
   
+  func tasksForLocalRepo(repoUid: String, query: String) -> Observable<Results<TaskItem>> {
+    let result = withRealm("tasksForLocalRepo") { realm -> Observable<Results<TaskItem>> in
+      if let localRepo = realm.object(ofType: LocalRepository.self, forPrimaryKey: repoUid) {
+        if query != "" {
+          let tasks = localRepo.tasks
+            .sorted(byKeyPath: "added", ascending: false)
+            .filter("title CONTAINS[c] '\(query)' ")
+          return Observable.collection(from: tasks)
+        } else {
+          let tasks = localRepo.tasks
+            .sorted(byKeyPath: "added", ascending: false)
+          return Observable.collection(from: tasks)
+        }
+      }
+      return Observable.empty()
+    }
+    return result ?? .empty()
+  }
+  
   func tasksForAssignee(username: String) -> Observable<Results<TaskItem>> {
-    print("------realmfile-------", RealmConfig.main.configuration.fileURL)
     let result = withRealm("tasksForAssignee") { realm -> Observable<Results<TaskItem>> in
       let assignees = realm.objects(Assignee.self)
       if let assignee = assignees.filter("name = '\(username)'").first {
@@ -367,7 +388,6 @@ class LocalTaskService {
     return result ?? .empty()
   }
   
-  
   //read
   func getRecentServer() -> Observable<(TaskItem, TaskItemWithReference)> {
     let result = withRealm("getRecentServer") { realm in
@@ -396,7 +416,8 @@ class LocalTaskService {
   }
   
   func seperateSequence(fetchedTasks: [TaskItem]) -> Completable {
-    let result = withRealm("getOldLocal") { realm in
+    print("------realmfile-------", RealmConfig.main.configuration.fileURL)
+    let result = withRealm("seperateSequence") { realm in
       return Completable.create(subscribe: { completable -> Disposable in
         for fetchedTask in fetchedTasks {
           if let localTask = realm.object(ofType: TaskItem.self,
@@ -420,22 +441,47 @@ class LocalTaskService {
     return result ?? .empty()
   }
   
-  func localCreatedCount() -> Int {
-    let realm = try! Realm(configuration: RealmConfig.main.configuration)
-    let localCreatedTasks = realm.objects(TaskItem.self)
-      .filter { !$0.isServerGeneratedType && $0.repository != nil }
-    return localCreatedTasks.count
+  func seperateLocalTasks() -> Completable {
+    let result = withRealm("seperateLocalTasks") { realm in
+      return Completable.create(subscribe: { [unowned self] completable -> Disposable in
+        let localTasks = realm.objects(TaskItem.self)
+          .filter { !$0.isServerGeneratedType && $0.repository != nil }
+        for localTask in localTasks {
+          if localTask.isDeleted {
+            self.deletedLocalDict.updateValue(localTask, forKey: localTask.uid)
+          } else {
+            self.createdLocalDict.updateValue(localTask, forKey: localTask.uid)
+          }
+        }
+        completable(.completed)
+        return Disposables.create()
+      })
+    }
+    return result ?? .empty()
   }
   
   //로컬에서 생성된 것 찾기
   func getLocalCreated() -> Observable<TaskItemWithReference> {
     let result = withRealm("getLocalCreated") { realm in
-      return Observable<TaskItemWithReference>.create({ observer -> Disposable in
-        let localCreatedTasks = realm.objects(TaskItem.self)
-          .filter { !$0.isServerGeneratedType && $0.repository != nil }
-        for task in localCreatedTasks {
-          let ref = TaskItemReference(to: task)
-          let tuple = (task, ref)
+      return Observable<TaskItemWithReference>.create({ [unowned self] observer -> Disposable in
+        for (key, value) in self.createdLocalDict {
+          let ref = TaskItemReference(to: value)
+          let tuple = (value, ref)
+          observer.onNext(tuple)
+        }
+        observer.onCompleted()
+        return Disposables.create()
+      })
+    }
+    return result ?? .empty()
+  }
+  
+  func getLocalDeleted() -> Observable<TaskItemWithReference> {
+    let result = withRealm("getLocalDeleted") { realm in
+      return Observable<TaskItemWithReference>.create({ [unowned self] observer -> Disposable in
+        for (key, value) in self.deletedLocalDict {
+          let ref = TaskItemReference(to: value)
+          let tuple = (value, ref)
           observer.onNext(tuple)
         }
         observer.onCompleted()
@@ -455,10 +501,10 @@ class LocalTaskService {
             if task.isServerGeneratedType {
               return [task]
             }
-            return []
           }
           return []
-      }
+        }
+        .filter{ $0.count > 0 }
     }
     return result ?? .empty()
   }
@@ -473,10 +519,10 @@ class LocalTaskService {
             if !task.isServerGeneratedType && task.repository != nil {
               return [task]
             }
-            return []
           }
           return []
-      }
+        }
+        .filter{ $0.count > 0 }
     }
     return result ?? .empty()
   }
@@ -498,15 +544,32 @@ class LocalTaskService {
   
   //write, newTask 는 아직 managed object 아니라서 thraedsafe 없이 넘겨줄 수 있음
   @discardableResult
-  func deleteOldTask(oldTaskWithRef: TaskItemWithReference) -> Observable<TaskItem> {
-    return Observable<TaskItem>.create({ [unowned self] (observer) -> Disposable in
+  func deleteOldTask(oldTaskWithRef: TaskItemWithReference) -> Observable<Void> {
+    return Observable<Void>.create({ [unowned self] (observer) -> Disposable in
       self.backgroundQueue.async {
         let realm = try! Realm(configuration: RealmConfig.main.configuration)
         if let exTask = realm.resolve(oldTaskWithRef.1) {
           try! realm.write {
             realm.delete(exTask)
           }
-          print(Thread.current, "222write thread \(#function)")
+          observer.onNext(())
+          print(Thread.current, "333write thread \(#function)")
+        }
+        observer.onCompleted()
+      }
+      return Disposables.create()
+    })
+  }
+  
+  @discardableResult
+  func fakeDeleteOldTask(oldTaskWithRef: TaskItemWithReference) -> Observable<TaskItem> {
+    return Observable<TaskItem>.create({ [unowned self] (observer) -> Disposable in
+      self.backgroundQueue.async {
+        let realm = try! Realm(configuration: RealmConfig.main.configuration)
+        if let exTask = realm.resolve(oldTaskWithRef.1) {
+          try! realm.write {
+            exTask.isDeleted = true
+          }
           observer.onNext(exTask)
           print(Thread.current, "333write thread \(#function)")
         }
@@ -627,7 +690,6 @@ class LocalTaskService {
     let result = withRealm("deleteTaskOnMain") { realm in
       return Observable<Void>.create({ observer -> Disposable in
         if let task = realm.object(ofType: TaskItem.self, forPrimaryKey: localTask.uid) {
-          print("task--------", task)
           try! realm.write {
             realm.delete(task)
             print(Thread.current, "write thread \(#function)")
@@ -670,6 +732,27 @@ class LocalTaskService {
       observer.onCompleted()
       return Disposables.create()
     })
+  }
+  
+  @discardableResult
+  func toggleStar(task: TaskItem) -> Observable<TaskItem> {
+    let result = withRealm("toggleStar") { realm -> Observable<TaskItem> in
+      try realm.write {
+        let repo = defaultLocalRepo(realm: realm, repoUid: "Today", repoName: "Today")
+        if task.isStarred {
+          task.isStarred = false
+          if let index = self.findIndex(tasks: repo.tasks.toArray(), exTask: task) {
+            repo.tasks.remove(at: index)
+          }
+        } else {
+          task.isStarred = true
+          repo.tasks.append(task)
+        }
+      }
+      print(Thread.current, "write thread \(#function)")
+      return .just(task)
+    }
+    return result ?? .error(TaskServiceError.toggleFailed(task))
   }
   
 }
@@ -724,6 +807,14 @@ extension LocalTaskService {
             let newUpdated = oldDate.converToPastDateString()
             newObject["updated"] = newUpdated
           }
+        }
+      }
+    }
+    else if fileSchemaVersion == 2 {
+      migration.enumerateObjects(ofType: TaskItem.className()) { (oldObject, newObject) in
+        if let newObject = newObject {
+          newObject["isStarred"] = false
+          newObject["isDeleted"] = false
         }
       }
     }

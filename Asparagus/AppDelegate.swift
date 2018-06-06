@@ -27,16 +27,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       let localTaskService = LocalTaskService()
       let authService = AuthService()
       let syncService = SyncService(issueService: issueService, localTaskService: localTaskService)
-      let leftViewModel = LeftViewModel(authService: authService,
+      
+      let repositoryViewModel = RepositoryViewModel(authService: authService,
+                                        syncService: syncService,
+                                        issueService: issueService,
                                         coordinator: sceneCoordinator,
                                         localTaskService: localTaskService)
-      let taskViewModel = TaskViewModel(issueService: issueService,
-                                        coordinator: sceneCoordinator,
-                                        localTaskService: localTaskService,
-                                        authService: authService,
-                                        syncService: syncService)
-      let sideBarScene = Scene.sidebar(leftViewModel, taskViewModel)
-      sceneCoordinator.transition(to: sideBarScene, type: .root)
+      let menuScene = Scene.repository(repositoryViewModel)
+      
+      sceneCoordinator.transition(to: menuScene, type: .root)
       
       let navigationBarAppearace = UINavigationBar.appearance()
       navigationBarAppearace.tintColor = UIColor(hex: "2E3136")

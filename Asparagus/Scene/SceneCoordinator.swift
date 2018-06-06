@@ -40,20 +40,10 @@ class SceneCoordinator: SceneCoordinatorType {
       subject.onCompleted()
       
     case .push:
-      var navigationController: UINavigationController
-      if let taskViewController = currentViewController as? TaskViewController {
-        if let nav = taskViewController.navigationController {
-          if let sideBarViewController = nav.parent as? SidebarViewController {
-            sideBarViewController.viewModel.isScroll.onNext(false)
-          }
-        }
+      guard let navigationController = currentViewController.navigationController else {
+        fatalError("Can't push a view controller without a current navigation controller")
       }
-      if let sideBarViewController = currentViewController as? SidebarViewController {
-        navigationController = currentViewController.childViewControllers.last as! UINavigationController
-        sideBarViewController.viewModel.isScroll.onNext(false)
-      } else {
-        navigationController = currentViewController.navigationController!
-      }
+      // one-off subscription to be notified when push complete
       _ = navigationController.rx.delegate
         .sentMessage(#selector(UINavigationControllerDelegate.navigationController(_:didShow:animated:)))
         .map { _ in }
@@ -75,23 +65,15 @@ class SceneCoordinator: SceneCoordinatorType {
   @discardableResult
   func pop(animated: Bool) -> Completable {
     let subject = PublishSubject<Void>()
-    //dismiss
     if let presenter = currentViewController.presentingViewController {
       // dismiss a modal controller
       currentViewController.dismiss(animated: animated) {
         self.currentViewController = SceneCoordinator.actualViewController(for: presenter)
         subject.onCompleted()
       }
-    }
-    else if let navigationController = currentViewController.navigationController {
-      //pop
-      if let editViewController = currentViewController as? EditViewController {
-        if let nav = editViewController.navigationController {
-          if let sideBarViewController = nav.parent as? SidebarViewController {
-            sideBarViewController.viewModel.isScroll.onNext(true)
-          }
-        }
-      }
+    } else if let navigationController = currentViewController.navigationController {
+      // navigate up the stack
+      // one-off subscription to be notified when pop complete
       _ = navigationController.rx.delegate
         .sentMessage(#selector(UINavigationControllerDelegate.navigationController(_:didShow:animated:)))
         .map { _ in }

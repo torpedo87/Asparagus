@@ -16,11 +16,7 @@ class TaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "TaskCell"
   
-  private lazy var baseView: UIView = {
-    let view = UIView()
-    return view
-  }()
-  
+  private let containerGuide = UILayoutGuide()
   private lazy var numberLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .center
@@ -42,46 +38,57 @@ class TaskCell: UITableViewCell {
     let btn = UIButton()
     return btn
   }()
+  private lazy var starButton: UIButton = {
+    let btn = UIButton()
+    return btn
+  }()
   
   func setupSubviews() {
     backgroundColor = UIColor.white
-    addSubview(baseView)
+    addLayoutGuide(containerGuide)
     
-    baseView.addSubview(numberLabel)
-    baseView.addSubview(achievementView)
-    baseView.addSubview(titleLabel)
-    baseView.addSubview(checkButton)
+    addSubview(numberLabel)
+    addSubview(achievementView)
+    addSubview(titleLabel)
+    addSubview(checkButton)
+    addSubview(starButton)
     
-    baseView.snp.makeConstraints { (make) in
+    containerGuide.snp.makeConstraints { (make) in
       make.edges.equalToSuperview().inset(20)
     }
     
     numberLabel.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
-      make.left.equalTo(baseView)
-      make.centerY.equalTo(baseView)
+      make.left.equalTo(containerGuide)
+      make.centerY.equalTo(containerGuide)
     }
     achievementView.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
       make.left.equalTo(numberLabel.snp.right).offset(8)
-      make.centerY.equalTo(baseView)
+      make.centerY.equalTo(containerGuide)
     }
     titleLabel.snp.makeConstraints { (make) in
       make.left.equalTo(achievementView.snp.right).offset(15)
-      make.top.equalTo(baseView)
-      make.bottom.equalTo(baseView)
+      make.top.equalTo(containerGuide)
+      make.bottom.equalTo(containerGuide)
       make.right.equalTo(checkButton.snp.left).offset(-15)
     }
     checkButton.snp.makeConstraints { (make) in
-      make.right.equalTo(baseView)
-      make.centerY.equalTo(baseView)
+      make.right.equalTo(starButton.snp.left).offset(-8)
+      make.centerY.equalTo(containerGuide)
+      make.width.height.equalTo(UIScreen.main.bounds.height / 30)
+    }
+    starButton.snp.makeConstraints { (make) in
+      make.right.equalTo(containerGuide)
+      make.centerY.equalTo(containerGuide)
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
     }
   }
   
-  func configureCell(item: TaskItem, action: CocoaAction) {
+  func configureCell(item: TaskItem, checkAction: CocoaAction, starAction: CocoaAction) {
     setupSubviews()
-    checkButton.rx.action = action
+    checkButton.rx.action = checkAction
+    starButton.rx.action = starAction
     numberLabel.isHidden = !item.isServerGeneratedType
     backgroundColor = item.isServerGeneratedType ? UIColor.white : UIColor(hex: "F5F5F5")
     
@@ -111,6 +118,13 @@ class TaskCell: UITableViewCell {
       .subscribe(onNext: { [unowned self] state in
         let image = UIImage(named: state == "open" ? "ItemNotChecked" : "ItemChecked")
         self.checkButton.setImage(image, for: .normal)
+      })
+      .disposed(by: bag)
+    
+    item.rx.observe(Bool.self, "isStarred")
+      .subscribe(onNext: { [unowned self] bool in
+        let image = UIImage(named: bool! ? "starred" : "unstarred")
+        self.starButton.setImage(image, for: .normal)
       })
       .disposed(by: bag)
   }

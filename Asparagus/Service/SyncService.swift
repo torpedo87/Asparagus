@@ -19,7 +19,7 @@ protocol SyncServiceRepresentable {
   func updateOldLocalWithNewServer()
   func updateOldLocalWithRecentServer()
   func realTimeSync()
-  var running: PublishSubject<Bool> { get }
+  var running: BehaviorSubject<Bool> { get }
 }
 
 class SyncService: SyncServiceRepresentable {
@@ -27,7 +27,7 @@ class SyncService: SyncServiceRepresentable {
   private let bag = DisposeBag()
   private let issueService: IssueServiceRepresentable
   private let localTaskService: LocalTaskService
-  let running = PublishSubject<Bool>()
+  let running = BehaviorSubject<Bool>(value: false)
   
   init(issueService: IssueServiceRepresentable, localTaskService: LocalTaskService) {
     self.issueService = issueService
@@ -37,7 +37,10 @@ class SyncService: SyncServiceRepresentable {
   func syncWhenTaskEdittedInLocal() {
     print("-------edit realtime---------")
     localTaskService.observeEditTask()
-      .skip(1)
+      .filter{ $0.count > 0 }
+      .distinctUntilChanged({ (taskArr1, taskArr2) -> Bool in
+        return taskArr1.first!.uid == taskArr2.first!.uid
+      })
       .observeOn(MainScheduler.instance)
       .flatMap { taskArr -> Observable<TaskItem> in
         if let task = taskArr.first {
@@ -49,30 +52,33 @@ class SyncService: SyncServiceRepresentable {
                                       exTask: task)
         }
         return Observable<TaskItem>.empty()
-      }.subscribe()
+      }
+      .subscribe()
       .disposed(by: bag)
   }
 
   func syncWhenTaskCreatedInLocal() {
     print("-------create realtime---------")
     localTaskService.observeCreateTask()
-      .skip(1)
+      .filter{ $0.count > 0 }
+      .distinctUntilChanged({ (taskArr1, taskArr2) -> Bool in
+        return taskArr1.first!.uid == taskArr2.first!.uid
+      })
       .observeOn(MainScheduler.instance)
-      .filter { $0.count > 0 }
       .flatMap({ [unowned self] in
-        self.localTaskService.convertToTaskWithRef(task: $0.first!)
+        return self.localTaskService.convertToTaskWithRef(task: $0.first!)
       })
       //서버에 새 이슈 생성
       .flatMap({ [unowned self] in
-        self.issueService.createIssueWithLocalTask(localTaskWithRef: $0)
+        return self.issueService.createIssueWithLocalTask(localTaskWithRef: $0)
       })
       //서버에서 생성한 새로운 이슈를 로컬에 추가
       .flatMap { [unowned self] in
-        self.localTaskService.addTask(newTaskWithOldRef: $0)
+        return self.localTaskService.addTask(newTaskWithOldRef: $0)
       }
       //로컬에 기존 task 삭제
       .flatMap { [unowned self] in
-        self.localTaskService.deleteOldTask(oldTaskWithRef: $0)
+        return self.localTaskService.fakeDeleteOldTask(oldTaskWithRef: $0)
       }
       //업데이트 완료시점 확인
       .reduce([TaskItem]()) { arr, task in
@@ -91,7 +97,32 @@ class SyncService: SyncServiceRepresentable {
     self.running.onNext(true)
     fetchedTasks
       .flatMap { self.localTaskService.seperateSequence(fetchedTasks: $0) }
+      .subscribe(onCompleted: { [unowned self] in
+        self.seperateLocalTasks()
+      })
+      .disposed(by: bag)
+  }
+  
+  func seperateLocalTasks() {
+    localTaskService.seperateLocalTasks()
+      .subscribe(onCompleted: { [unowned self] in
+        print("seperateLocalTasks complete")
+        self.deleteLocalTasks()
+      })
+      .disposed(by: bag)
+  }
+  
+  func deleteLocalTasks() {
+    localTaskService.getLocalDeleted()
+      .flatMap { [unowned self] in
+        self.localTaskService.deleteOldTask(oldTaskWithRef: $0)
+      }
+      .take(localTaskService.deletedLocalDict.count)
+      .reduce([TaskItem]()) { (arr, task) in
+        return arr + [task]
+      }
       .subscribe(onCompleted: {
+        print("deleteLocalTasks complete")
         self.updateOldServerWithNewLocal()
       })
       .disposed(by: bag)
@@ -105,7 +136,7 @@ class SyncService: SyncServiceRepresentable {
       .flatMap({ [unowned self] in
         self.issueService.createIssueWithLocalTask(localTaskWithRef: $0)
       })
-      .take(localTaskService.localCreatedCount())
+      .take(localTaskService.createdLocalDict.count)
       //serverTask와 localTask의 uid 다르므로 먼저 넣어도 됨
       .flatMap { [unowned self] in
         self.localTaskService.addTask(newTaskWithOldRef: $0)

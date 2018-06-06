@@ -24,6 +24,9 @@ class TaskItem: Object, Decodable {
   var labels = List<Label>()
   
   // local only properties
+  @objc dynamic var isStarred: Bool = false
+  @objc dynamic var isDeleted: Bool = false
+  
   var tag = LinkingObjects(fromType: Tag.self, property: "tasks")
   var assignee = LinkingObjects(fromType: Assignee.self, property: "tasks")
   var subTasks = List<SubTask>()

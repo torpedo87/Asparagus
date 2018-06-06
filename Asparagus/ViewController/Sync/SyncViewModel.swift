@@ -1,8 +1,8 @@
 //
-//  AuthViewModel.swift
+//  SyncViewModel.swift
 //  Asparagus
 //
-//  Created by junwoo on 2018. 2. 27..
+//  Created by junwoo on 2018. 6. 1..
 //  Copyright © 2018년 samchon. All rights reserved.
 //
 
@@ -11,12 +11,12 @@ import RxSwift
 import RxCocoa
 import Action
 
-struct AuthViewModel {
+struct SyncViewModel {
   private let bag = DisposeBag()
   private let sceneCoordinator: SceneCoordinatorType
   private let authService: AuthServiceRepresentable
   let onAuth: Action<(String, String), AuthService.AccountStatus>
-  let isLoggedIn = BehaviorRelay<Bool>(value: false)
+  
   
   init(authService: AuthServiceRepresentable,
        coordinator: SceneCoordinatorType,
@@ -29,20 +29,27 @@ struct AuthViewModel {
   }
   
   private func bindOutput() {
-    authService.loginStatus.asObservable()
-      .bind(to: isLoggedIn)
-      .disposed(by: bag)
+    
   }
   
-  func onForgotPassword() -> CocoaAction {
+  func isLoggedIn() -> Observable<Bool> {
+    return authService.loginStatus.asObservable()
+  }
+  
+  func dismissView() -> CocoaAction {
     return CocoaAction {
-      return Observable.create({ (observer) -> Disposable in
-        if let url = URL(string: "https://github.com/password_reset") {
-          UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        }
-        observer.onCompleted()
-        return Disposables.create()
-      })
+      return self.sceneCoordinator.pop()
+        .asObservable().map{ _ in }
     }
   }
+  
+  func authVC() -> AuthViewController {
+    var vc = AuthViewController()
+    let authViewModel = AuthViewModel(authService: self.authService,
+                                      coordinator: self.sceneCoordinator,
+                                      authAction: self.onAuth)
+    vc.bindViewModel(to: authViewModel)
+    return vc
+  }
 }
+
