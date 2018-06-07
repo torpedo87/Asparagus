@@ -49,6 +49,7 @@ class PopupViewController: UIViewController, BindableType {
   private lazy var checkListTableView: UITableView = {
     let view = UITableView()
     view.layer.cornerRadius = 10
+    view.backgroundColor = .white
     view.rowHeight = UIScreen.main.bounds.height / 15
     view.register(SubTaskCell.self, forCellReuseIdentifier: SubTaskCell.reuseIdentifier)
     view.register(NewTaskCell.self, forCellReuseIdentifier: NewTaskCell.reuseIdentifier)
@@ -64,10 +65,19 @@ class PopupViewController: UIViewController, BindableType {
                   forCellReuseIdentifier: NewTaskCell.reuseIdentifier)
     return view
   }()
-  private lazy var assigneeTableView: UITableView = {
-    let view = UITableView()
+  lazy var customLayout: UICollectionViewFlowLayout = {
+    let layout = UICollectionViewFlowLayout()
+    layout.itemSize = CGSize(width: UIScreen.main.bounds.height / 5, height: UIScreen.main.bounds.height / 5)
+    layout.scrollDirection = UICollectionViewScrollDirection.horizontal
+    return layout
+  }()
+  private lazy var assigneeCollectionView: UICollectionView = {
+    let view = UICollectionView(frame: CGRect.zero,
+                                collectionViewLayout: customLayout)
     view.layer.cornerRadius = 10
-    view.register(UITableViewCell.self, forCellReuseIdentifier: "TableViewCell")
+    view.contentInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+    view.backgroundColor = .white
+    view.register(CarouselCell.self, forCellWithReuseIdentifier: CarouselCell.reuseIdentifier)
     return view
   }()
   var dataSource: RxTableViewSectionedAnimatedDataSource<SubTaskSection>!
@@ -101,7 +111,7 @@ class PopupViewController: UIViewController, BindableType {
       } else {
         make.bottom.left.right.equalTo(view)
       }
-      make.height.equalTo(UIScreen.main.bounds.height * 2 / 3)
+      make.height.equalTo(UIScreen.main.bounds.height / 3)
     }
     closeButton.snp.makeConstraints { (make) in
       closeButton.sizeToFit()
@@ -111,45 +121,33 @@ class PopupViewController: UIViewController, BindableType {
     
     switch popupMode {
     case .subTask:
-      addTableView(tableView: checkListTableView)
+      addContentsView(contentsView: checkListTableView)
     case .label:
-      addTableView(tableView: tagTableView)
+      addContentsView(contentsView: tagTableView)
     case .assignee:
-      addTableView(tableView: assigneeTableView)
+      addContentsView(contentsView: assigneeCollectionView)
     default: return
     }
   }
   
   func bindViewModel() {
-    //로그인상태에서만 assignee 정보 요청하기
     viewModel.isLoggedIn()
       .filter{ return $0 }
       .flatMap({ [unowned self] _ in
         return self.viewModel.repoUsers()
-      }).bind(to: assigneeTableView.rx.items) {
-        [unowned self] (tableView: UITableView, index: Int, element: User) in
-        let cell = UITableViewCell(style: .default, reuseIdentifier: "TableViewCell")
-        cell.textLabel?.text = element.name
-        let assigneeNameArr = self.viewModel.task.assignees.toArray().map{ $0.name }
-        cell.accessoryType = assigneeNameArr.contains(element.name) ? .checkmark : .none
-        return cell
+      }).bind(to: assigneeCollectionView.rx.items) { [unowned self]
+        (collectionView: UICollectionView, index: Int, item: User) in
+        if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CarouselCell.reuseIdentifier,
+                                                         for: IndexPath(item: index, section: 0)) as? CarouselCell {
+          let assigneeNames = self.viewModel.task.assignees.toArray().map{ $0.name }
+          cell.configCell(item: item, isAssigned: assigneeNames.contains(item.name))
+          return cell
+        }
+        return CarouselCell()
       }
       .disposed(by: bag)
     
-    assigneeTableView.rx.itemSelected
-      .subscribe(onNext: { [unowned self] indexPath in
-        self.assigneeTableView.deselectRow(at: indexPath, animated: false)
-        if let cell = self.assigneeTableView.cellForRow(at: indexPath) {
-          if cell.accessoryType == .checkmark {
-            cell.accessoryType = .none
-          } else {
-            cell.accessoryType = .checkmark
-          }
-        }
-      })
-      .disposed(by: bag)
-    
-    assigneeTableView.rx.modelSelected(User.self)
+    assigneeCollectionView.rx.modelSelected(User.self)
       .map { [unowned self] user -> (Assignee, LocalTaskService.EditMode) in
         let assignee = Assignee(name: user.name)
         let assigneeNameArr = self.viewModel.task.assignees.toArray().map{ $0.name }
@@ -160,6 +158,15 @@ class PopupViewController: UIViewController, BindableType {
         }
       }
       .bind(to: viewModel.onUpdateAssignees.inputs)
+      .disposed(by: bag)
+    
+    assigneeCollectionView.rx.itemSelected
+      .asDriver()
+      .drive(onNext: { [unowned self] indexPath in
+        if let cell = self.assigneeCollectionView.cellForItem(at: indexPath) as? CarouselCell {
+          cell.toggleCheck()
+        }
+      })
       .disposed(by: bag)
     
     viewModel.tags()
@@ -187,9 +194,9 @@ class PopupViewController: UIViewController, BindableType {
     closeButton.rx.action = viewModel.popView()
   }
   
-  func addTableView(tableView: UITableView) {
-    containerView.addSubview(tableView)
-    tableView.snp.makeConstraints { (make) in
+  func addContentsView(contentsView: UIView) {
+    containerView.addSubview(contentsView)
+    contentsView.snp.makeConstraints { (make) in
       make.top.left.right.equalTo(containerView)
       make.bottom.equalTo(containerView).offset(-10)
     }

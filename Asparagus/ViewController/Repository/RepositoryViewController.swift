@@ -89,14 +89,8 @@ class RepositoryViewController: UIViewController, BindableType {
     
     authBarButtonItem.rx.action = viewModel.onSync()
     
-    let running = viewModel.isRunning().share()
-    
-    running
+    viewModel.isRunning()
       .bind(to: activityIndicator.rx.isAnimating)
-      .disposed(by: bag)
-    
-    running
-      .bind(to: tableView.rx.isHidden)
       .disposed(by: bag)
   }
   
