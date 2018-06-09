@@ -12,5 +12,7 @@ enum SceneTransitionType {
   case root
   case push
   case modal
+  case popover
+  case slide
 }
 

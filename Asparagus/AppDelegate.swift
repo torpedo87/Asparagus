@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       sceneCoordinator.transition(to: menuScene, type: .root)
       
       let navigationBarAppearace = UINavigationBar.appearance()
-      navigationBarAppearace.tintColor = UIColor(hex: "2E3136")
+      navigationBarAppearace.tintColor = UIColor(hex: "7DC062")
       navigationBarAppearace.barTintColor = UIColor.white
       navigationBarAppearace.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor(hex: "283A45")]
       

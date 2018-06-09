@@ -8,7 +8,6 @@
 
 import Foundation
 import RxSwift
-import RxCocoa
 import Action
 
 struct RepositoryViewModel {
@@ -65,18 +64,12 @@ struct RepositoryViewModel {
       })
       .disposed(by: bag)
     
-    bindOutput()
-  }
-  
-  func bindOutput() {
-    let syncRunning = syncService.running.share()
-    
-    syncRunning.asObservable()
+    syncService.running.asObservable()
       .observeOn(MainScheduler.instance)
       .filter{ return !$0 }
       .skip(1)
       .subscribe(onNext: { _ in
-        self.syncService.realTimeSync()
+        syncService.realTimeSync()
       })
       .disposed(by: bag)
   }
@@ -105,24 +98,12 @@ struct RepositoryViewModel {
     }
   }
   
-  func onAuthTask(isLoggedIn: Bool) -> Action<(String, String), AuthService.AccountStatus> {
-    return Action { tuple in
-      if isLoggedIn {
-        return self.authService.removeToken(userId: tuple.0, userPassword: tuple.1)
-      } else {
-        return self.authService.requestToken(userId: tuple.0, userPassword: tuple.1)
-      }
-    }
-  }
-  
   
   func onSync() -> CocoaAction {
     return CocoaAction {
-      let isLoggedIn = UserDefaults.loadToken() != nil
       let syncViewModel = SyncViewModel(authService: self.authService,
-                                        coordinator: self.sceneCoordinator,
-                                        authAction: self.onAuthTask(isLoggedIn: isLoggedIn))
-      return self.sceneCoordinator.transition(to: .sync(syncViewModel), type: .modal)
+                                        coordinator: self.sceneCoordinator)
+      return self.sceneCoordinator.transition(to: .sync(syncViewModel), type: .popover)
         .asObservable()
         .map{ _ in }
     }

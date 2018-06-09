@@ -8,28 +8,18 @@
 
 import Foundation
 import RxSwift
-import RxCocoa
 import Action
 
 struct SyncViewModel {
   private let bag = DisposeBag()
   private let sceneCoordinator: SceneCoordinatorType
   private let authService: AuthServiceRepresentable
-  let onAuth: Action<(String, String), AuthService.AccountStatus>
   
   
   init(authService: AuthServiceRepresentable,
-       coordinator: SceneCoordinatorType,
-       authAction: Action<(String, String), AuthService.AccountStatus>) {
+       coordinator: SceneCoordinatorType) {
     self.authService = authService
     self.sceneCoordinator = coordinator
-    self.onAuth = authAction
-    
-    bindOutput()
-  }
-  
-  private func bindOutput() {
-    
   }
   
   func isLoggedIn() -> Observable<Bool> {
@@ -45,11 +35,30 @@ struct SyncViewModel {
   
   func authVC() -> AuthViewController {
     var vc = AuthViewController()
-    let authViewModel = AuthViewModel(authService: self.authService,
-                                      coordinator: self.sceneCoordinator,
-                                      authAction: self.onAuth)
-    vc.bindViewModel(to: authViewModel)
+    vc.bindViewModel(to: self)
     return vc
+  }
+  
+  func onForgotPassword() -> CocoaAction {
+    return CocoaAction {
+      return Observable.create({ (observer) -> Disposable in
+        if let url = URL(string: "https://github.com/password_reset") {
+          UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+        observer.onCompleted()
+        return Disposables.create()
+      })
+    }
+  }
+  
+  func onAuthTask() -> Action<(String, String), AuthService.AccountStatus> {
+    return Action { tuple in
+      if let _ = UserDefaults.loadToken() {
+        return self.authService.removeToken(userId: tuple.0, userPassword: tuple.1)
+      } else {
+        return self.authService.requestToken(userId: tuple.0, userPassword: tuple.1)
+      }
+    }
   }
 }
 

@@ -20,6 +20,7 @@ class SceneCoordinator: SceneCoordinatorType {
   }()
   
   fileprivate var currentViewController: UIViewController!
+  lazy var slideInTransitioningDelegate = SlideInPresentationManager()
   
   static func actualViewController(for viewController: UIViewController) -> UIViewController {
     if let navigationController = viewController as? UINavigationController {
@@ -34,6 +35,36 @@ class SceneCoordinator: SceneCoordinatorType {
     let subject = PublishSubject<Void>()
     let viewController = scene.viewController()
     switch type {
+    case .popover:
+      let nav = UINavigationController(rootViewController: viewController)
+      nav.modalPresentationStyle = .popover
+      if let popover = nav.popoverPresentationController {
+        popover.sourceView = currentViewController.view
+        popover.sourceRect = currentViewController.view.frame
+        popover.canOverlapSourceViewRect = true
+        popover.delegate = viewController as? SyncViewController
+        popover.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
+      }
+      currentViewController.present(nav, animated: false) {
+        subject.onCompleted()
+      }
+      currentViewController = SceneCoordinator.actualViewController(for: nav)
+      
+    case .slide:
+      if let vc = viewController as? PopupViewController {
+        switch vc.popupMode! {
+        case .assignee: slideInTransitioningDelegate.direction = .bottom
+        case .label: slideInTransitioningDelegate.direction = .left
+        case .subTask: slideInTransitioningDelegate.direction = .right
+        }
+      }
+      viewController.transitioningDelegate = slideInTransitioningDelegate
+      viewController.modalPresentationStyle = .custom
+      currentViewController.present(viewController, animated: true) {
+        subject.onCompleted()
+      }
+      currentViewController = SceneCoordinator.actualViewController(for: viewController)
+      
     case .root:
       currentViewController = SceneCoordinator.actualViewController(for: viewController)
       window.rootViewController = viewController

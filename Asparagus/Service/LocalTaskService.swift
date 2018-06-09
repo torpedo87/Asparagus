@@ -466,11 +466,11 @@ class LocalTaskService {
   func getLocalCreated() -> Observable<TaskItemWithReference> {
     let result = withRealm("getLocalCreated") { realm in
       return Observable<TaskItemWithReference>.create({ [unowned self] observer -> Disposable in
-        for (key, value) in self.createdLocalDict {
+        self.createdLocalDict.forEach({ (key, value) in
           let ref = TaskItemReference(to: value)
           let tuple = (value, ref)
           observer.onNext(tuple)
-        }
+        })
         observer.onCompleted()
         return Disposables.create()
       })
@@ -481,11 +481,11 @@ class LocalTaskService {
   func getLocalDeleted() -> Observable<TaskItemWithReference> {
     let result = withRealm("getLocalDeleted") { realm in
       return Observable<TaskItemWithReference>.create({ [unowned self] observer -> Disposable in
-        for (key, value) in self.deletedLocalDict {
+        self.deletedLocalDict.forEach({ (key, value) in
           let ref = TaskItemReference(to: value)
           let tuple = (value, ref)
           observer.onNext(tuple)
-        }
+        })
         observer.onCompleted()
         return Disposables.create()
       })
@@ -630,7 +630,6 @@ class LocalTaskService {
             exTask.owner = newTask.owner
             exTask.assignees = newTask.assignees
             exTask.labels = newTask.labels
-            exTask.isStarred = newTask.isStarred
             for label in exTask.labels.toArray() {
               let tag = self.defaultTag(realm: realm, tagTitle: label.name)
               tag.tasks.append(exTask)
@@ -657,13 +656,14 @@ class LocalTaskService {
         let realm = try! Realm(configuration: RealmConfig.main.configuration)
         if let exTask = realm.resolve(newTaskWithOldRef.1.1) {
           let newTask = newTaskWithOldRef.0
-          newTask.repository = exTask.repository
-          newTask.tag = exTask.tag
-          newTask.assignee = exTask.assignee
-          newTask.subTasks = exTask.subTasks
-          newTask.isStarred = exTask.isStarred
-          newTask.localRepository = exTask.localRepository
+          
           try! realm.write {
+            newTask.repository = exTask.repository
+            newTask.tag = exTask.tag
+            newTask.assignee = exTask.assignee
+            newTask.subTasks = exTask.subTasks
+            newTask.isStarred = exTask.isStarred
+            newTask.localRepository = exTask.localRepository
             realm.add(newTask)
             let localRepo = self.defaultLocalRepo(realm: realm,
                                                   repoUid: newTask.repository!.uid,

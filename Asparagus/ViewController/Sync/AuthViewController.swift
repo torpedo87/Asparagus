@@ -9,11 +9,9 @@
 import UIKit
 import RxSwift
 import RxCocoa
-import RxGesture
-import RxKeyboard
 
 class AuthViewController: UIViewController, BindableType {
-  var viewModel: AuthViewModel!
+  var viewModel: SyncViewModel!
   private let bag = DisposeBag()
   
   private lazy var stackView: UIStackView = {
@@ -140,7 +138,7 @@ class AuthViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     Observable.combineLatest(Reachability.rx.isOnline,
-                             viewModel.isLoggedIn.asObservable())
+                             viewModel.isLoggedIn())
       .map { (tuple) -> String in
         if !tuple.0 { return "no internet connection" }
         else if tuple.1 { return "Disconnect" }
@@ -150,6 +148,8 @@ class AuthViewController: UIViewController, BindableType {
       .drive(authButton.rx.title())
       .disposed(by: bag)
     
+    let onAuth = viewModel.onAuthTask()
+    
     authButton.rx.tap
       .throttle(0.5, scheduler: MainScheduler.instance)
       .map({ [unowned self] _ -> (String, String) in
@@ -157,10 +157,10 @@ class AuthViewController: UIViewController, BindableType {
         let password = self.passWordTextField.text ?? ""
         return (id, password)
       })
-      .bind(to: viewModel.onAuth.inputs)
+      .bind(to: onAuth.inputs)
       .disposed(by: bag)
     
-    viewModel.onAuth.elements
+    onAuth.elements
       .asDriver(onErrorJustReturn: .unavailable("request failed"))
       .drive(onNext: { [unowned self] status in
         switch status {

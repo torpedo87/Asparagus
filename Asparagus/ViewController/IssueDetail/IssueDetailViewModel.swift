@@ -8,9 +8,7 @@
 
 import Foundation
 import RxSwift
-import RxCocoa
 import Action
-import RxDataSources
 
 struct IssueDetailViewModel {
   let task: TaskItem
@@ -24,6 +22,7 @@ struct IssueDetailViewModel {
   private let issueService: IssueServiceRepresentable
   private let authService: AuthServiceRepresentable
   private let coordinator: SceneCoordinatorType
+  let slideInTransitioningDelegate = SlideInPresentationManager()
   
   init(task: TaskItem,
        coordinator: SceneCoordinatorType,
@@ -86,9 +85,9 @@ struct IssueDetailViewModel {
     }
   }
   
-  func popup(mode: PopupMode) -> CocoaAction {
+  func popup(mode: PopupViewController.PopupMode) -> CocoaAction {
     return CocoaAction { _ in
-      return self.coordinator.transition(to: .popup(self, mode), type: .modal)
+      return self.coordinator.transition(to: .popup(self, mode), type: .slide)
         .asObservable().map{ _ in }
     }
   }

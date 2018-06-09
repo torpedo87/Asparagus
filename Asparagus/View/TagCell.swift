@@ -25,7 +25,7 @@ class TagCell: UITableViewCell {
     let selectedView = UIView()
     selectedView.backgroundColor = UIColor.darkGray
     selectedBackgroundView = selectedView
-    backgroundColor = UIColor.clear
+    backgroundColor = UIColor.white
     addSubview(titleLabel)
     titleLabel.snp.makeConstraints { (make) in
       if #available(iOS 11.0, *) {

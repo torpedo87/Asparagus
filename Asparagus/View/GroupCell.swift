@@ -41,28 +41,28 @@ class GroupCell: UITableViewCell {
     addSubview(countLabel)
     containerGuide.snp.makeConstraints { (make) in
       if #available(iOS 11.0, *) {
-        make.left.equalTo(safeAreaLayoutGuide.snp.left).inset(30)
-        make.right.equalTo(safeAreaLayoutGuide.snp.right).inset(30)
-        make.top.equalTo(safeAreaLayoutGuide.snp.top).inset(30)
-        make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom).inset(30)
+        make.left.equalTo(safeAreaLayoutGuide.snp.left).inset(20)
+        make.right.equalTo(safeAreaLayoutGuide.snp.right).inset(20)
+        make.top.equalTo(safeAreaLayoutGuide.snp.top).inset(20)
+        make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom).inset(20)
       } else {
-        make.edges.equalTo(self).inset(30)
+        make.edges.equalTo(self).inset(20)
       }
     }
     imgView.snp.makeConstraints { (make) in
       make.centerY.equalTo(containerGuide)
       make.left.equalTo(containerGuide)
-      make.width.height.equalTo(30)
+      make.width.height.equalTo(contentView.frame.height / 2)
     }
     titleLabel.snp.makeConstraints { (make) in
       make.top.bottom.equalTo(containerGuide)
-      make.left.equalTo(imgView.snp.right).offset(8)
+      make.left.equalTo(imgView.snp.right).offset(10)
       make.right.equalTo(countLabel.snp.left).offset(-8)
     }
     countLabel.snp.makeConstraints { (make) in
       make.centerY.equalTo(containerGuide)
-      make.right.equalTo(containerGuide)
-      make.width.height.equalTo(30)
+      make.right.equalTo(containerGuide).offset(-10)
+      make.width.height.equalTo(imgView)
     }
   }
   

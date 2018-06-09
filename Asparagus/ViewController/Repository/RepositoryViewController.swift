@@ -44,7 +44,8 @@ class RepositoryViewController: UIViewController, BindableType {
   
   func setupView() {
     title = "Repository"
-    navigationItem.rightBarButtonItem = authBarButtonItem
+    navigationItem.leftBarButtonItem = authBarButtonItem
+    navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityIndicator)
     view.addSubview(tableView)
     view.addSubview(activityIndicator)
   }

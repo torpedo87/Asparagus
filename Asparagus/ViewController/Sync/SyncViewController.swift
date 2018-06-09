@@ -91,7 +91,12 @@ class SyncViewController: UIViewController, BindableType {
     
     viewModel.isLoggedIn().asDriver(onErrorJustReturn: false)
       .map { bool -> String in
-        if bool { return "Your account is Active"}
+        if bool {
+          if let me = UserDefaults.loadUser() {
+            return "@\(me.name) is Active"
+          }
+          return "Your Account is Active"
+        }
         else { return "Tap the switch to sync with Github account"}
       }
       .drive(descriptionLabel.rx.text)

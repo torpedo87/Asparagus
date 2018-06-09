@@ -9,11 +9,11 @@
 import UIKit
 
 enum Scene {
-  case auth(AuthViewModel)
+  case auth(SyncViewModel)
   case repository(RepositoryViewModel)
   case issue(IssueViewModel)
   case issueDetail(IssueDetailViewModel)
-  case popup(IssueDetailViewModel, PopupMode)
+  case popup(IssueDetailViewModel, PopupViewController.PopupMode)
   case sync(SyncViewModel)
 }
 
@@ -46,26 +46,12 @@ extension Scene {
     case .popup(let viewModel, let mode):
       var vc = PopupViewController()
       vc.popupMode = mode
-      vc.modalPresentationStyle = .overFullScreen
       vc.bindViewModel(to: viewModel)
       return vc
     case .sync(let viewModel):
       var vc = SyncViewController()
       vc.bindViewModel(to: viewModel)
-      let nav = UINavigationController(rootViewController: vc)
-      nav.modalPresentationStyle = UIModalPresentationStyle.popover
-      
-      if let popover = nav.popoverPresentationController {
-        popover.sourceView = vc.view
-        popover.sourceRect = vc.view.frame
-        popover.canOverlapSourceViewRect = true
-        popover.delegate = vc
-        popover.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
-      }
-//      nav.preferredContentSize = CGSize(width: UIScreen.main.bounds.width - 50,
-//                                        height: UIScreen.main.bounds.height * 2 / 3)
-      
-      return nav
+      return vc
     }
     
   }

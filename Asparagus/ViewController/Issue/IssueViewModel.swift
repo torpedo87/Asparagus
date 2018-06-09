@@ -30,12 +30,6 @@ struct IssueViewModel {
     self.sceneCoordinator = coordinator
     self.authService = authService
     self.issueService = issueService
-    
-    bindOutput()
-  }
-  
-  func bindOutput() {
-    
   }
   
   func onToggle(task: TaskItem) -> CocoaAction {

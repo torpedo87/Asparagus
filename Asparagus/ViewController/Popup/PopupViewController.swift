@@ -9,20 +9,19 @@
 import UIKit
 import RxSwift
 import RxCocoa
-import RxGesture
 import RxDataSources
-import RxKeyboard
 import Action
 
-enum PopupMode {
-  case assignee
-  case label
-  case subTask
-}
-
 class PopupViewController: UIViewController, BindableType {
-  private let bag = DisposeBag()
+  
+  enum PopupMode {
+    case assignee
+    case label
+    case subTask
+  }
+  
   var popupMode: PopupMode!
+  private let bag = DisposeBag()
   var viewModel: IssueDetailViewModel!
   private lazy var customBackButton: UIBarButtonItem = {
     let item =
@@ -32,9 +31,8 @@ class PopupViewController: UIViewController, BindableType {
                       action: nil)
     return item
   }()
-  private lazy var containerView: UIView = {
+  lazy var containerView: UIView = {
     let view = UIView()
-    view.backgroundColor = UIColor.white
     view.layer.cornerRadius = 10
     return view
   }()
@@ -49,7 +47,6 @@ class PopupViewController: UIViewController, BindableType {
   private lazy var checkListTableView: UITableView = {
     let view = UITableView()
     view.layer.cornerRadius = 10
-    view.backgroundColor = .white
     view.rowHeight = UIScreen.main.bounds.height / 15
     view.register(SubTaskCell.self, forCellReuseIdentifier: SubTaskCell.reuseIdentifier)
     view.register(NewTaskCell.self, forCellReuseIdentifier: NewTaskCell.reuseIdentifier)
@@ -67,7 +64,7 @@ class PopupViewController: UIViewController, BindableType {
   }()
   lazy var customLayout: UICollectionViewFlowLayout = {
     let layout = UICollectionViewFlowLayout()
-    layout.itemSize = CGSize(width: UIScreen.main.bounds.height / 5, height: UIScreen.main.bounds.height / 5)
+    layout.itemSize = CGSize(width: UIScreen.main.bounds.height / 6, height: UIScreen.main.bounds.height / 6)
     layout.scrollDirection = UICollectionViewScrollDirection.horizontal
     return layout
   }()
@@ -88,30 +85,22 @@ class PopupViewController: UIViewController, BindableType {
     configureDataSource()
   }
   
-  override func viewDidAppear(_ animated: Bool) {
-    super.viewDidAppear(animated)
-    view.backgroundColor = UIColor.black.withAlphaComponent(0.25)
-  }
-  
-  override func viewWillDisappear(_ animated: Bool) {
-    super.viewWillDisappear(animated)
-    view.backgroundColor = UIColor.clear
-  }
-  
   func setupView() {
-    view.backgroundColor = UIColor.clear
+    view.backgroundColor = .clear
     view.addSubview(containerView)
     view.addSubview(closeButton)
     
     containerView.snp.makeConstraints { (make) in
       if #available(iOS 11.0, *) {
-        make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
-        make.right.equalTo(view.safeAreaLayoutGuide.snp.right)
-        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+        make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(50)
+        make.left.equalTo(view.safeAreaLayoutGuide.snp.left).inset(10)
+        make.right.equalTo(view.safeAreaLayoutGuide.snp.right).inset(10)
+        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(10)
       } else {
-        make.bottom.left.right.equalTo(view)
+        make.left.right.equalTo(view).inset(10)
+        make.bottom.equalTo(view).inset(10)
+        make.top.equalTo(view).offset(50)
       }
-      make.height.equalTo(UIScreen.main.bounds.height / 3)
     }
     closeButton.snp.makeConstraints { (make) in
       closeButton.sizeToFit()
@@ -119,15 +108,15 @@ class PopupViewController: UIViewController, BindableType {
       make.bottom.equalTo(containerView.snp.top)
     }
     
-    switch popupMode {
+    switch popupMode as! PopupMode {
     case .subTask:
       addContentsView(contentsView: checkListTableView)
     case .label:
       addContentsView(contentsView: tagTableView)
     case .assignee:
       addContentsView(contentsView: assigneeCollectionView)
-    default: return
     }
+    
   }
   
   func bindViewModel() {
@@ -162,6 +151,7 @@ class PopupViewController: UIViewController, BindableType {
     
     assigneeCollectionView.rx.itemSelected
       .asDriver()
+      .debug("-----")
       .drive(onNext: { [unowned self] indexPath in
         if let cell = self.assigneeCollectionView.cellForItem(at: indexPath) as? CarouselCell {
           cell.toggleCheck()
@@ -192,13 +182,14 @@ class PopupViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     closeButton.rx.action = viewModel.popView()
+    
   }
   
   func addContentsView(contentsView: UIView) {
     containerView.addSubview(contentsView)
     contentsView.snp.makeConstraints { (make) in
       make.top.left.right.equalTo(containerView)
-      make.bottom.equalTo(containerView).offset(-10)
+      make.bottom.equalTo(containerView)
     }
   }
   

@@ -18,7 +18,7 @@ class CarouselCell: UICollectionViewCell {
   private var isChecked: Bool = false
   lazy var selectedView: UIView = {
     let view = UIView()
-    view.backgroundColor = UIColor.lightGray
+    view.backgroundColor = UIColor(hex: "7DC062")
     return view
   }()
   lazy var imgView: UIImageView = {
@@ -59,7 +59,7 @@ class CarouselCell: UICollectionViewCell {
   }
   
   func toggleCheck() {
-    selectedView.backgroundColor = isChecked ? .white : .lightGray
+    selectedView.backgroundColor = isChecked ? .white : UIColor(hex: "7DC062")
     isChecked = !isChecked
   }
   
@@ -78,7 +78,7 @@ class CarouselCell: UICollectionViewCell {
       self.imgView.image = UIImage(named: "user")
     }
     
-    selectedView.backgroundColor = isAssigned ? .lightGray : .white
+    selectedView.backgroundColor = isAssigned ? UIColor(hex: "7DC062") : .white
   }
   
   override func prepareForReuse() {
