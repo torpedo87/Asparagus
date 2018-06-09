@@ -15,7 +15,7 @@ import RealmSwift
 class TaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "TaskCell"
-  
+  private var metaLabels = [UILabel]()
   private let containerGuide = UILayoutGuide()
   private lazy var numberLabel: UILabel = {
     let label = UILabel()
@@ -42,21 +42,34 @@ class TaskCell: UITableViewCell {
     let btn = UIButton()
     return btn
   }()
+  private lazy var metaLabelView: UIView = {
+    let view = UIView()
+    return view
+  }()
+  private lazy var assigneeView: UIView = {
+    let view = UIView()
+    return view
+  }()
   
   func setupSubviews() {
     backgroundColor = UIColor.white
     addLayoutGuide(containerGuide)
-    
+    addSubview(metaLabelView)
     addSubview(numberLabel)
     addSubview(achievementView)
     addSubview(titleLabel)
+    addSubview(assigneeView)
     addSubview(checkButton)
     addSubview(starButton)
     
     containerGuide.snp.makeConstraints { (make) in
       make.edges.equalToSuperview().inset(20)
     }
-    
+    metaLabelView.snp.makeConstraints { (make) in
+      make.top.equalTo(containerGuide.snp.bottom)
+      make.left.right.equalTo(titleLabel)
+      make.bottom.equalToSuperview()
+    }
     numberLabel.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
       make.left.equalTo(containerGuide)
@@ -71,7 +84,7 @@ class TaskCell: UITableViewCell {
       make.left.equalTo(achievementView.snp.right).offset(15)
       make.top.equalTo(containerGuide)
       make.bottom.equalTo(containerGuide)
-      make.right.equalTo(checkButton.snp.left).offset(-15)
+      make.right.equalTo(checkButton.snp.left)
     }
     checkButton.snp.makeConstraints { (make) in
       make.right.equalTo(starButton.snp.left).offset(-8)
@@ -83,10 +96,35 @@ class TaskCell: UITableViewCell {
       make.centerY.equalTo(containerGuide)
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
     }
+    
+    metaLabels.forEach {
+      metaLabelView.addSubview($0)
+    }
+    
+    var lastLabel: UILabel?
+    for i in 0..<metaLabels.count {
+      let label = metaLabels[i]
+      label.sizeToFit()
+      if i == 0 {
+        label.snp.makeConstraints {
+          $0.left.equalTo(metaLabelView)
+            .offset(5)
+          $0.centerY.equalTo(metaLabelView)
+        }
+      } else {
+        label.snp.makeConstraints {
+          if let last = lastLabel {
+            $0.left.equalTo(last.snp.right).offset(5)
+            $0.centerY.equalTo(metaLabelView)
+          }
+        }
+      }
+      lastLabel = label
+    }
+    
   }
   
   func configureCell(item: TaskItem, checkAction: CocoaAction, starAction: CocoaAction) {
-    setupSubviews()
     checkButton.rx.action = checkAction
     starButton.rx.action = starAction
     numberLabel.isHidden = !item.isServerGeneratedType
@@ -127,12 +165,34 @@ class TaskCell: UITableViewCell {
         self.starButton.setImage(image, for: .normal)
       })
       .disposed(by: bag)
+    
+    item.rx.observe(List<Label>.self, "labels")
+      .subscribe(onNext: { [unowned self] _ in
+        let tags = item.labels.toArray()
+        for i in 0..<tags.count {
+          let label = UILabel()
+          label.layer.borderWidth = 0.5
+          label.font = UIFont.systemFont(ofSize: 10)
+          label.text = tags[i].name
+          self.metaLabels.append(label)
+        }
+      })
+      .disposed(by: bag)
+    
+    setupSubviews()
   }
   
   override func prepareForReuse() {
     checkButton.rx.action = nil
+    starButton.rx.action = nil
     titleLabel.text = ""
     bag = DisposeBag()
     super.prepareForReuse()
+    metaLabels = []
+    
+    metaLabelView.subviews.forEach {
+      $0.removeFromSuperview()
+    }
+    
   }
 }

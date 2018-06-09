@@ -21,7 +21,6 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
     view.clipsToBounds = true
     return view
   }()
-  
   private lazy var subTaskButton: UIButton = {
     let item = UIButton()
     item.backgroundColor = UIColor(hex: "292D36")
@@ -73,14 +72,14 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
   private let bag = DisposeBag()
   var viewModel: IssueDetailViewModel!
   
-  private let titleTextField: UITextField = {
+  private lazy var titleTextField: UITextField = {
     let view = UITextField()
     view.font = UIFont.boldSystemFont(ofSize: 35)
     view.adjustsFontSizeToFitWidth = true
     view.placeholder = "Please enter task title"
     return view
   }()
-
+  
   private lazy var bodyTextView: UITextView = {
     let view = UITextView()
     view.font = UIFont.systemFont(ofSize: 20)
@@ -113,6 +112,7 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
   }
   
   func setupView() {
+    print(viewModel.task.labels.toArray().map{ $0.name })
     view.backgroundColor = .white
     setCustomBackButton()
     view.addSubview(dateLabel)
@@ -142,7 +142,6 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
       make.top.equalTo(dateLabel.snp.bottom).offset(8)
       make.height.equalTo(44)
     })
-    
     bodyTextView.snp.makeConstraints { (make) in
       if #available(iOS 11.0, *) {
         make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
@@ -229,6 +228,7 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
         self.bodyTextView.contentOffset.y += keyboardVisibleHeight
       })
       .disposed(by: bag)
+    
   }
 }
 
