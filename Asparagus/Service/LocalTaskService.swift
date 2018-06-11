@@ -285,7 +285,7 @@ class LocalTaskService {
         if query != "" {
           let tasks = localRepo.tasks
             .sorted(byKeyPath: "added", ascending: false)
-            .filter("title CONTAINS[c] '\(query)' ")
+            .filter("title CONTAINS[c] '\(query)' AND  isDeleted == false")
           return Observable.collection(from: tasks)
         } else {
           let tasks = localRepo.tasks

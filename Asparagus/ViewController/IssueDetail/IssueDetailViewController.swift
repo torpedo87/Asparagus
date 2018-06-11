@@ -112,7 +112,6 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
   }
   
   func setupView() {
-    print(viewModel.task.labels.toArray().map{ $0.name })
     view.backgroundColor = .white
     setCustomBackButton()
     view.addSubview(dateLabel)
@@ -156,7 +155,7 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
       make.centerX.equalToSuperview()
       make.bottom.equalToSuperview().offset(-50)
       make.width.equalTo(UIScreen.main.bounds.width / 2)
-      make.height.equalTo(UIScreen.main.bounds.height / 15)
+      make.height.equalTo(UIScreen.main.bounds.height / 13)
     }
     labelButton.snp.makeConstraints { (make) in
       make.left.bottom.top.equalTo(buttonContainerView)
@@ -207,6 +206,8 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
     viewModel.isLoggedIn()
       .bind(to: assigneeButton.rx.isEnabled)
       .disposed(by: bag)
+    
+    buttonContainerView.isHidden = viewModel.task.title == ""
     
     RxKeyboard.instance.visibleHeight
       .drive(onNext: { [unowned self] keyboardVisibleHeight in

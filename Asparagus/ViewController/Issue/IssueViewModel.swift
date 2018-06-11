@@ -51,11 +51,11 @@ struct IssueViewModel {
       })
       .map { results in
         let dueTasks = results
-          .filter("title != '' AND checked = 'open'")
+          .filter("title != '' AND checked = 'open' AND isDeleted == false")
           .sorted(byKeyPath: "added", ascending: false)
         
         let doneTasks = results
-          .filter("title != '' AND checked = 'closed'")
+          .filter("title != '' AND checked = 'closed' AND isDeleted == false")
           .sorted(byKeyPath: "added", ascending: false)
         
         return [

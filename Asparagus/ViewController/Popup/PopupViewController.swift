@@ -23,14 +23,6 @@ class PopupViewController: UIViewController, BindableType {
   var popupMode: PopupMode!
   private let bag = DisposeBag()
   var viewModel: IssueDetailViewModel!
-  private lazy var customBackButton: UIBarButtonItem = {
-    let item =
-      UIBarButtonItem(title: "X",
-                      style: UIBarButtonItemStyle.plain,
-                      target: self,
-                      action: nil)
-    return item
-  }()
   lazy var containerView: UIView = {
     let view = UIView()
     view.layer.cornerRadius = 10
