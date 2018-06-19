@@ -50,6 +50,10 @@ class IssueViewController: UIViewController, BindableType, GoBackable {
   }()
   
   private var dataSource: RxTableViewSectionedAnimatedDataSource<TaskSection>!
+  private lazy var emptyView = EmptyView(frame: CGRect(x: 0,
+                                                       y: 0,
+                                                       width: UIScreen.main.bounds.width,
+                                                       height: UIScreen.main.bounds.height))
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -89,6 +93,7 @@ class IssueViewController: UIViewController, BindableType, GoBackable {
       .subscribeOn(MainScheduler.instance)
       .subscribe(onNext: { [unowned self] sections in
         self.hideTableviewHeader(sections: sections, i: 1)
+        self.addFooterViewWhenEmpty(sections: sections)
       })
       .disposed(by: bag)
     
@@ -124,6 +129,12 @@ class IssueViewController: UIViewController, BindableType, GoBackable {
       self.tableView.headerView(forSection: i)?.isHidden = true
     } else {
       self.tableView.headerView(forSection: i)?.isHidden = false
+    }
+  }
+  
+  func addFooterViewWhenEmpty(sections: [TaskSection]) {
+    if sections[0].items.count + sections[1].items.count == 0 {
+      self.tableView.tableFooterView = emptyView
     }
   }
   
