@@ -270,7 +270,7 @@ class LocalTaskService {
     let result = withRealm("tasksForLocalRepo") { realm -> Observable<Results<TaskItem>> in
       if let localRepo = realm.object(ofType: LocalRepository.self, forPrimaryKey: repoUid) {
         let tasks = localRepo.tasks
-          .filter("isDeleted == false")
+          .filter("isDeleted == false AND checked == 'open'")
           .sorted(byKeyPath: "added", ascending: false)
         return Observable.collection(from: tasks)
       }
