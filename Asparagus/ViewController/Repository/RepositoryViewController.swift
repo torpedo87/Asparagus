@@ -62,10 +62,6 @@ class RepositoryViewController: UIViewController, BindableType {
         make.edges.equalTo(view)
       }
     }
-    activityIndicator.snp.makeConstraints { (make) in
-      make.width.height.equalTo(UIScreen.main.bounds.height / 10)
-      make.center.equalToSuperview()
-    }
   }
   
   func bindViewModel() {
