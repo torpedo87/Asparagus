@@ -17,12 +17,16 @@ class NewTaskCell: UITableViewCell {
   private lazy var numberLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .center
+    label.backgroundColor = .clear
+    label.textColor = .white
     return label
   }()
   
   private lazy var titleTextField: UITextField = {
     let view = UITextField()
     view.placeholder = "add newItem"
+    view.backgroundColor = .clear
+    view.textColor = .white
     return view
   }()
   private lazy var addButton: UIButton = {
@@ -32,7 +36,7 @@ class NewTaskCell: UITableViewCell {
   }()
   
   func setupSubviews() {
-    backgroundColor = UIColor.white
+    backgroundColor = UIColor(hex: "232429")
     addSubview(titleTextField)
     addSubview(addButton)
     titleTextField.snp.makeConstraints { (make) in

@@ -13,7 +13,7 @@ import RxCocoa
 //시퀀스를 받아서 처리하는 것들
 //동기화 작업은 동기적으로
 protocol SyncServiceRepresentable {
-  func syncStart(fetchedTasks: Observable<[TaskItem]>)
+  func syncStart()
   func updateOldServerWithNewLocal()
   func updateOldServerWithRecentLocal()
   func updateOldLocalWithNewServer()
@@ -38,9 +38,6 @@ class SyncService: SyncServiceRepresentable {
     print("-------edit realtime---------")
     localTaskService.observeEditTask()
       .filter{ $0.count > 0 }
-      .distinctUntilChanged({ (taskArr1, taskArr2) -> Bool in
-        return taskArr1.first!.uid == taskArr2.first!.uid
-      })
       .observeOn(MainScheduler.instance)
       .flatMap { taskArr -> Observable<TaskItem> in
         if let task = taskArr.first {
@@ -94,9 +91,11 @@ class SyncService: SyncServiceRepresentable {
     syncWhenTaskEdittedInLocal()
   }
   
-  func syncStart(fetchedTasks: Observable<[TaskItem]>) {
+  func syncStart() {
     self.running.onNext(true)
-    fetchedTasks
+    
+    issueService.fetchAllIssues(page: 1)
+      .share(replay: 1, scope: .whileConnected)
       .flatMap { self.localTaskService.seperateSequence(fetchedTasks: $0)}
       .subscribe(onCompleted: { [unowned self] in
         self.seperateLocalTasks()

@@ -13,32 +13,45 @@ import RxDataSources
 import Action
 
 class PopupViewController: UIViewController, BindableType {
-  
-  enum PopupMode {
-    case assignee
-    case label
-    case subTask
+  enum LabelMode: String {
+    case bug
+    case duplicate
+    case enhancement
+    case goodfirstissue = "good first issue"
+    case helpwanted = "help wanted"
+    case invalid
+    case question
+    case wontfix
+    static let arr: [LabelMode] = [.bug, .duplicate, .enhancement, .goodfirstissue, .helpwanted, .invalid, .question, .wontfix]
+  }
+  enum PopupMode: String {
+    case Assignees
+    case Labels
+    case CheckLists
   }
   
   var popupMode: PopupMode!
   private let bag = DisposeBag()
   var viewModel: IssueDetailViewModel!
-  lazy var containerView: UIView = {
-    let view = UIView()
-    view.layer.cornerRadius = 10
-    return view
-  }()
-  private lazy var closeButton: UIButton = {
-    let button = UIButton()
-    button.setTitle("Close", for: .normal)
-    button.setTitleColor(UIColor.white, for: .normal)
-    button.backgroundColor = UIColor.clear
+  
+  private lazy var closeButton: UIBarButtonItem = {
+    let button = UIBarButtonItem(title: "Close",
+                                 style: UIBarButtonItemStyle.plain,
+                                 target: self,
+                                 action: nil)
     return button
   }()
-  
+  private lazy var closeAssigneeButton: UIButton = {
+    let button = UIButton()
+    button.setTitle("Close", for: .normal)
+    button.setTitleColor(.black, for: .normal)
+    button.backgroundColor = .white
+    button.layer.cornerRadius = 10
+    return button
+  }()
   private lazy var checkListTableView: UITableView = {
     let view = UITableView()
-    view.layer.cornerRadius = 10
+    view.backgroundColor = UIColor(hex: "232429")
     view.rowHeight = UIScreen.main.bounds.height / 15
     view.register(SubTaskCell.self, forCellReuseIdentifier: SubTaskCell.reuseIdentifier)
     view.register(NewTaskCell.self, forCellReuseIdentifier: NewTaskCell.reuseIdentifier)
@@ -46,12 +59,10 @@ class PopupViewController: UIViewController, BindableType {
   }()
   private lazy var tagTableView: UITableView = {
     let view = UITableView()
-    view.layer.cornerRadius = 10
+    view.backgroundColor = UIColor(hex: "232429")
     view.rowHeight = UIScreen.main.bounds.height / 15
     view.register(SubTagCell.self,
                   forCellReuseIdentifier: SubTagCell.reuseIdentifier)
-    view.register(NewTaskCell.self,
-                  forCellReuseIdentifier: NewTaskCell.reuseIdentifier)
     return view
   }()
   lazy var customLayout: UICollectionViewFlowLayout = {
@@ -79,39 +90,47 @@ class PopupViewController: UIViewController, BindableType {
   
   func setupView() {
     view.backgroundColor = .clear
-    view.addSubview(containerView)
-    view.addSubview(closeButton)
-    
-    containerView.snp.makeConstraints { (make) in
-      if #available(iOS 11.0, *) {
-        make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(50)
-        make.left.equalTo(view.safeAreaLayoutGuide.snp.left).inset(10)
-        make.right.equalTo(view.safeAreaLayoutGuide.snp.right).inset(10)
-        make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(10)
-      } else {
-        make.left.right.equalTo(view).inset(10)
-        make.bottom.equalTo(view).inset(10)
-        make.top.equalTo(view).offset(50)
-      }
-    }
-    closeButton.snp.makeConstraints { (make) in
-      closeButton.sizeToFit()
-      make.right.equalTo(containerView).offset(-10)
-      make.bottom.equalTo(containerView.snp.top)
-    }
+    title = popupMode.rawValue
+    navigationItem.rightBarButtonItem = closeButton
     
     switch popupMode as! PopupMode {
-    case .subTask:
+    case .CheckLists:
       addContentsView(contentsView: checkListTableView)
-    case .label:
+    case .Labels:
       addContentsView(contentsView: tagTableView)
-    case .assignee:
+    case .Assignees:
       addContentsView(contentsView: assigneeCollectionView)
+      view.addSubview(closeAssigneeButton)
+      assigneeCollectionView.snp.remakeConstraints { (make) in
+        if #available(iOS 11.0, *) {
+          make.left.top.right.equalTo(view.safeAreaLayoutGuide).inset(10)
+        } else {
+          make.left.top.right.equalToSuperview().inset(10)
+        }
+        make.height.equalTo(UIScreen.main.bounds.height / 6)
+      }
+      closeAssigneeButton.snp.makeConstraints { (make) in
+        if #available(iOS 11.0, *) {
+          make.left.bottom.right.equalTo(view.safeAreaLayoutGuide).inset(10)
+        } else {
+          make.left.bottom.right.equalToSuperview().inset(10)
+        }
+        make.top.equalTo(assigneeCollectionView.snp.bottom).offset(10)
+      }
     }
     
   }
   
   func bindViewModel() {
+//    view.rx.tapGesture()
+//      .when(UIGestureRecognizerState.recognized)
+//      .subscribe(onNext: { [unowned self] _ in
+//        self.view.endEditing(true)
+//      })
+//      .disposed(by: bag)
+    
+    closeButton.rx.action = viewModel.popView()
+    closeAssigneeButton.rx.action = viewModel.popView()
     viewModel.isLoggedIn()
       .filter{ return $0 }
       .flatMap({ [unowned self] _ in
@@ -151,22 +170,31 @@ class PopupViewController: UIViewController, BindableType {
       })
       .disposed(by: bag)
     
-    viewModel.tags()
+    Observable.of(LabelMode.arr)
       .bind(to: tagTableView.rx.items) { [unowned self]
-        (tableView: UITableView, index: Int, item: Tag) in
-        if index == 0 {
-          let cell = NewTaskCell(style: .default,
-                                 reuseIdentifier: NewTaskCell.reuseIdentifier)
-          cell.configureNewTagCell(onUpdateTags: self.viewModel.onUpdateTags)
-          return cell
-        } else {
-          let cell = SubTagCell(style: .default,
-                                reuseIdentifier: SubTagCell.reuseIdentifier)
-          cell.configureCell(item: item,
-                             onUpdateTags: self.viewModel.onUpdateTags)
-          return cell
-        }
+        (tableView: UITableView, index: Int, item: LabelMode) in
+        let cell = SubTagCell(style: .default,
+                              reuseIdentifier: SubTagCell.reuseIdentifier)
+        let tags = self.viewModel.tags().map{ $0.title }
+        cell.configureCell(item: LabelMode.arr[index], isTagged: tags.contains(item.rawValue))
+        return cell
       }
+      .disposed(by: bag)
+    
+    tagTableView.rx.itemSelected
+      .debug("--")
+      .map { [unowned self] indexPath -> (Tag, LocalTaskService.EditMode) in
+        let tags = self.viewModel.tags().map{ $0.title }
+        let model = LabelMode.arr[indexPath.row]
+        let cell = self.tagTableView.cellForRow(at: indexPath) as? SubTagCell
+        if tags.contains(model.rawValue) {
+          cell?.configureCell(item: model, isTagged: false)
+          return (Tag(title: model.rawValue), .delete)
+        } else {
+          cell?.configureCell(item: model, isTagged: true)
+          return (Tag(title: model.rawValue), .add)
+        }
+      }.bind(to: viewModel.onUpdateTags.inputs)
       .disposed(by: bag)
     
     viewModel.sectionedItems
@@ -178,10 +206,13 @@ class PopupViewController: UIViewController, BindableType {
   }
   
   func addContentsView(contentsView: UIView) {
-    containerView.addSubview(contentsView)
+    view.addSubview(contentsView)
     contentsView.snp.makeConstraints { (make) in
-      make.top.left.right.equalTo(containerView)
-      make.bottom.equalTo(containerView)
+      if #available(iOS 11.0, *) {
+        make.edges.equalTo(view.safeAreaLayoutGuide)
+      } else {
+        make.edges.equalToSuperview()
+      }
     }
   }
   
@@ -207,5 +238,15 @@ class PopupViewController: UIViewController, BindableType {
         return dataSource[sectionIndex].header
     }
     )
+  }
+}
+
+extension PopupViewController: UIPopoverPresentationControllerDelegate {
+  func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle {
+    return .none
+  }
+  
+  func popoverPresentationControllerShouldDismissPopover(_ popoverPresentationController: UIPopoverPresentationController) -> Bool {
+    return false
   }
 }

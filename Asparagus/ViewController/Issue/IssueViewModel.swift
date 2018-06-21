@@ -36,7 +36,7 @@ struct IssueViewModel {
   }
   
   func syncInForce() {
-    syncService.syncStart(fetchedTasks: issueService.fetchAllIssues(page: 1))
+    syncService.syncStart()
   }
   
   func isRunning() -> Observable<Bool> {

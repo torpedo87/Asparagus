@@ -101,6 +101,7 @@ class IssueViewController: UIViewController, BindableType, GoBackable {
       .disposed(by: bag)
     
     viewModel.isRunning()
+      .skip(1)
       .bind(to: refreshControl.rx.isRefreshing)
       .disposed(by: bag)
     

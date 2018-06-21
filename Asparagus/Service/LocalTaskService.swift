@@ -243,15 +243,15 @@ class LocalTaskService {
     return result ?? .empty()
   }
   
-  func tagsForTask(task: TaskItem) -> Observable<Results<Tag>> {
-    let result = withRealm("tagsForTask") { realm -> Observable<Results<Tag>> in
+  func tagsForTask(task: TaskItem) -> [Tag] {
+    let result = withRealm("tagsForTask") { realm -> [Tag] in
       if let singleTask = realm.object(ofType: TaskItem.self, forPrimaryKey: task.uid) {
-        let tags = singleTask.tag.sorted(byKeyPath: "added", ascending: false)
-        return Observable.collection(from: tags)
+        let tags = singleTask.tag.sorted(byKeyPath: "added", ascending: false).toArray()
+        return tags
       }
-      return .empty()
+      return []
     }
-    return result ?? .empty()
+    return result ?? []
   }
   
   func tasksForTag(tagTitle: String) -> Observable<Results<TaskItem>> {

@@ -13,53 +13,55 @@ import Action
 class SubTagCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "SubTagCell"
-  
+  private let containerGuide = UILayoutGuide()
+  private lazy var imgView: UIImageView = {
+    let view = UIImageView()
+    view.image = UIImage(named: "tag")
+    view.contentMode = .scaleAspectFit
+    return view
+  }()
   private lazy var titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
+    label.backgroundColor = .clear
+    label.textColor = .white
     return label
-  }()
-  private lazy var deleteButton: UIButton = {
-    let btn = UIButton()
-    btn.setImage(UIImage(named: "trash"), for: UIControlState.normal)
-    return btn
   }()
   
   func setupSubviews() {
-    backgroundColor = UIColor.white
+    selectionStyle = .none
+    tintColor = .white
+    addLayoutGuide(containerGuide)
+    backgroundColor = UIColor(hex: "232429")
+    addSubview(imgView)
     addSubview(titleLabel)
-    addSubview(deleteButton)
-    titleLabel.snp.makeConstraints { (make) in
-      make.left.top.bottom.equalTo(contentView).inset(10)
-      make.right.equalTo(deleteButton.snp.left).offset(-5)
+    accessoryType = .none
+    
+    containerGuide.snp.makeConstraints { (make) in
+      make.edges.equalToSuperview().inset(20)
     }
-    deleteButton.snp.makeConstraints { (make) in
+    imgView.snp.makeConstraints { (make) in
+      make.left.equalTo(containerGuide)
+      make.centerY.equalTo(containerGuide)
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
-      make.centerY.equalToSuperview()
-      make.right.equalTo(contentView).offset(-10)
+    }
+    titleLabel.snp.makeConstraints { (make) in
+      make.left.equalTo(imgView.snp.right).offset(8)
+      make.top.bottom.equalTo(containerGuide)
+      make.right.equalTo(containerGuide).offset(-50)
     }
   }
   
-  func configureCell(item: Tag, onUpdateTags: Action<(Tag, LocalTaskService.EditMode), Void>) {
+  func configureCell(item: PopupViewController.LabelMode, isTagged: Bool) {
     setupSubviews()
-    item.rx.observe(String.self, "title")
-      .subscribe(onNext: { [unowned self] title in
-        self.titleLabel.text = title!
-      })
-      .disposed(by: bag)
-    
-    deleteButton.rx.tap
-      .throttle(0.5, scheduler: MainScheduler.instance)
-      .map { _ -> (Tag, LocalTaskService.EditMode) in
-        return (item, LocalTaskService.EditMode.delete)
-      }
-      .bind(to: onUpdateTags.inputs)
-      .disposed(by: bag)
+    titleLabel.text = item.rawValue
+    imgView.image = isTagged ? UIImage(named: "tagged") : UIImage(named: "unTagged")
+    accessoryType = isTagged ? .checkmark : .none
   }
   
   override func prepareForReuse() {
-    deleteButton.rx.action = nil
     titleLabel.text = ""
+    accessoryType = .none
     bag = DisposeBag()
     super.prepareForReuse()
   }

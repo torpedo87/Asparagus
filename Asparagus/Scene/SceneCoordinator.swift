@@ -38,11 +38,13 @@ class SceneCoordinator: SceneCoordinatorType {
     case .popover:
       let nav = UINavigationController(rootViewController: viewController)
       nav.modalPresentationStyle = .popover
+      nav.preferredContentSize = CGSize(width: UIScreen.main.bounds.width - 100,
+                                        height: UIScreen.main.bounds.height - 200)
       if let popover = nav.popoverPresentationController {
         popover.sourceView = currentViewController.view
         popover.sourceRect = currentViewController.view.frame
         popover.canOverlapSourceViewRect = true
-        popover.delegate = viewController as? SyncViewController
+        popover.delegate = viewController as! UIPopoverPresentationControllerDelegate
         popover.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
       }
       currentViewController.present(nav, animated: false) {
@@ -51,13 +53,7 @@ class SceneCoordinator: SceneCoordinatorType {
       currentViewController = SceneCoordinator.actualViewController(for: nav)
       
     case .slide:
-      if let vc = viewController as? PopupViewController {
-        switch vc.popupMode! {
-        case .assignee: slideInTransitioningDelegate.direction = .bottom
-        case .label: slideInTransitioningDelegate.direction = .left
-        case .subTask: slideInTransitioningDelegate.direction = .right
-        }
-      }
+      slideInTransitioningDelegate.direction = .bottom
       viewController.transitioningDelegate = slideInTransitioningDelegate
       viewController.modalPresentationStyle = .custom
       currentViewController.present(viewController, animated: true) {

@@ -87,6 +87,13 @@ struct IssueDetailViewModel {
   
   func popup(mode: PopupViewController.PopupMode) -> CocoaAction {
     return CocoaAction { _ in
+      return self.coordinator.transition(to: .popup(self, mode), type: .popover)
+        .asObservable().map{ _ in }
+    }
+  }
+  
+  func slide(mode: PopupViewController.PopupMode) -> CocoaAction {
+    return CocoaAction { _ in
       return self.coordinator.transition(to: .popup(self, mode), type: .slide)
         .asObservable().map{ _ in }
     }
@@ -110,17 +117,7 @@ struct IssueDetailViewModel {
     }
   }
   
-  func tags() -> Observable<[Tag]> {
+  func tags() -> [Tag] {
     return localTaskService.tagsForTask(task: task)
-      .map({ result -> [Tag] in
-        let tags = result.toArray()
-        let filteredTags = Array(Set(tags))
-        let newTag = Tag()
-        var temp = [newTag]
-        filteredTags.forEach({ (tag) in
-          temp.append(tag)
-        })
-        return temp
-      })
   }
 }

@@ -33,7 +33,7 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
   private lazy var labelButton: UIButton = {
     let item = UIButton()
     item.backgroundColor = UIColor(hex: "292D36")
-    item.setImage(UIImage(named: "tag"), for: .normal)
+    item.setImage(UIImage(named: "unTagged"), for: .normal)
     item.imageView?.contentMode = .scaleAspectFit
     item.imageEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
     item.alpha = 0.75
@@ -203,9 +203,9 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
       .disposed(by: bag)
     
     customBackButton.rx.action = viewModel.onCancel
-    subTaskButton.rx.action = viewModel.popup(mode: .subTask)
-    assigneeButton.rx.action = viewModel.popup(mode: .assignee)
-    labelButton.rx.action = viewModel.popup(mode: .label)
+    subTaskButton.rx.action = viewModel.popup(mode: .CheckLists)
+    assigneeButton.rx.action = viewModel.slide(mode: .Assignees)
+    labelButton.rx.action = viewModel.popup(mode: .Labels)
     
     viewModel.isLoggedIn()
       .bind(to: assigneeButton.rx.isEnabled)

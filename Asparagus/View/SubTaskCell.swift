@@ -15,11 +15,14 @@ class SubTaskCell: UITableViewCell {
   static let reuseIdentifier = "SubTaskCell"
   private lazy var baseView: UIView = {
     let view = UIView()
+    view.backgroundColor = .clear
     return view
   }()
   private lazy var titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
+    label.textColor = .white
+    label.backgroundColor = .clear
     label.numberOfLines = 0
     return label
   }()
@@ -29,7 +32,7 @@ class SubTaskCell: UITableViewCell {
   }()
   
   func setupSubviews() {
-    backgroundColor = UIColor.white
+    backgroundColor = UIColor(hex: "232429")
     addSubview(baseView)
     baseView.addSubview(titleLabel)
     baseView.addSubview(checkButton)

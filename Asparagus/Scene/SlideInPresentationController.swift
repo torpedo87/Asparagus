@@ -107,16 +107,16 @@ extension SlideInPresentationController {
           actualHeight = keyboardVisibleHeight - 10
         }
         if let vc = self.presentedViewController as? PopupViewController {
-          UIView.animate(withDuration: 0.5, animations: {
-            vc.containerView.snp.updateConstraints({ (make) in
-              if #available(iOS 11.0, *) {
-                make.bottom.equalTo(vc.view.safeAreaLayoutGuide.snp.bottom).offset(-actualHeight)
-              } else {
-                make.bottom.equalTo(vc.view).offset(-actualHeight)
-              }
-            })
-            vc.view.layoutIfNeeded()
-          })
+//          UIView.animate(withDuration: 0.5, animations: {
+//            vc.containerView.snp.updateConstraints({ (make) in
+//              if #available(iOS 11.0, *) {
+//                make.bottom.equalTo(vc.view.safeAreaLayoutGuide.snp.bottom).offset(-actualHeight)
+//              } else {
+//                make.bottom.equalTo(vc.view).offset(-actualHeight)
+//              }
+//            })
+//            vc.view.layoutIfNeeded()
+//          })
         }
       })
       .disposed(by: bag)

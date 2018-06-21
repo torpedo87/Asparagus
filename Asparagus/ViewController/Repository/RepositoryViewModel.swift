@@ -49,7 +49,7 @@ struct RepositoryViewModel {
       .filter { $0.0 && $0.1 }
       .subscribeOn(globalScheduler)
       .subscribe(onNext: { _ in
-        syncService.syncStart(fetchedTasks: issueService.fetchAllIssues(page: 1))
+        syncService.syncStart()
       })
       .disposed(by: bag)
     
