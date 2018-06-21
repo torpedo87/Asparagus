@@ -158,7 +158,6 @@ class PopupViewController: UIViewController, BindableType {
     
     assigneeCollectionView.rx.itemSelected
       .asDriver()
-      .debug("-----")
       .drive(onNext: { [unowned self] indexPath in
         if let cell = self.assigneeCollectionView.cellForItem(at: indexPath) as? CarouselCell {
           cell.toggleCheck()

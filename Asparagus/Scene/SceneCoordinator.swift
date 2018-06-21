@@ -24,7 +24,7 @@ class SceneCoordinator: SceneCoordinatorType {
   
   static func actualViewController(for viewController: UIViewController) -> UIViewController {
     if let navigationController = viewController as? UINavigationController {
-      return navigationController.viewControllers.first!
+      return navigationController.viewControllers.last!
     } else {
       return viewController
     }
@@ -36,6 +36,7 @@ class SceneCoordinator: SceneCoordinatorType {
     let viewController = scene.viewController()
     switch type {
     case .popover:
+      print(currentViewController)
       let nav = UINavigationController(rootViewController: viewController)
       nav.navigationBar.tintColor = .white
       nav.navigationBar.barTintColor = UIColor(hex: "232429")
@@ -96,14 +97,12 @@ class SceneCoordinator: SceneCoordinatorType {
   func pop(animated: Bool) -> Completable {
     let subject = PublishSubject<Void>()
     if let presenter = currentViewController.presentingViewController {
-      // dismiss a modal controller
+      print("dismiss")
       currentViewController.dismiss(animated: animated) {
         self.currentViewController = SceneCoordinator.actualViewController(for: presenter)
         subject.onCompleted()
       }
     } else if let navigationController = currentViewController.navigationController {
-      // navigate up the stack
-      // one-off subscription to be notified when pop complete
       _ = navigationController.rx.delegate
         .sentMessage(#selector(UINavigationControllerDelegate.navigationController(_:didShow:animated:)))
         .map { _ in }
