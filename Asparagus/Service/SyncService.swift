@@ -72,6 +72,7 @@ class SyncService: SyncServiceRepresentable {
       .flatMap({ [unowned self] in
         return self.issueService.createIssueWithLocalTask(localTaskWithRef: $0)
       })
+      .filter{ !$0.1.1.isInvalidated }
       //서버에서 생성한 새로운 이슈를 로컬에 추가
       .flatMap { [unowned self] in
         return self.localTaskService.addTask(newTaskWithOldRef: $0)
@@ -96,7 +97,7 @@ class SyncService: SyncServiceRepresentable {
   func syncStart(fetchedTasks: Observable<[TaskItem]>) {
     self.running.onNext(true)
     fetchedTasks
-      .flatMap { self.localTaskService.seperateSequence(fetchedTasks: $0) }
+      .flatMap { self.localTaskService.seperateSequence(fetchedTasks: $0)}
       .subscribe(onCompleted: { [unowned self] in
         self.seperateLocalTasks()
       })
@@ -200,6 +201,10 @@ class SyncService: SyncServiceRepresentable {
     localTaskService.getRecentServer()
       //로컬에 기존 task 삭제
       .take(localTaskService.recentServerDict.count)
+      .distinctUntilChanged({ (tuple1, tuple2) -> Bool in
+        return tuple1.0.uid == tuple2.0.uid
+      })
+      .filter{ !$0.1.1.isInvalidated }
       .flatMap { [unowned self] in
         self.localTaskService.updateTask(newTaskWithOldRef: $0)
       }

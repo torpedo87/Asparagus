@@ -17,7 +17,7 @@ struct RepositoryViewModel {
   private let syncService: SyncServiceRepresentable
   private let sceneCoordinator: SceneCoordinatorType
   private let localTaskService: LocalTaskService
-  
+  private let globalScheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue.global())
   
   init(authService: AuthServiceRepresentable,
        syncService: SyncServiceRepresentable,
@@ -44,8 +44,6 @@ struct RepositoryViewModel {
       .disposed(by: bag)
     
     //온라인 및 로그인상태시 이슈 가져오기
-    let globalScheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue.global())
-    
     Observable.combineLatest(Reachability.rx.isOnline,
                              authService.loginStatus.asObservable())
       .filter { $0.0 && $0.1 }
@@ -98,7 +96,6 @@ struct RepositoryViewModel {
     }
   }
   
-  
   func onSync() -> CocoaAction {
     return CocoaAction {
       let syncViewModel = SyncViewModel(authService: self.authService,
@@ -115,7 +112,8 @@ struct RepositoryViewModel {
                                      issueService: this.issueService,
                                      coordinator: this.sceneCoordinator,
                                      localTaskService: this.localTaskService,
-                                     authService: this.authService)
+                                     authService: this.authService,
+                                     syncService: this.syncService)
       
       return this.sceneCoordinator
         .transition(to: .issue(viewModel), type: .push)

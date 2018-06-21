@@ -74,15 +74,17 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
   
   private lazy var titleTextField: UITextField = {
     let view = UITextField()
-    view.font = UIFont.boldSystemFont(ofSize: 35)
-    view.adjustsFontSizeToFitWidth = true
+    view.font = UIFont.preferredFont(forTextStyle: .title1)
+    view.adjustsFontForContentSizeCategory = true
     view.placeholder = "Please enter task title"
+    view.borderStyle = UITextBorderStyle.roundedRect
     return view
   }()
   
   private lazy var bodyTextView: UITextView = {
     let view = UITextView()
-    view.font = UIFont.systemFont(ofSize: 20)
+    view.font = UIFont.preferredFont(forTextStyle: .body)
+    view.adjustsFontForContentSizeCategory = true
     return view
   }()
   
@@ -131,6 +133,7 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
       dateLabel.sizeToFit()
       make.centerX.equalToSuperview()
     }
+    
     titleTextField.snp.makeConstraints({ (make) in
       if #available(iOS 11.0, *) {
         make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
@@ -141,6 +144,7 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
       make.top.equalTo(dateLabel.snp.bottom).offset(8)
       make.height.equalTo(44)
     })
+    bodyTextView.textContainerInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
     bodyTextView.snp.makeConstraints { (make) in
       if #available(iOS 11.0, *) {
         make.left.equalTo(view.safeAreaLayoutGuide.snp.left)

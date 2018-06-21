@@ -607,7 +607,6 @@ class LocalTaskService {
         let realm = try! Realm(configuration: RealmConfig.main.configuration)
         if let exTask = realm.resolve(newTaskWithOldRef.1.1) {
           let newTask = newTaskWithOldRef.0
-          
           try! realm.write {
             for label in exTask.labels.toArray() {
               let tag = self.defaultTag(realm: realm, tagTitle: label.name)

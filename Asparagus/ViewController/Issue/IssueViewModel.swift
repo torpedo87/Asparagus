@@ -18,20 +18,34 @@ struct IssueViewModel {
   private let localTaskService: LocalTaskService
   private let authService: AuthServiceRepresentable
   private let issueService: IssueServiceRepresentable
+  private let syncService: SyncServiceRepresentable
   let searchText = BehaviorRelay<String>(value: "")
   
   init(selectedRepo: LocalRepository,
        issueService: IssueServiceRepresentable,
        coordinator: SceneCoordinatorType,
        localTaskService: LocalTaskService,
-       authService: AuthServiceRepresentable) {
+       authService: AuthServiceRepresentable,
+       syncService: SyncServiceRepresentable) {
     self.selectedRepo = selectedRepo
     self.localTaskService = localTaskService
     self.sceneCoordinator = coordinator
     self.authService = authService
     self.issueService = issueService
+    self.syncService = syncService
   }
   
+  func syncInForce() {
+    syncService.syncStart(fetchedTasks: issueService.fetchAllIssues(page: 1))
+  }
+  
+  func isRunning() -> Observable<Bool> {
+    return syncService.running.asObservable()
+  }
+  
+  func isLoggedIn() -> Observable<Bool> {
+    return authService.loginStatus.asObservable()
+  }
   func onToggle(task: TaskItem) -> CocoaAction {
     return CocoaAction {
       return self.localTaskService.toggle(task: task).map { _ in }

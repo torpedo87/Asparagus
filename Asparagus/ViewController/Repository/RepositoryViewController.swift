@@ -47,7 +47,6 @@ class RepositoryViewController: UIViewController, BindableType {
     navigationItem.leftBarButtonItem = authBarButtonItem
     navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityIndicator)
     view.addSubview(tableView)
-    view.addSubview(activityIndicator)
   }
   
   override func viewDidLayoutSubviews() {
@@ -65,6 +64,7 @@ class RepositoryViewController: UIViewController, BindableType {
   }
   
   func bindViewModel() {
+    
     viewModel.localRepositories()
       .bind(to: tableView.rx.items) {
         (tableView: UITableView, index: Int, item: LocalRepository) in

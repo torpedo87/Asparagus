@@ -54,6 +54,12 @@ class IssueViewController: UIViewController, BindableType, GoBackable {
                                                        y: 0,
                                                        width: UIScreen.main.bounds.width,
                                                        height: UIScreen.main.bounds.height))
+  private let globalScheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue.global())
+  private lazy var refreshControl: UIRefreshControl = {
+    let control = UIRefreshControl()
+    control.tintColor = .red
+    return control
+  }()
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -74,7 +80,7 @@ class IssueViewController: UIViewController, BindableType, GoBackable {
     setCustomBackButton()
     title = viewModel.selectedRepo.name
     view.addSubview(tableView)
-    
+    tableView.addSubview(refreshControl)
     tableView.snp.makeConstraints({ (make) in
       if #available(iOS 11.0, *) {
         make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
@@ -88,6 +94,23 @@ class IssueViewController: UIViewController, BindableType, GoBackable {
   }
   
   func bindViewModel() {
+    Observable.combineLatest(Reachability.rx.isOnline,
+                             viewModel.isLoggedIn())
+      .map{ $0.0 && $0.1 }
+      .bind(to: refreshControl.rx.isEnabled)
+      .disposed(by: bag)
+    
+    viewModel.isRunning()
+      .bind(to: refreshControl.rx.isRefreshing)
+      .disposed(by: bag)
+    
+    refreshControl.rx.controlEvent(.valueChanged)
+      .subscribeOn(globalScheduler)
+      .subscribe(onNext: { [unowned self] _ in
+        self.viewModel.syncInForce()
+      })
+      .disposed(by: bag)
+    
     viewModel.sectionedItems
       .observeOn(MainScheduler.instance)
       .subscribeOn(MainScheduler.instance)
