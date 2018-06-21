@@ -14,18 +14,16 @@ import Action
 class NewTaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "NewTaskCell"
+  private let containerGuide = UILayoutGuide()
+  
   private lazy var numberLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .center
-    label.backgroundColor = .clear
-    label.textColor = .white
     return label
   }()
   
   private lazy var titleTextField: UITextField = {
     let view = UITextField()
-    view.placeholder = "add newItem"
-    view.backgroundColor = .clear
     view.textColor = .white
     return view
   }()
@@ -36,21 +34,21 @@ class NewTaskCell: UITableViewCell {
   }()
   
   func setupSubviews() {
+    selectionStyle = .none
     backgroundColor = UIColor(hex: "232429")
+    addLayoutGuide(containerGuide)
     addSubview(titleTextField)
     addSubview(addButton)
+    containerGuide.snp.makeConstraints { (make) in
+      make.edges.equalToSuperview().inset(20)
+    }
     titleTextField.snp.makeConstraints { (make) in
-      make.left.top.bottom.equalTo(self).inset(10)
+      make.left.top.bottom.equalTo(containerGuide)
       make.right.equalTo(addButton.snp.left).offset(-5)
     }
     addButton.snp.makeConstraints { (make) in
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
-      make.centerY.equalTo(contentView)
-      if #available(iOS 11.0, *) {
-        make.right.equalTo(safeAreaLayoutGuide.snp.right).offset(-10)
-      } else {
-        make.right.equalTo(self).offset(-10)
-      }
+      make.centerY.right.equalTo(containerGuide)
     }
   }
   

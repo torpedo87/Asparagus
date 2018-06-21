@@ -37,9 +37,12 @@ class SceneCoordinator: SceneCoordinatorType {
     switch type {
     case .popover:
       let nav = UINavigationController(rootViewController: viewController)
+      nav.navigationBar.tintColor = .white
+      nav.navigationBar.barTintColor = UIColor(hex: "232429")
+      nav.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.white]
       nav.modalPresentationStyle = .popover
-      nav.preferredContentSize = CGSize(width: UIScreen.main.bounds.width - 100,
-                                        height: UIScreen.main.bounds.height - 200)
+      nav.preferredContentSize = CGSize(width: UIScreen.main.bounds.width * 4 / 5,
+                                        height: UIScreen.main.bounds.height * 2 / 3)
       if let popover = nav.popoverPresentationController {
         popover.sourceView = currentViewController.view
         popover.sourceRect = currentViewController.view.frame

@@ -22,8 +22,10 @@ class PopupViewController: UIViewController, BindableType {
     case invalid
     case question
     case wontfix
-    static let arr: [LabelMode] = [.bug, .duplicate, .enhancement, .goodfirstissue, .helpwanted, .invalid, .question, .wontfix]
+    static let arr: [LabelMode] = [.bug, .duplicate, .enhancement, .goodfirstissue,
+                                   .helpwanted, .invalid, .question, .wontfix]
   }
+  
   enum PopupMode: String {
     case Assignees
     case Labels
@@ -51,6 +53,7 @@ class PopupViewController: UIViewController, BindableType {
   }()
   private lazy var checkListTableView: UITableView = {
     let view = UITableView()
+    view.delegate = self
     view.backgroundColor = UIColor(hex: "232429")
     view.rowHeight = UIScreen.main.bounds.height / 15
     view.register(SubTaskCell.self, forCellReuseIdentifier: SubTaskCell.reuseIdentifier)
@@ -122,13 +125,6 @@ class PopupViewController: UIViewController, BindableType {
   }
   
   func bindViewModel() {
-//    view.rx.tapGesture()
-//      .when(UIGestureRecognizerState.recognized)
-//      .subscribe(onNext: { [unowned self] _ in
-//        self.view.endEditing(true)
-//      })
-//      .disposed(by: bag)
-    
     closeButton.rx.action = viewModel.popView()
     closeAssigneeButton.rx.action = viewModel.popView()
     viewModel.isLoggedIn()
@@ -182,7 +178,6 @@ class PopupViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     tagTableView.rx.itemSelected
-      .debug("--")
       .map { [unowned self] indexPath -> (Tag, LocalTaskService.EditMode) in
         let tags = self.viewModel.tags().map{ $0.title }
         let model = LabelMode.arr[indexPath.row]
@@ -202,7 +197,6 @@ class PopupViewController: UIViewController, BindableType {
       .disposed(by: bag)
     
     closeButton.rx.action = viewModel.popView()
-    
   }
   
   func addContentsView(contentsView: UIView) {
@@ -248,5 +242,14 @@ extension PopupViewController: UIPopoverPresentationControllerDelegate {
   
   func popoverPresentationControllerShouldDismissPopover(_ popoverPresentationController: UIPopoverPresentationController) -> Bool {
     return false
+  }
+}
+
+extension PopupViewController: UITableViewDelegate {
+  func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView,
+                 forSection section: Int) {
+    view.tintColor = UIColor(hex: "19263C")
+    let header = view as! UITableViewHeaderFooterView
+    header.textLabel?.textColor = .white
   }
 }

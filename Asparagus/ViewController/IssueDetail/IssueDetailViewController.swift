@@ -25,7 +25,7 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
     let item = UIButton()
     item.backgroundColor = UIColor(hex: "292D36")
     item.setImage(UIImage(named: "subTask"), for: .normal)
-    item.imageEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+    item.imageEdgeInsets = UIEdgeInsets(top: 15, left: 15, bottom: 15, right: 15)
     item.imageView?.contentMode = .scaleAspectFit
     item.alpha = 0.75
     return item
@@ -35,7 +35,7 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
     item.backgroundColor = UIColor(hex: "292D36")
     item.setImage(UIImage(named: "unTagged"), for: .normal)
     item.imageView?.contentMode = .scaleAspectFit
-    item.imageEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+    item.imageEdgeInsets = UIEdgeInsets(top: 15, left: 15, bottom: 15, right: 15)
     item.alpha = 0.75
     return item
   }()
@@ -44,7 +44,7 @@ class IssueDetailViewController: UIViewController, BindableType, GoBackable {
     item.backgroundColor = UIColor(hex: "292D36")
     item.setImage(UIImage(named: "assignee"), for: .normal)
     item.imageView?.contentMode = .scaleAspectFit
-    item.imageEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+    item.imageEdgeInsets = UIEdgeInsets(top: 15, left: 15, bottom: 15, right: 15)
     item.alpha = 0.75
     return item
   }()

@@ -13,11 +13,8 @@ import Action
 class SubTaskCell: UITableViewCell {
   private var bag = DisposeBag()
   static let reuseIdentifier = "SubTaskCell"
-  private lazy var baseView: UIView = {
-    let view = UIView()
-    view.backgroundColor = .clear
-    return view
-  }()
+  private let containerGuide = UILayoutGuide()
+  
   private lazy var titleLabel: UILabel = {
     let label = UILabel()
     label.textAlignment = .left
@@ -32,20 +29,21 @@ class SubTaskCell: UITableViewCell {
   }()
   
   func setupSubviews() {
+    selectionStyle = .none
     backgroundColor = UIColor(hex: "232429")
-    addSubview(baseView)
-    baseView.addSubview(titleLabel)
-    baseView.addSubview(checkButton)
-    baseView.snp.makeConstraints { (make) in
-      make.edges.equalToSuperview().inset(8)
+    addLayoutGuide(containerGuide)
+    addSubview(titleLabel)
+    addSubview(checkButton)
+    containerGuide.snp.makeConstraints { (make) in
+      make.edges.equalToSuperview().inset(20)
     }
     titleLabel.snp.makeConstraints { (make) in
-      make.left.top.bottom.equalTo(baseView)
+      make.left.top.bottom.equalTo(containerGuide)
       make.right.equalTo(checkButton.snp.left).offset(-5)
     }
     checkButton.snp.makeConstraints { (make) in
-      make.right.equalTo(baseView)
-      make.centerY.equalTo(baseView)
+      make.right.equalTo(containerGuide)
+      make.centerY.equalTo(containerGuide)
       make.width.height.equalTo(UIScreen.main.bounds.height / 30)
     }
   }

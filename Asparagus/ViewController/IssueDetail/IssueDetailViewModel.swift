@@ -71,9 +71,9 @@ struct IssueDetailViewModel {
         
         let newTask = SubTask()
         return [
-          SubTaskSection(header: "Add SubTask", items: [newTask]),
-          SubTaskSection(header: "Due SubTasks", items: dueTasks.toArray()),
-          SubTaskSection(header: "Done SubTasks", items: doneTasks.toArray())
+          SubTaskSection(header: "Add New checkList", items: [newTask]),
+          SubTaskSection(header: "Due", items: dueTasks.toArray()),
+          SubTaskSection(header: "Done", items: doneTasks.toArray())
         ]
       })
   }
