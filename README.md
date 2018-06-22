@@ -16,7 +16,7 @@
 - As soon as your state become online, you can sync your data changes with Github automatically
 
 
-## app architecture
+## Architecture
 
 - SyncService <-> LocalService <-> ViewModel <-> ViewController
 - SyncView : Sync with Github Issues
@@ -26,12 +26,15 @@
 - PopupView : Manage label, assignee, checklist of issue
 
 
-## spec
+## Pod
 
-- Realm
+- RealmSwift
+- RxRealm
 - RxSwift
-
-
-## 유레카
-
-- Realm managed object는 thread 간 이동시 threadSafe 를 보장해주어야 한다
+- RxCocoa
+- SnapKit
+- Action
+- Moya
+- RxDataSources
+- RxGesture
+- RxKeyboard
