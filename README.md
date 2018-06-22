@@ -1,6 +1,7 @@
-# Asparagus
+<a href="https://itunes.apple.com/us/app/asparagus/id1361881261?mt=8"><img src="/Screenshots/icon.png" /></a> # Asparagus
 
-- [AppStore](https://itunes.apple.com/us/app/asparagus/id1361881261?mt=8)
+<p align="center"><a href="https://itunes.apple.com/us/app/asparagus/id1361881261?mt=8"><img src="Screenshots/app-store-badge.png" width="250" /></a></p>
+
 - To-Do-List + Issue Tracker
 - Manage your issues only for Today just like to-do-lists apps
 - Manage one issue with detailed a few check-lists
@@ -8,7 +9,7 @@
 - When you are offline, you can manage your issues in local
 - As soon as your state become online, you can sync your data changes with Github automatically
 
-![Alt text](/Screenshots/allshots.png)<img width="50" height="200"></img>
+![Alt text](/Screenshots/allshots.png)
 
 
 ## spec
