@@ -9,11 +9,12 @@
 
 
 ## Features
-- Manage your issues only for Today just like to-do-lists apps
+
+- Manage your issues for Today separately
 - Manage one issue with detailed a few check-lists
-- Simply create and close your Github issues
-- When you are offline, you can manage your issues in local
-- As soon as your state become online, you can sync your data changes with Github automatically
+- Simply create and open/close your Github issues
+- When you are offline, you can manage issues in local
+- As soon as you are online, it starts to sync your data changes with Github automatically
 
 
 ## Architecture
