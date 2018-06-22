@@ -8,7 +8,7 @@
 - When you are offline, you can manage your issues in local
 - As soon as your state become online, you can sync your data changes with Github automatically
 
-![Alt text](/Screenshots/allshots.png)<img width="50" height="200"></img>
+![Alt text](/Screenshots/allshots.png)
 
 
 ## spec
