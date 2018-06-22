@@ -35,7 +35,8 @@ class SubTaskCell: UITableViewCell {
     addSubview(titleLabel)
     addSubview(checkButton)
     containerGuide.snp.makeConstraints { (make) in
-      make.edges.equalToSuperview().inset(20)
+      make.left.right.equalToSuperview().inset(20)
+      make.top.bottom.equalToSuperview().inset(5)
     }
     titleLabel.snp.makeConstraints { (make) in
       make.left.top.bottom.equalTo(containerGuide)

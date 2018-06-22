@@ -38,7 +38,8 @@ class SubTagCell: UITableViewCell {
     accessoryType = .none
     
     containerGuide.snp.makeConstraints { (make) in
-      make.edges.equalToSuperview().inset(20)
+      make.left.right.equalToSuperview().inset(20)
+      make.top.bottom.equalToSuperview().inset(5)
     }
     imgView.snp.makeConstraints { (make) in
       make.left.equalTo(containerGuide)

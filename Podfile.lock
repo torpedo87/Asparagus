@@ -10,11 +10,11 @@ PODS:
   - Moya/RxSwift (11.0.2):
     - Moya/Core
     - RxSwift (~> 4.0)
-  - Realm (3.7.3):
-    - Realm/Headers (= 3.7.3)
-  - Realm/Headers (3.7.3)
-  - RealmSwift (3.7.3):
-    - Realm (= 3.7.3)
+  - Realm (3.7.4):
+    - Realm/Headers (= 3.7.4)
+  - Realm/Headers (3.7.4)
+  - RealmSwift (3.7.4):
+    - Realm (= 3.7.4)
   - Result (3.2.4)
   - Reveal-SDK (15)
   - RxBlocking (4.2.0):
@@ -79,8 +79,8 @@ SPEC CHECKSUMS:
   Alamofire: e4fa87002c137ba2d8d634d2c51fabcda0d5c223
   Differentiator: a87be69eba49ec4ab460c7671143ee3a9eececfd
   Moya: a725035953bc1c0eb1be505ab903984501d82440
-  Realm: f366e954e3330d4915a319e96cc04e2ee09a9ef2
-  RealmSwift: 56f111b1dd439973fbe1c066b067ac4702285441
+  Realm: a469bb59e33f9926102ccaea4349822c53b9117e
+  RealmSwift: a45861b21c180f5cf0f122144b9759fa8dde3e9e
   Result: d2d07204ce72856f1fd9130bbe42c35a7b0fea10
   Reveal-SDK: 25e21896c478b60b948f876043f91570d368d23d
   RxBlocking: e339d8a6e752e25ade95ff858466c55436668f59

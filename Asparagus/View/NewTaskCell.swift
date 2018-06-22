@@ -40,7 +40,8 @@ class NewTaskCell: UITableViewCell {
     addSubview(titleTextField)
     addSubview(addButton)
     containerGuide.snp.makeConstraints { (make) in
-      make.edges.equalToSuperview().inset(20)
+      make.left.right.equalToSuperview().inset(20)
+      make.top.bottom.equalToSuperview().inset(5)
     }
     titleTextField.snp.makeConstraints { (make) in
       make.left.top.bottom.equalTo(containerGuide)
