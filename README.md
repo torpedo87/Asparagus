@@ -32,10 +32,9 @@
 - PopupView : Manage label, assignee, checklist of issue
 
 
-## Pod
+## Dependency
 
-- RealmSwift
-- RxRealm
+- RealmSwift/RxRealm
 - RxSwift
 - RxCocoa
 - SnapKit
